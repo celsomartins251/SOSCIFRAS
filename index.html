@@ -123,9 +123,10 @@ function organizeImportedText(raw, chordOnly){
  if(!hasSection){
   const first=out.findIndex(x=>x.trim());
   if(first>=0&&isChordLine(out[first])){
+   let end=first;
+   while(end<out.length&&(!out[end].trim()||isChordLine(out[end])))end++;
    out.splice(first,0,'[Intro]');
-   const next=out.findIndex((x,i)=>i>first+1&&x.trim());
-   if(next>=0)out.splice(next,0,'[Verso]');
+   if(end<out.length)out.splice(end+1,0,'[Verso]');
   }else if(!chordOnly){
    out.unshift('[Verso]');
   }else{
