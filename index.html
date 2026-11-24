@@ -114,7 +114,7 @@ function vSets(){
  ${D.sets.map(l=>`<button class="item" data-a="oset" data-v="${l.id}"><span class="ico">▤</span><span style="flex:1"><b>${e(l.n)}</b><small>${l.items.length} música(s)</small></span>${l.shared?'<span class="chip">compartilhada</span>':''}</button>`).join('')}`}
 
 function vConta(){return `<h1>Conta</h1><h2>Aparência</h2><div class="row"><button class="btn ghost" data-a="th" data-v="light">Claro</button><button class="btn ghost" data-a="th" data-v="dark">Escuro</button><button class="btn ghost" data-a="th" data-v="">Automático</button></div>
- <h2>Dados</h2><p style="color:var(--mute)">As cifras ficam salvas neste navegador. Use exportação/backup do navegador antes de limpar os dados.</p><button class="btn ghost" data-a="reset">Restaurar exemplos</button>`}
+ <h2>Dados</h2><p style="color:var(--mute)">As cifras ficam salvas neste navegador. Para sincronizar outros aparelhos, use a aba Banda com Firebase configurado.</p><button class="btn ghost" data-a="reset">Restaurar exemplos</button>`}
 
 function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const body=s.body.split('\n').map(l=>{const m=l.match(/^\s*\[(.+)\]\s*$/);if(m)return`<div class="sec">${e(m[1])}</div>`;
