@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SOS CIFRAS — Cifras e Repertórios</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#101010;--card:#1b1b1b;--ink:#f4f1e8;--mute:#aaa398;--line:#39342a;--brand:#d5aa42;--onbrand:#17130a;--chord:#f0c65b;--bar:#5a451b;--ok:#d5aa42}
+
+:root[data-theme="dark"]{--bg:#101010;--card:#1b1b1b;--ink:#f4f1e8;--mute:#aaa398;--line:#39342a;--brand:#d5aa42;--onbrand:#17130a;--chord:#f0c65b;--bar:#5a451b}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 "Bricolage Grotesque",system-ui,sans-serif}
+#app{max-width:760px;margin:0 auto;padding:16px 16px 110px}
+h1{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:8px 0 4px}
+h2{font-size:13px;font-weight:600;color:var(--mute);margin:22px 0 8px}
+.logo{font-weight:800;font-size:30px;letter-spacing:-.04em;color:var(--brand);text-align:center;margin:18px 0 2px}
+.sub{color:var(--mute);text-align:center;margin:0 0 18px;font-size:14px}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
+textarea{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:14px;min-height:300px;line-height:1.5}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+button{font:inherit;cursor:pointer;border:0;color:var(--ink);background:none}
+.btn{background:var(--brand);color:var(--onbrand);border-radius:12px;padding:11px 16px;font-weight:600;min-height:44px}
+.btn.ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.row>.fit{flex:none}
+.item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;min-height:56px}
+.item b{display:block;font-weight:600}.item small{color:var(--mute)}
+.ico{width:34px;height:34px;border-radius:10px;background:color-mix(in srgb,var(--brand) 14%,transparent);color:var(--brand);display:grid;place-items:center;flex:none;font-weight:800}
+.chip{font-size:12px;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--brand) 14%,transparent);color:var(--brand);font-weight:600}
+.empty{text-align:center;color:var(--mute);padding:28px 10px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line);margin:-16px -16px 12px;padding:10px 16px}
+.tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.tb{min-width:44px;min-height:44px;border-radius:10px;background:var(--card);border:1.5px solid var(--line);font-weight:700}
+.tb.on{background:var(--brand);color:var(--onbrand);border-color:var(--brand)}
+.sec{background:var(--bar);color:#fff;text-align:center;font-weight:600;font-size:14px;border-radius:8px;padding:5px;margin:18px 0 8px}
+.cs{font-family:"JetBrains Mono",ui-monospace,monospace;white-space:pre;overflow-x:auto}
+.c{color:var(--chord);font-weight:700}.l{color:var(--ink)}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs>div{display:flex;width:100%;max-width:760px;align-items:center}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--mute);min-height:48px;justify-content:center}
+.tab.on{color:var(--brand);font-weight:700}.tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.tab.mid{flex:none;width:58px;height:58px;border-radius:50%;background:var(--brand);color:var(--onbrand);margin-top:-26px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 16px;border-radius:12px;font-weight:600;z-index:9}
+.seq{position:fixed;left:0;right:0;bottom:calc(66px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;gap:8px;z-index:4}
+.seq .btn{box-shadow:0 3px 10px rgba(0,0,0,.2)}
+label{font-size:13px;color:var(--mute);display:block;margin:12px 0 4px}
+@media (prefers-reduced-motion:no-preference){.toast{animation:up .2s}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav class="tabs" aria-label="Navegação"><div id="tabs"></div></nav>
+<script>
+const N=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],FL={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
+const CH=/^([A-G][#b]?)((?:m|M|maj|min|dim|aug|sus|add|\d+|[#b+\-]|\([^)]*\))*)(?:\/([A-G][#b]?))?$/;
+const nn=(n,s)=>N[((N.indexOf(FL[n]||n)+s)%12+12)%12];
+const trTok=(t,s)=>{const m=t.match(CH);return m?nn(m[1],s)+m[2]+(m[3]?'/'+nn(m[3],s):''):t};
+const isChordLine=l=>{const k=l.trim().split(/\s+/).filter(Boolean);return k.length>0&&k.every(t=>t==='|'||/^\|?$/.test(t)||CH.test(t))&&k.some(t=>CH.test(t))};
+const trLine=(l,s)=>l.replace(/(\S+)( *)/g,(_,t,sp)=>{if(t==='|'||!CH.test(t))return t+sp;const n=trTok(t,s);return n+(sp?' '.repeat(Math.max(1,sp.length-(n.length-t.length))):'')});
+const e=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+const SEED={songs:[
+{id:'s1',t:'Manhã de Domingo',a:'Exemplo autoral',k:'G',src:'com',fav:0,shift:0,body:`[Intro]\n| G  C | D  Em |\n\n[Verso]\nG            C\nAcordo com a luz na janela\nD              Em\nE o dia me chama a cantar\nG          C\nO pão sobre a mesa, a casa em paz\nD            G\nÉ tempo de agradecer\n\n[Refrão]\nC        G\nCanta comigo, canta\nD           Em\nQue a manhã já vai chegar\nC       G\nCada nota, uma oração\nD          G\nE o coração a ecoar`},
+{id:'s2',t:'Amazing Grace',a:'Tradicional (domínio público)',k:'G',src:'com',fav:0,shift:0,body:`[Verso 1]\nG         G7       C       G\nAmazing grace, how sweet the sound\n          Em       D\nThat saved a wretch like me\nG         G7        C      G\nI once was lost, but now am found\n        Em    D     G\nWas blind, but now I see`},
+{id:'s3',t:'Caminho de Casa',a:'Exemplo autoral',k:'D',src:'mine',fav:1,shift:0,body:`[Intro]\n| D  A | Bm  G |\n\n[Verso]\nD         A\nA estrada é longa e o vento é leve\nBm            G\nCada passo me traz de volta\nD          A\nA luz da varanda acesa está\nG       A      D\nEsperando quem vai chegar\n\n[Refrão]\nG       D\nVou pra casa, vou\nA        Bm\nCom o peito em paz\nG       D     A   D\nSó o que importa ficou`}
+],sets:[{id:'l1',n:'Culto de domingo',items:['s1','s2'],shared:true},{id:'l2',n:'Ensaio',items:['s3'],shared:false}],theme:'dark'};
+let D;try{D=JSON.parse(localStorage.getItem('soscifras_v1'))}catch(_){}
+if(!D){try{D=JSON.parse(localStorage.getItem('acordes_v1'))}catch(_){}}
+D=D||JSON.parse(JSON.stringify(SEED));
+const save=()=>{try{localStorage.setItem('soscifras_v1',JSON.stringify(D))}catch(_){}};
+const S={tab:'busca',q:'',song:null,ctx:null,edit:null,sl:null,fs:16,play:0,pick:0,msg:'',band:null};
+let FB=null,fbUnsub=null;
+const song=id=>D.songs.find(x=>x.id===id);
+let timer=null;const stopPlay=()=>{clearInterval(timer);S.play=0};
+const applyTheme=()=>{if(D.theme)document.documentElement.dataset.theme=D.theme;else delete document.documentElement.dataset.theme};
+
+const IC={web:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',band:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-4 12-4 12 0M16 11a3 3 0 1 0 0-6M18 16c2 0 3 2 3 4"/>',busca:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',sets:'<path d="M3 7h6l2 2h10v10H3z"/>',pub:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 4 3 14 0 18M12 3c-3 4-3 14 0 18"/>',conta:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/>'};
+function tabs(){const t=[['pub','Público'],['sets','Setlists'],['web','Web'],['busca','Busca'],['band','Banda'],['conta','Conta']];
+ document.getElementById('tabs').innerHTML=t.map(([k,n])=>`<button class="tab ${k==='busca'?'mid':''} ${S.tab===k&&!S.song&&!S.edit?'on':''}" data-a="tab" data-v="${k}" aria-label="${n}"><svg viewBox="0 0 24 24">${IC[k]}</svg>${k==='busca'?'':n}</button>`).join('')}
+
+const item=(s,extra='')=>`<button class="item" data-a="open" data-v="${s.id}"><span class="ico">♪</span><span style="flex:1"><b>${e(s.t)}</b><small>${e(s.a||'')}</small></span>${s.fav?'<span class="chip">★</span>':''}${extra}</button>`;
+
+function vBusca(){const q=S.q.toLowerCase(),m=s=>!q||(s.t+' '+s.a).toLowerCase().includes(q);
+ const mine=D.songs.filter(s=>s.src==='mine'&&m(s)),com=D.songs.filter(s=>s.src==='com'&&m(s)),any=mine.length+com.length;
+ return `<div class="logo">SOS CIFRAS</div><p class="sub">Qual música você quer tocar?</p>
+ <input id="q" type="search" placeholder="Título ou artista" value="${e(S.q)}" aria-label="Buscar música" autocomplete="off">
+ ${mine.length?'<h2>Suas cifras</h2>'+mine.map(s=>item(s)).join(''):''}
+ ${com.length?'<h2>Comunidade</h2>'+com.map(s=>item(s)).join(''):''}
+ ${!any?'<div class="empty">Nada encontrado para essa busca.</div>':''}
+ <button class="item" data-a="new"><span class="ico">+</span><span><b>Criar cifra manualmente</b><small>Escreva ou cole a cifra e salve</small></span></button>`}
+
+function vWeb(){return `<h1>Buscar cifras na internet</h1><p class="sub" style="text-align:left">Pesquise por título e artista. Abra um resultado, copie a cifra e importe no editor abaixo. A importação é manual para evitar copiar catálogos ou conteúdo protegido automaticamente.</p><label for="webq">Música ou artista</label><input id="webq" placeholder="Ex.: nome da música — artista"><div class="row" style="margin:8px 0"><button class="btn" data-a="webgoogle">Google</button><button class="btn ghost" data-a="webbing">Bing</button></div><h2>Importar cifra copiada</h2><label for="wtitle">Título</label><input id="wtitle" placeholder="Título da música"><label for="wartist">Artista</label><input id="wartist" placeholder="Artista"><label for="wkey">Tom original (opcional)</label><input id="wkey" placeholder="Ex.: G, F#m, Bb"><label for="wbody">Cole aqui a cifra</label><textarea id="wbody" placeholder="[Intro]
+G  D  Em  C
+
+[Verso]
+G..." spellcheck="false"></textarea><button class="btn" style="width:100%;margin-top:10px" data-a="webimport">Importar para minhas cifras</button>`}
+function vBand(){return `<h1>Banda sincronizada</h1><p class="sub" style="text-align:left">Conecte os dispositivos da banda ao mesmo grupo. O líder controla a música atual e pode enviar o repertório e as setlists para os demais músicos.</p><h2>Configuração Firebase</h2><label for="fbapi">API Key</label><input id="fbapi" placeholder="Firebase apiKey" value="${e((D.firebase||{}).apiKey||'')}"><label for="fbdom">Auth Domain</label><input id="fbdom" placeholder="projeto.firebaseapp.com" value="${e((D.firebase||{}).authDomain||'')}"><label for="fbpid">Project ID</label><input id="fbpid" placeholder="Firebase Project ID" value="${e((D.firebase||{}).projectId||'')}"><label for="fbapp">App ID</label><input id="fbapp" placeholder="Firebase App ID" value="${e((D.firebase||{}).appId||'')}"><button class="btn" style="width:100%;margin-top:8px" data-a="fbconfig">Salvar configuração</button><h2>Conta do músico</h2><label for="fbemail">E-mail</label><input id="fbemail" type="email" autocomplete="username" placeholder="seu@email.com"><label for="fbpass">Senha</label><input id="fbpass" type="password" autocomplete="current-password" placeholder="Senha"><div class="row" style="margin-top:8px"><button class="btn" data-a="fblogin">Entrar</button><button class="btn ghost" data-a="fbcreate">Criar conta</button></div><h2>Grupo</h2><div class="row"><input id="fbcode" placeholder="Código do grupo"><button class="btn" data-a="fbjoin">Entrar no grupo</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbgroup">Criar grupo e ser líder</button><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbsync">Enviar repertório e setlists aos membros</button><p id="fbstatus" class="sub" style="text-align:left">Ainda não conectado.</p><p class="sub" style="text-align:left">A sincronização entre aparelhos só ficará ativa após configurar Authentication (e-mail/senha), Firestore e publicar as regras de segurança no Firebase.</p>`}
+
+function vPub(){const l=D.songs.filter(s=>s.src==='com');return `<h1>Público</h1><p class="sub" style="text-align:left">Cifras compartilhadas pela comunidade.</p>${l.map(s=>item(s)).join('')||'<div class="empty">Nenhuma cifra pública ainda.</div>'}`}
+
+function vSets(){
+ if(S.sl){const l=D.sets.find(x=>x.id===S.sl);if(!l){S.sl=null;return vSets()}
+  const opts=D.songs.filter(s=>!l.items.includes(s.id));
+  return `<div class="top"><button class="btn ghost" data-a="back">‹ Voltar</button></div><h1>${e(l.n)}</h1><p class="sub" style="text-align:left">${l.items.length} música(s) ${l.shared?'· compartilhada':''}</p><div class="row"><button class="btn ghost" data-a="renameset">Renomear setlist</button><button class="btn ghost" data-a="share">${l.shared?'Parar de compartilhar':'Marcar como compartilhada'}</button></div>
+  ${l.items.map((id,i)=>{const s=song(id);return s?`<div class="row" style="margin-bottom:8px"><button class="item" style="margin:0" data-a="openset" data-v="${i}"><span class="ico">${i+1}</span><span><b>${e(s.t)}</b><small>${e(s.a||'')}</small></span></button><button class="tb fit" data-a="up" data-v="${i}" aria-label="Subir">↑</button><button class="tb fit" data-a="down" data-v="${i}" aria-label="Descer">↓</button><button class="tb fit" data-a="rm" data-v="${i}" aria-label="Remover">✕</button></div>`:''}).join('')||'<div class="empty">Setlist vazia. Adicione músicas abaixo.</div>'}
+  ${opts.length?`<h2>Adicionar música</h2><div class="row"><select id="addsel" aria-label="Música">${opts.map(s=>`<option value="${s.id}">${e(s.t)}</option>`).join('')}</select><button class="btn fit" data-a="addto">Adicionar</button></div>`:''}
+  <h2>Opções</h2><div class="row"><button class="btn ghost" data-a="delset">Excluir setlist</button></div>`}
+ return `<h1>Minhas setlists</h1>
+ <div class="row" style="margin:10px 0 14px"><input id="nl" placeholder="Nome da nova setlist" aria-label="Nome da setlist"><button class="btn fit" data-a="mkset">Criar</button></div>
+ <button class="item" data-a="favs"><span class="ico">★</span><span><b>Minhas cifras</b><small>${D.songs.filter(s=>s.src==='mine').length} música(s)</small></span></button>
+ ${D.sets.map(l=>`<button class="item" data-a="oset" data-v="${l.id}"><span class="ico">▤</span><span style="flex:1"><b>${e(l.n)}</b><small>${l.items.length} música(s)</small></span>${l.shared?'<span class="chip">compartilhada</span>':''}</button>`).join('')}`}
+
+function vConta(){return `<h1>Conta</h1><h2>Aparência</h2><div class="row"><button class="btn ghost" data-a="th" data-v="light">Claro</button><button class="btn ghost" data-a="th" data-v="dark">Escuro</button><button class="btn ghost" data-a="th" data-v="">Automático</button></div>
+ <h2>Dados</h2><p style="color:var(--mute)">As cifras ficam salvas neste navegador. Use exportação/backup do navegador antes de limpar os dados.</p><button class="btn ghost" data-a="reset">Restaurar exemplos</button>`}
+
+function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
+ const body=s.body.split('\n').map(l=>{const m=l.match(/^\s*\[(.+)\]\s*$/);if(m)return`<div class="sec">${e(m[1])}</div>`;
+  return isChordLine(l)?`<div class="cs c">${e(trLine(l,cur))||' '}</div>`:`<div class="cs l">${e(l)||' '}</div>`}).join('');
+ const k=s.k?nn(s.k.replace(/m$/,''),cur)+(/m$/.test(s.k)?'m':''):'—';
+ const pos=S.ctx?S.ctx.i+1+'/'+S.ctx.ids.length:'';
+ return `<div class="top"><div class="row"><button class="btn ghost fit" data-a="back">‹ Voltar</button><div style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(s.t)}</b><small style="color:var(--mute)">${e(s.a||'')}</small></div></div>
+ <div class="tools"><button class="tb" data-a="tr" data-v="-1" aria-label="Baixar tom">−</button><span class="chip" style="padding:8px 12px">Tom ${e(k)}${cur?' ('+(cur>0?'+':'')+cur+')':''}</span><button class="tb" data-a="tr" data-v="1" aria-label="Subir tom">+</button>
+ <button class="tb" data-a="fs" data-v="-1" aria-label="Diminuir fonte">A−</button><button class="tb" data-a="fs" data-v="1" aria-label="Aumentar fonte">A+</button>
+ <button class="tb ${S.play?'on':''}" data-a="play" aria-label="Rolagem automática">${S.play?'❚❚':'▶'}</button><button class="tb ${s.fav?'on':''}" data-a="fav" aria-label="Favoritar">★</button>
+ <button class="tb" data-a="edit" aria-label="Editar">✎</button><button class="tb ${S.pick?'on':''}" data-a="pick" aria-label="Adicionar à setlist">▤+</button><button class="tb" data-a="print" aria-label="Imprimir">⎙</button></div>
+ ${S.pick?`<div class="tools">${D.sets.map(l=>`<button class="btn ghost" data-a="toset" data-v="${l.id}">${e(l.n)}</button>`).join('')||'<small>Crie uma setlist primeiro.</small>'}</div>`:''}</div>
+ <div style="font-size:${S.fs}px">${body}</div>
+ ${S.ctx?`<div class="seq"><button class="btn" data-a="prev" ${S.ctx.i<1?'disabled style="opacity:.4"':''}>‹ Anterior</button><span class="btn ghost" style="min-width:64px;text-align:center">${pos}</span><button class="btn" data-a="next" ${S.ctx.i>=S.ctx.ids.length-1?'disabled style="opacity:.4"':''}>Próxima ›</button></div>`:''}`}
+
+function vEdit(){const s=S.edit;return `<div class="top"><div class="row"><button class="btn ghost fit" data-a="cancel">Cancelar</button><button class="btn fit" data-a="save">Salvar</button></div></div><h1>${song(s.id)?'Editar cifra':'Nova cifra'}</h1>
+ <label for="et">Título</label><input id="et" value="${e(s.t)}"><div class="row"><div><label for="ea">Artista</label><input id="ea" value="${e(s.a)}"></div><div><label for="ek">Tom</label><input id="ek" value="${e(s.k)}" placeholder="Ex.: G"></div></div>
+ <label for="eb">Cifra (use [Verso], [Refrão] para seções; acordes em linha própria acima da letra)</label><textarea id="eb" spellcheck="false">${e(s.body)}</textarea>`}
+
+function render(){stopIfLeft();applyTheme();let h;
+ if(S.edit)h=vEdit();else if(S.song)h=vSong();else h={busca:vBusca,pub:vPub,sets:vSets,web:vWeb,band:vBand,conta:vConta}[S.tab]();
+ const q=document.getElementById('q'),f=q&&document.activeElement===q,pos=q&&q.selectionStart;
+ document.getElementById('app').innerHTML=h+(S.msg?`<div class="toast" role="status">${e(S.msg)}</div>`:'');
+ tabs();if(f){const n=document.getElementById('q');n.focus();n.setSelectionRange(pos,pos)}}
+function stopIfLeft(){if(!S.song&&S.play)stopPlay()}
+function toast(m){S.msg=m;render();setTimeout(()=>{S.msg='';render()},1800)}
+function openSong(id,ctx){S.song=id;S.ctx=ctx||null;S.pick=0;stopPlay();render();window.scrollTo(0,0);if(S.band?.role==='leader')fbSyncCurrent(id)}
+
+document.addEventListener('input',ev=>{if(ev.target.id==='q'){S.q=ev.target.value;render()}});
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
+ const s=S.song&&song(S.song),l=S.sl&&D.sets.find(x=>x.id===S.sl);
+ switch(a){
+ case'tab':S.tab=v;S.song=null;S.edit=null;S.sl=null;S.ctx=null;render();break;
+ case'webgoogle':case'webbing':{const q=document.getElementById('webq').value.trim();if(q)window.open((a==='webgoogle'?'https://www.google.com/search?q=':'https://www.bing.com/search?q=')+encodeURIComponent(q+' cifra'),'_blank','noopener');break}
+ case'webimport':{const t=document.getElementById('wtitle').value.trim(),ar=document.getElementById('wartist').value.trim(),k=document.getElementById('wkey').value.trim(),body=document.getElementById('wbody').value.trim();if(!t||!body){toast('Informe o título e cole a cifra.');break}const norm=body.replace(/^\s*\[(verse|verso)\s*\]\s*$/gim,'[Verso]').replace(/^\s*\[(chorus|refr[aã]o)\s*\]\s*$/gim,'[Refrão]').replace(/^\s*\[(intro|ponte|bridge|solo|final)\s*\]\s*$/gim, m=>'['+m.replace(/[\[\]]/g,'').replace(/bridge/i,'Ponte').replace(/intro/i,'Intro').replace(/solo/i,'Solo').replace(/final/i,'Final')+']');const x={id:uid(),t,a:ar,k,body:norm,src:'mine',fav:0,shift:0};D.songs.unshift(x);save();S.tab='busca';S.q='';openSong(x.id);break}
+ case'fbconfig':D.firebase={apiKey:document.getElementById('fbapi').value.trim(),authDomain:document.getElementById('fbdom').value.trim(),projectId:document.getElementById('fbpid').value.trim(),appId:document.getElementById('fbapp').value.trim()};save();toast('Configuração salva neste dispositivo.');break;
+ case'fbcreate':case'fblogin':case'fbjoin':case'fbgroup':case'fbsync':fbDo(a);break;
+ case'renameset':{const n=prompt('Novo nome da setlist:',l.n);if(n&&n.trim()){l.n=n.trim();save();render()}break}
+ case'open':openSong(v);break;
+ case'back':if(S.song){S.song=null;S.ctx=null;stopPlay()}else if(S.sl)S.sl=null;render();break;
+ case'new':S.edit={id:uid(),t:'',a:'',k:'',body:'[Verso]\n'};render();break;
+ case'edit':S.edit={...s};S.song=null;render();break;
+ case'cancel':S.edit=null;render();break;
+ case'save':{const x=S.edit;x.t=document.getElementById('et').value.trim()||'Sem título';x.a=document.getElementById('ea').value.trim();x.k=document.getElementById('ek').value.trim();x.body=document.getElementById('eb').value;
+  const i=D.songs.findIndex(y=>y.id===x.id);if(i<0)D.songs.unshift({...x,src:'mine',fav:0,shift:0});else D.songs[i]={...D.songs[i],...x};save();S.edit=null;S.song=x.id;toast('Cifra salva com sucesso');break}
+ case'tr':s.shift=((s.shift||0)+ +v+12)%12;if(s.shift>6)s.shift-=12;save();render();break;
+ case'fs':S.fs=Math.min(30,Math.max(11,S.fs+ +v*2));render();break;
+ case'fav':s.fav=s.fav?0:1;save();render();break;
+ case'play':if(S.play)stopPlay();else{S.play=1;timer=setInterval(()=>window.scrollBy(0,1),50)}render();break;
+ case'pick':S.pick=S.pick?0:1;render();break;
+ case'toset':{const t=D.sets.find(x=>x.id===v);if(!t.items.includes(s.id))t.items.push(s.id);save();S.pick=0;toast('Adicionada a “'+t.n+'”');break}
+ case'print':window.print();break;
+ case'prev':case'next':{const i=S.ctx.i+(a==='next'?1:-1);S.ctx.i=i;S.song=S.ctx.ids[i];stopPlay();render();window.scrollTo(0,0);break}
+ case'oset':S.sl=v;render();break;
+ case'favs':S.tab='busca';S.q='';render();break;
+ case'openset':{const ids=l.items.filter(song);openSong(ids[+v],{ids,i:+v});break}
+ case'mkset':{const n=document.getElementById('nl').value.trim();if(n){D.sets.unshift({id:uid(),n,items:[],shared:false});save();render()}break}
+ case'addto':l.items.push(document.getElementById('addsel').value);save();render();break;
+ case'up':case'down':{const i=+v,j=a==='up'?i-1:i+1;if(j>=0&&j<l.items.length){[l.items[i],l.items[j]]=[l.items[j],l.items[i]];save();render()}break}
+ case'rm':l.items.splice(+v,1);save();render();break;
+ case'share':l.shared=!l.shared;save();render();break;
+ case'delset':D.sets=D.sets.filter(x=>x!==l);S.sl=null;save();render();break;
+ case'th':D.theme=v;save();render();break;
+ case'reset':D=JSON.parse(JSON.stringify(SEED));save();toast('Exemplos restaurados');break;
+ }});
+
+async function fbDo(action){
+ const status=m=>{const x=document.getElementById('fbstatus');if(x)x.textContent=m;};
+ try{
+  const cfg=D.firebase||{};if(!cfg.apiKey||!cfg.projectId||!cfg.appId||!cfg.authDomain){status('Preencha e salve os quatro campos de configuração Firebase.');return}
+  if(!FB){const [appM,authM,dbM]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js')]);const app=appM.initializeApp(cfg,'soscifras');const auth=authM.getAuth(app);const db=dbM.getFirestore(app);FB={...appM,...authM,...dbM,app,auth,db};}
+  const {auth,db,createUserWithEmailAndPassword,signInWithEmailAndPassword,doc,setDoc,getDoc,onSnapshot,updateDoc,arrayUnion}=FB;
+  const email=document.getElementById('fbemail')?.value.trim(),pass=document.getElementById('fbpass')?.value;
+  if(action==='fbcreate'){await createUserWithEmailAndPassword(auth,email,pass);status('Conta criada e conectada: '+auth.currentUser.email);return}
+  if(action==='fblogin'){await signInWithEmailAndPassword(auth,email,pass);status('Conectado: '+auth.currentUser.email);return}
+  if(!auth.currentUser){status('Entre na sua conta antes de criar ou acessar um grupo.');return}
+  if(action==='fbgroup'){
+   const payloadSize=JSON.stringify({songs:D.songs,sets:D.sets}).length;if(payloadSize>850000){status('Repertório muito grande para um único documento do Firestore. Reduza o conteúdo antes de criar o grupo.');return}const code=Math.random().toString(36).slice(2,10).toUpperCase();const ref=doc(db,'sos_cifras_groups',code);
+   await setDoc(ref,{code,owner:auth.currentUser.uid,leader:auth.currentUser.uid,members:[auth.currentUser.uid],currentSong:null,songs:D.songs,sets:D.sets,updatedAt:Date.now()});
+   S.band={code,role:'leader'};document.getElementById('fbcode').value=code;status('Grupo criado. Código para os músicos: '+code);fbListen(ref);return;
+  }
+  if(action==='fbjoin'){
+   const code=document.getElementById('fbcode').value.trim().toUpperCase();const ref=doc(db,'sos_cifras_groups',code);const snap=await getDoc(ref);if(!snap.exists()){status('Código não encontrado.');return}await updateDoc(ref,{members:arrayUnion(auth.currentUser.uid)});S.band={code,role:'member'};status('Entrou no grupo '+code+'. Aguardando sincronização.');fbListen(ref);return;
+  }
+  if(action==='fbsync'){
+   if(S.band?.role!=='leader'){status('Somente o líder pode enviar o repertório.');return}const payloadSize=JSON.stringify({songs:D.songs,sets:D.sets}).length;if(payloadSize>850000){status('Repertório muito grande para sincronizar em um único documento Firestore.');return}await updateDoc(doc(db,'sos_cifras_groups',S.band.code),{songs:D.songs,sets:D.sets,updatedAt:Date.now()});status('Repertório e setlists enviados ao grupo.');return;
+  }
+ }catch(err){console.error(err);status('Falha Firebase: '+(err.code||err.message||'erro desconhecido'));}
+}
+function fbListen(ref){if(fbUnsub)fbUnsub();fbUnsub=FB.onSnapshot(ref,snap=>{if(!snap.exists())return;const d=snap.data();if(S.band?.role!=='leader'){if(Array.isArray(d.songs))D.songs=d.songs;if(Array.isArray(d.sets))D.sets=d.sets;if(d.currentSong&&song(d.currentSong)){S.song=d.currentSong;S.tab='busca'}save();render()}const status=document.getElementById('fbstatus');if(status)status.textContent='Grupo '+d.code+' conectado · '+(d.leader===FB.auth.currentUser?.uid?'Você é líder':'sincronizado com o líder');},err=>{const status=document.getElementById('fbstatus');if(status)status.textContent='Erro na sincronização: '+err.message;});}
+async function fbSyncCurrent(id){try{if(FB&&S.band?.role==='leader')await FB.updateDoc(FB.doc(FB.db,'sos_cifras_groups',S.band.code),{currentSong:id,updatedAt:Date.now()})}catch(e){console.error(e)}}
+
+render();
+</script>
+</body>
+</html>
