@@ -12,7 +12,7 @@
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "./Ic%C3%B4ni_correto.png?v=1.2.2",
+      "src": "./%C3%8Dcone_certo_ok.png?v=1.2.4",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
