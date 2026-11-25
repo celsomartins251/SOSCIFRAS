@@ -11,7 +11,7 @@
 <div id="status" class="status">Cole uma cifra ou tente ler o endereço acima.</div>
 <label for="source">Texto copiado ou recebido do site</label><textarea id="source" placeholder="Cole aqui a cifra original, mesmo que os acordes estejam grudados na letra."></textarea>
 <div class="row"><button id="convert">Organizar cifra</button><button id="reset" class="ghost">Restaurar exemplo</button></div>
-<label>Resultado organizado (acordes acima da letra)</label><div id="preview" class="preview"></div>
+<label>Resultado organizado</label><div id="preview" class="preview"></div><label style="margin-top:14px">Banco de acordes encontrado na página</label><div id="chordbank" class="preview"></div>
 </main><script>
 const sample = `Assim    que o dia amanheceuDG7MA7
 Lá no mar alto da paixãoA#°BmBm7M
@@ -25,15 +25,7 @@ sem você chegarAm7D7(9)
    Longe de ti tudo parouGm7C7(9)F#m7B7(b9)
 Ninguém sabe o que eu sofriE7(9)A7(4)`;
 const status = m => document.getElementById('status').textContent=m;
-const chordAt = (s,i) => {
- const root=s.slice(i).match(/^[A-G](?:#|b)?/); if(!root)return null;
- const start=i+root[0].length;
- const q=s.slice(start).match(/^(?:(?:maj|min|dim|aug|sus|add|m|M|°|º|ø|\+|-)?(?:\d+)?(?:[#b](?:\d+)?)*(?:\([^)]*\))?(?:M|m|maj|min|dim|aug|sus|add|°|º|ø)?)/);
- if(!q)return null;
- const token=root[0]+q[0];
- if(!token || token.length===root[0].length && !/^[A-G]/.test(root[0]))return null;
- return token;
-};
+const CHORD_TOKEN = /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|m|M|°|º|ø|\+|-)?(?:\d+)?(?:[#b](?:\d+)?)*(?:\([^)]*\))?(?:M|m|maj|min|dim|aug|sus|add|°|º|ø)?)/;
 function splitChordRun(run){
  const memo=new Map();
  function solve(i){
@@ -51,42 +43,57 @@ function splitChordRun(run){
  const result=solve(0);return result&&result.length>=2?result:null;
 }
 function findTrailingChords(line){
- let end=line.length;while(end>0&&/\s/.test(line[end-1]))end--;
- for(let start=end-1;start>=0;start--){
-  if(start>0 && /[A-Za-zÀ-ÿ]/.test(line[start-1]))continue;
-  const run=line.slice(start,end),tokens=splitChordRun(run);
-  if(tokens)return {lyric:line.slice(0,start).replace(/\s+$/,''),prefix:line.slice(0,start).match(/^\s*/)[0],tokens};
- }
- // Segunda tentativa: a cifra pode estar imediatamente depois de uma palavra.
- for(let start=end-1;start>=0;start--){
-  const run=line.slice(start,end),tokens=splitChordRun(run);
-  if(tokens && start>0 && /[A-Za-zÀ-ÿ]/.test(line[start-1]))return {lyric:line.slice(0,start),prefix:'',tokens};
+ const end=line.length;
+ for(let start=end-1;start>0;start--){
+  const run=line.slice(start,end).replace(/\s+/g,'');
+  if(!run)continue;
+  const tokens=splitChordRun(run);
+  if(tokens && /[A-Za-zÀ-ÿ]/.test(line[start-1]) && !/[A-G](?:#|b)?$/.test(line.slice(0,start))){
+   return {lyric:line.slice(0,start).replace(/\s+$/,''),tokens};
+  }
+  if(tokens && /\s$/.test(line.slice(0,start))){
+   return {lyric:line.slice(0,start).replace(/\s+$/,''),tokens};
+  }
  }
  return null;
 }
-function isChordLine(line){const t=line.trim();return !!t&&splitChordRun(t.replace(/\s+/g,''))!==null || /^\s*(?:[A-G](?:#|b)?[^\s]*\s*)+\s*$/.test(line.trim())&&/^[A-G]/.test(line.trim());}
+function isChordLine(line){
+ const t=line.trim().replace(/\s+/g,'');
+ return !!splitChordRun(t) || /^(?:[A-G](?:#|b)?(?:maj|min|dim|aug|sus|add|m|M|°|º|ø|\+|-)?(?:\d+)?(?:[#b]\d+)*(?:\([^)]*\))?)+$/.test(t);
+}
 function organize(raw){
- const out=[];
- for(const original of raw.replace(/\r/g,'').split('\n')){
+ const out=[];let bank=[];
+ const rows=raw.replace(/\r/g,'').split('\n');
+ let inBank=false;
+ for(const original of rows){
   const line=original.replace(/\t/g,'    ').replace(/\s+$/,'');
+  if(/^\s*Acordes da música\s*$/i.test(line)){inBank=true;continue}
+  if(inBank){
+   if(!line.trim())continue;
+   const parts=line.trim().split(/\s+/);
+   const valid=parts.filter(x=>isChordLine(x));
+   if(valid.length){bank.push(...valid);continue}
+   inBank=false;
+  }
   if(!line.trim()){out.push({type:'blank',text:''});continue}
-  if(/^\s*(?:\[.*\]|#{1,3}\s*\[.*\])\s*$/.test(line)){out.push({type:'section',text:line.trim().replace(/^#+\s*/, '')});continue}
+  if(/^https?:\/\//i.test(line.trim())||/^(Title|URL Source|Markdown Content):/i.test(line.trim()))continue;
+  if(/^Essa cifra te ajudou\?/i.test(line.trim()))continue;
   const found=findTrailingChords(line);
   if(found && found.lyric.trim()){
-   const chordText=found.tokens.join('   ');
-   const indent=found.prefix + ' '.repeat(Math.max(0,found.lyric.trimStart().length));
-   out.push({type:'chords',text:indent+chordText});
+   out.push({type:'chords',text:found.tokens.join('   ')});
    out.push({type:'lyric',text:found.lyric});
   }else if(isChordLine(line)){
-   out.push({type:'chords',text:line});
+   bank.push(...line.trim().split(/\s+/));
   }else out.push({type:'lyric',text:line});
  }
- return out;
+ return {lines:out,bank:[...new Set(bank)]};
 }
 function show(){
- const lines=organize(document.getElementById('source').value);
+ const result=organize(document.getElementById('source').value);
+ const lines=result.lines;
  document.getElementById('preview').innerHTML=lines.map(x=>x.type==='blank'?'':x.type==='section'?'<span class="chords">'+esc(x.text)+'</span>':x.type==='chords'?'<span class="chords">'+esc(x.text)+'</span>':'<span class="lyric">'+esc(x.text)+'</span>').join('\n');
- status('Processamento concluído: '+lines.filter(x=>x.type==='chords').length+' linhas de acordes identificadas. Confira o alinhamento antes de aprovar.');
+ document.getElementById('chordbank').innerHTML=result.bank.length?'<span class="chords">'+esc(result.bank.join('   '))+'</span>':'<span style="color:var(--muted)">Nenhum banco de acordes separado foi identificado.</span>';
+ status('Organização concluída: '+lines.filter(x=>x.type==='chords').length+' linhas de acordes posicionadas; '+result.bank.length+' acordes no banco. A página de origem só permite posicionamento automático quando fornece essa relação na letra.');
 }
 function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 document.getElementById('convert').onclick=show;
