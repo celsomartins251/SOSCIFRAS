@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="./manifest.webmanifest">
-<title>S.O.S Cifra — Cifras e Repertórios</title>
+<title>SOS Cifra — Cifras e Repertórios</title>
 <link rel="icon" type="image/png" href="./sos-Logo.png?v=1.1.1">
 <link rel="apple-touch-icon" href="./sos-Logo.png?v=1.1.1">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=JetBrains+Mono:wght@400;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
@@ -81,7 +81,7 @@ details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 
 </style>
 </head>
 <body>
-<div id="splash" role="img" aria-label="SOS Cifras, Celso Martins, Dicas de Música"><i class="sp-ring"></i><i class="sp-ring r2"></i><img class="sp-logo" alt="" src="./sos-Logo.png?v=1.1.1"><div class="sp-bar"><i></i></div></div>
+<div id="splash" role="img" aria-label="SOS Cifra, Celso Martins, Dicas de Música"><i class="sp-ring"></i><i class="sp-ring r2"></i><img class="sp-logo" alt="" src="./sos-Logo.png?v=1.1.1"><div class="sp-bar"><i></i></div></div>
 <div class="sig"><span>Celso Martins Dica de Música</span><button class="helpbtn" data-a="tab" data-v="ajuda" aria-label="Abrir Ajuda">? Ajuda</button></div>
 <div id="app"></div>
 <nav class="tabs" aria-label="Navegação"><div id="tabs"></div></nav>
@@ -170,7 +170,7 @@ const item=(s,extra='')=>`<button class="item" data-a="open" data-v="${s.id}"><s
 
 function vBusca(){const q=S.q.toLowerCase(),m=s=>!q||(s.t+' '+s.a).toLowerCase().includes(q);
  const mine=D.songs.filter(s=>s.src==='mine'&&m(s)),com=D.songs.filter(s=>s.src==='com'&&m(s)),any=mine.length+com.length;
- return `<img class="homelogo" src="${LOGO}" alt="S.O.S CIFRA"><p class="sub">Qual música você quer tocar?</p>
+ return `<img class="homelogo" src="${LOGO}" alt="SOS CIFRA"><p class="sub">Qual música você quer tocar?</p>
  <input id="q" type="search" placeholder="Título ou artista" value="${e(S.q)}" aria-label="Buscar música" autocomplete="off">
  ${mine.length?'<h2>Suas cifras</h2>'+mine.map(s=>item(s)).join(''):''}
  ${com.length?'<h2>Comunidade</h2>'+com.map(s=>item(s)).join(''):''}
@@ -525,10 +525,10 @@ function vAjuda(){return `<h1>Ajuda</h1><p class="sub" style="text-align:left">T
 <li>O repertório enviado tem limite de cerca de 850 KB. Acima disso o aplicativo avisa.</li></ul></details>
 <details><summary>Banda: como configurar (passo a passo)</summary>
 <p>A sincronização usa o <b>Firebase</b> (serviço gratuito do Google). Você faz a configuração uma vez, e todos os músicos usam a mesma configuração.</p><ol>
-<li>Entre em <b>console.firebase.google.com</b> com sua conta Google e toque em <b>Criar um projeto</b>. Dê um nome (por exemplo, SOS Cifras). O Google Analytics pode ficar desligado.</li>
+<li>Entre em <b>console.firebase.google.com</b> com sua conta Google e toque em <b>Criar um projeto</b>. Dê um nome (por exemplo, SOS Cifra). O Google Analytics pode ficar desligado.</li>
 <li>Na página do projeto, toque no ícone <b>&lt;/&gt;</b> (Web) para registrar um aplicativo. Dê um apelido. Não precisa marcar o Hosting.</li>
 <li>O Firebase mostra um bloco <b>firebaseConfig</b>. Copie quatro valores: <b>apiKey</b>, <b>authDomain</b>, <b>projectId</b> e <b>appId</b>.</li>
-<li>No SOS Cifras, aba <b>Banda</b>, cole os quatro valores nos campos API Key, Auth Domain, Project ID e App ID e toque em <b>Salvar configuração</b>. Isso fica salvo só neste aparelho; faça o mesmo nos outros aparelhos.</li>
+<li>No SOS Cifra, aba <b>Banda</b>, cole os quatro valores nos campos API Key, Auth Domain, Project ID e App ID e toque em <b>Salvar configuração</b>. Isso fica salvo só neste aparelho; faça o mesmo nos outros aparelhos.</li>
 <li>No Firebase, vá em <b>Authentication → Começar → Método de login</b>, ative <b>E-mail/senha</b> e salve.</li>
 <li>No Firebase, vá em <b>Firestore Database → Criar banco de dados</b>. Escolha uma região (por exemplo, São Paulo) e inicie em modo de produção.</li>
 <li>No Firestore, abra a aba <b>Regras</b>, apague o texto e cole as regras abaixo. Toque em <b>Publicar</b>. Sem as regras publicadas, a sincronização não funciona.</li></ol>
@@ -666,7 +666,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     if (!waiting || !navigator.serviceWorker.controller || updateBanner || dismissedWorker === waiting) return;
     const banner = document.createElement('section'); banner.setAttribute('role','alert'); banner.setAttribute('aria-live','polite');
     banner.style.cssText = 'position:fixed;z-index:10000;left:12px;right:12px;bottom:calc(78px + env(safe-area-inset-bottom,0px));max-width:700px;margin:0 auto;padding:14px;background:#211b0d;border:1px solid #d5aa42;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.45);color:#f4f1e8;font:600 14px/1.4 system-ui,sans-serif';
-    const message = document.createElement('div'); message.textContent = 'Uma nova versão do S.O.S Cifra está disponível.'; message.style.marginBottom = '10px';
+    const message = document.createElement('div'); message.textContent = 'Uma nova versão do SOS Cifra está disponível.'; message.style.marginBottom = '10px';
     const actions = document.createElement('div'); actions.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap';
     const later = document.createElement('button'); later.type='button'; later.textContent='Depois'; later.style.cssText='padding:10px 16px;border:1px solid #8c7540;border-radius:9px;background:#302817;color:#f4f1e8;font:600 14px system-ui';
     later.addEventListener('click',()=>{dismissedWorker=waiting;banner.remove();updateBanner=null;});
@@ -685,7 +685,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     try { const before=pwaRegistration.waiting; await pwaRegistration.update(); watchInstalling(pwaRegistration); await new Promise(resolve=>setTimeout(resolve,1200));
       const waiting=pwaRegistration.waiting; if(waiting){announceUpdate(pwaRegistration);if(manual)setPwaStatus('Nova versão disponível. Confirme em “Atualizar agora” no aviso.');}
       else if(manual)setPwaStatus(before?'A atualização está sendo preparada. Aguarde alguns instantes.':'Você já está usando a versão mais recente.');
-    } catch(error){console.warn('Falha ao verificar atualização do S.O.S Cifra:',error);if(manual)setPwaStatus('Não foi possível consultar o servidor. Verifique a conexão e tente novamente.');}
+    } catch(error){console.warn('Falha ao verificar atualização do SOS Cifra:',error);if(manual)setPwaStatus('Não foi possível consultar o servidor. Verifique a conexão e tente novamente.');}
     finally{manualCheckRunning=false;if(manual&&button){button.disabled=false;button.textContent='Verificar atualizações';}}
   };
   document.addEventListener('click',event=>{const button=event.target.closest('[data-a="checkupdates"]');if(button)checkForUpdate(true);});
