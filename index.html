@@ -7,7 +7,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS CIFRAS">
-<link rel="apple-touch-icon" type="image/png" href="./%C3%8Dcone_certo_ok.png?v=1.2.4"><link rel="icon" type="image/png" href="./%C3%8Dcone_certo_ok.png?v=1.2.4">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SOS Cifras">
@@ -51,7 +50,7 @@ button{font:inherit;cursor:pointer;border:0;color:var(--ink);background:none}
 .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
 .tabs>div{display:flex;width:100%;max-width:760px;align-items:center}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--mute);min-height:48px;justify-content:center}
-.tab.on{color:var(--brand);font-weight:700}.tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.tab.on{color:var(--brand);font-weight:700}.tab .tabicon{font-size:22px;line-height:22px;height:22px;display:block}
 .tab.mid{flex:none;width:58px;height:58px;border-radius:50%;background:var(--brand);color:var(--onbrand);margin-top:-26px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 16px;border-radius:12px;font-weight:600;z-index:9;max-width:92vw}
 .seq{position:fixed;left:0;right:0;bottom:calc(66px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;gap:8px;z-index:4}
@@ -67,35 +66,28 @@ details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 
 .vh{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;pointer-events:none}
 @media (prefers-reduced-motion:no-preference){.toast{animation:up .2s}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
 
-/* ===== LOGO + ABERTURA ===== */
-:root{--logo:url('./sos-Logo.png?v=1.1.7')}
-.brandimg{background:var(--logo) center/contain no-repeat}
-.logo.brandimg{height:170px;font-size:0;margin:6px auto 4px;filter:drop-shadow(0 6px 18px rgba(213,170,66,.18))}
+/* ===== ABERTURA SEM IMAGENS ===== */
 #splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 45%,#2a2110 0%,#101010 62%);overflow:hidden;cursor:pointer;transition:opacity .6s ease,visibility .6s}
 #splash.out{opacity:0;visibility:hidden}
 #splash .glow{position:absolute;width:140vmin;height:140vmin;left:50%;top:50%;margin:-70vmin 0 0 -70vmin;background:repeating-conic-gradient(from 0deg,rgba(240,198,91,.10) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 62%);mask:radial-gradient(circle,#000 0,transparent 62%);opacity:0}
-#splash .box{position:relative;width:min(68vw,52vh,420px);aspect-ratio:1;opacity:0}
-#splash .box .brandimg{position:absolute;inset:0;filter:drop-shadow(0 0 28px rgba(240,198,91,.35))}
-#splash .shine{position:absolute;inset:0;-webkit-mask-image:var(--logo);mask-image:var(--logo);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.75) 50%,transparent 60%) -150% 0/250% 100% no-repeat}
+#splash .wordmark{position:relative;color:var(--brand);font-size:clamp(30px,8vw,54px);font-weight:800;letter-spacing:.08em;text-shadow:0 0 28px rgba(240,198,91,.35);opacity:0}
 #splash .bar{position:absolute;left:50%;bottom:calc(9vh + env(safe-area-inset-bottom,0px));width:120px;height:3px;margin-left:-60px;border-radius:3px;background:rgba(213,170,66,.2);overflow:hidden;opacity:0}
 #splash .bar i{display:block;height:100%;width:100%;background:var(--brand);transform:scaleX(0);transform-origin:left}
 @media (prefers-reduced-motion:no-preference){
 #splash .glow{animation:gl 2.6s ease-out .1s forwards,spin 14s linear infinite}
-#splash .box{animation:pop 1s cubic-bezier(.2,1.25,.4,1) .15s forwards}
-#splash .shine{animation:sh 1.1s ease-in-out 1.05s forwards}
+#splash .wordmark{animation:pop 1s cubic-bezier(.2,1.25,.4,1) .15s forwards}
 #splash .bar{animation:fi .4s ease .5s forwards}
 #splash .bar i{animation:ld 1.9s ease-in-out .5s forwards}
 @keyframes pop{0%{opacity:0;transform:scale(.45) rotate(-8deg);filter:blur(8px)}60%{opacity:1;filter:blur(0)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes gl{0%{opacity:0}40%{opacity:1}100%{opacity:.55}}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes sh{to{background-position:150% 0}}
 @keyframes fi{to{opacity:1}}
 @keyframes ld{to{transform:scaleX(1)}}}
-@media (prefers-reduced-motion:reduce){#splash .box,#splash .glow,#splash .bar{opacity:1}#splash .bar i{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){#splash .wordmark,#splash .glow,#splash .bar{opacity:1}#splash .bar i{transform:scaleX(1)}}
 </style>
 </head>
 <body>
-<div id="splash" role="img" aria-label="SOS Cifras — Celso Martins, Dicas de Música"><div class="glow"></div><div class="box"><div class="brandimg"></div><div class="shine" ></div></div><div class="bar"><i></i></div></div>
+<div id="splash" aria-label="Abertura SOS CIFRAS"><div class="glow"></div><div class="wordmark">SOS CIFRAS</div><div class="bar"><i></i></div></div>
 <div class="sig"><span>Celso Martins Dica de Música</span><button class="helpbtn" data-a="tab" data-v="ajuda" aria-label="Abrir Ajuda">? Ajuda</button></div>
 <div id="app"></div>
 <nav class="tabs" aria-label="Navegação"><div id="tabs"></div></nav>
@@ -175,15 +167,15 @@ const song=id=>D.songs.find(x=>x.id===id);
 let timer=null;const stopPlay=()=>{clearInterval(timer);S.play=0};
 const applyTheme=()=>{if(D.theme)document.documentElement.dataset.theme=D.theme;else delete document.documentElement.dataset.theme};
 
-const IC={web:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',band:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-4 12-4 12 0M16 11a3 3 0 1 0 0-6M18 16c2 0 3 2 3 4"/>',busca:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',sets:'<path d="M3 7h6l2 2h10v10H3z"/>',pub:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 4 3 14 0 18M12 3c-3 4-3 14 0 18"/>',conta:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/>'};
+const IC={web:"⌕",band:"♬",busca:"⌕",sets:"▤",pub:"◎",conta:"●"};
 function tabs(){const t=[['pub','Público'],['sets','Setlists'],['web','Web'],['busca','Busca'],['band','Banda'],['conta','Conta']];
- document.getElementById('tabs').innerHTML=t.map(([k,n])=>`<button class="tab ${k==='busca'?'mid':''} ${S.tab===k&&!S.song&&!S.edit?'on':''}" data-a="tab" data-v="${k}" aria-label="${n}"><svg viewBox="0 0 24 24">${IC[k]}</svg>${k==='busca'?'':n}</button>`).join('')}
+ document.getElementById('tabs').innerHTML=t.map(([k,n])=>`<button class="tab ${k==='busca'?'mid':''} ${S.tab===k&&!S.song&&!S.edit?'on':''}" data-a="tab" data-v="${k}" aria-label="${n}"><span class="tabicon">${IC[k]}</span>${k==='busca'?'':n}</button>`).join('')}
 
 const item=(s,extra='')=>`<button class="item" data-a="open" data-v="${s.id}"><span class="ico">♪</span><span style="flex:1"><b>${e(s.t)}</b><small>${e(s.a||'')}</small></span>${s.fav?'<span class="chip">★</span>':''}${extra}</button>`;
 
 function vBusca(){const q=S.q.toLowerCase(),m=s=>!q||(s.t+' '+s.a).toLowerCase().includes(q);
  const mine=D.songs.filter(s=>s.src==='mine'&&m(s)),com=D.songs.filter(s=>s.src==='com'&&m(s)),any=mine.length+com.length;
- return `<div class="logo brandimg" role="img" aria-label="SOS CIFRAS"></div><p class="sub">Qual música você quer tocar?</p>
+ return `<div class="logo">SOS CIFRAS</div><p class="sub">Qual música você quer tocar?</p>
  <input id="q" type="search" placeholder="Título ou artista" value="${e(S.q)}" aria-label="Buscar música" autocomplete="off">
  ${mine.length?'<h2>Suas cifras</h2>'+mine.map(s=>item(s)).join(''):''}
  ${com.length?'<h2>Comunidade</h2>'+com.map(s=>item(s)).join(''):''}
