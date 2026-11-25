@@ -134,65 +134,74 @@ function findTrailingChords(line){
  }
  return null;
 }
-function organizeImportedText(raw, chordOnly){
- let lines=String(raw||'').replace(/\r/g,'').split('\n')
-  .map(x=>x.replace(/^\s*>\s?/,'').replace(/\*\*/g,'').replace(/^\s*[-*_]{3,}\s*$/,'').trimEnd());
- const out=[]; let hasSection=false, glossary=false;
- for(const line of lines){
+function splitChordRun(run){
+ const memo=new Map();
+ function solve(i){
+  if(i===run.length)return [];
+  if(memo.has(i))return memo.get(i);
+  let best=null;
+  for(let j=i+1;j<=run.length;j++){
+   const token=run.slice(i,j);
+   if(!/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|m|M|°|º|ø|\\+|-)?(?:\\d+)?(?:[#b](?:\\d+)?)*(?:\\([^)]*\\))?(?:M|m|maj|min|dim|aug|sus|add|°|º|ø)?)$/.test(token))continue;
+   const rest=solve(j);
+   if(rest!==null){const candidate=[token,...rest];if(!best||candidate.length>best.length)best=candidate;}
+  }
+  memo.set(i,best);return best;
+ }
+ const result=solve(0);return result&&result.length>=2?result:null;
+}
+function findTrailingChords(line){
+ const end=line.length;
+ for(let start=end-1;start>0;start--){
+  const run=line.slice(start,end).replace(/\\s+/g,'');
+  if(!run)continue;
+  const tokens=splitChordRun(run);
+  if(tokens && /[A-Za-zÀ-ÿ]/.test(line[start-1]) && !/[A-G](?:#|b)?$/.test(line.slice(0,start))){
+   return {lyric:line.slice(0,start).replace(/\\s+$/,''),tokens};
+  }
+  if(tokens && /\\s$/.test(line.slice(0,start))){
+   return {lyric:line.slice(0,start).replace(/\\s+$/,''),tokens};
+  }
+ }
+ return null;
+}
+function organizeImportedText(raw,chordOnly){
+ const out=[];
+ const rows=String(raw||'').replace(/\\r/g,'').split('\\n');
+ let inBank=false,hasSection=false;
+ for(const original of rows){
+  const line=original.replace(/\\t/g,'    ').replace(/\\s+$/,'');
   const t=line.trim();
-  if(!t) { if(out.length&&out[out.length-1]!=='')out.push(''); continue; }
-  const headingText=t.replace(/^#{1,6}\s*/,'').trim();
-  if(/^(?:Acordes da música|Acordes utilizados|Colaboradores|Enviado por|Corrigido por|Composição:|Talvez você queira|Vídeo|Video)$/i.test(headingText)){glossary=true;continue;}
-  if(glossary)continue;
-  const heading=t.match(/^(?:#{1,6}\s*)?(?:\[([^\]]+)\]|([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ ]{1,24}))\s*:?\s*$/);
-  const section=heading?sectionName(heading[1]||heading[2]):null;
+  if(/^\\s*Acordes da música\\s*$/i.test(line)){inBank=true;continue;}
+  if(inBank){
+   if(!t)continue;
+   const parts=t.split(/\\s+/);
+   const valid=parts.filter(x=>isChordLine(x));
+   if(valid.length)continue;
+   inBank=false;
+  }
+  if(!t){if(out.length&&out[out.length-1]!=='')out.push('');continue;}
+  if(/^https?:\\/\\//i.test(t)||/^(Title|URL Source|Markdown Content):/i.test(t))continue;
+  if(/^Essa cifra te ajudou\\?/i.test(t))continue;
+  const heading=t.match(/^(?:#{1,6}\\s*)?\\[([^\\]]+)\\]$/);
+  if(heading){const section=sectionName(heading[1]);if(section){out.push('['+section+']');hasSection=true;continue;}}
+  const named=t.replace(/^#{1,6}\\s*/,'');
+  const section=sectionName(named);
   if(section){out.push('['+section+']');hasSection=true;continue;}
-  if(/^#{1,6}\s/.test(t))continue;
-  if(/^(URL Source|Published Time|Markdown Content)\s*:/i.test(t))continue;
-  if(/^(Tom|Capo|Acordes|Início|Inicio|Final|Fixo)\s*(?:\[Button:|$)/i.test(t))continue;
-
-  // Algumas páginas colocam cada acorde em um botão junto da frase.
-  // Converte os botões em uma linha de acordes e preserva a frase abaixo.
-  const marks=[...t.matchAll(/\[Button:\s*([^\]]+)\]/gi)];
-  if(marks.length){
-   const chords=marks.map(m=>m[1].trim()).filter(x=>CH.test(x));
-   const lyric=t.replace(/\[Button:\s*[^\]]+\]/gi,'').replace(/^\s*[-*]\s*/,'').trim();
-   if(chords.length){
-    out.push(chords.join('  '));
-    if(!chordOnly&&lyric)out.push(lyric);
-   }else if(!chordOnly&&lyric)out.push(lyric);
-   continue;
-  }
-  const trailing=findTrailingChords(t);
-  if(trailing&&trailing.lyric.trim()){
-   if(!chordOnly){
-    out.push(trailing.tokens.join('   '));
-    out.push(trailing.lyric);
-   }else{
-    out.push(trailing.tokens.join('   '));
-   }
-   continue;
-  }
-  if(chordOnly&&!isChordLine(t))continue;
-  out.push(line);
+  const found=findTrailingChords(line);
+  if(found&&found.lyric.trim()){
+   if(!chordOnly){out.push(found.tokens.join('   '));out.push(found.lyric);}
+   else out.push(found.tokens.join('   '));
+  }else if(isChordLine(line)){
+   if(!chordOnly)out.push(line);
+   else out.push(line);
+  }else if(!chordOnly)out.push(line);
  }
  while(out.length&&out[0]==='')out.shift();
  while(out.length&&out[out.length-1]==='')out.pop();
  if(!out.length)return '';
- if(!hasSection){
-  const first=out.findIndex(x=>x.trim());
-  if(first>=0&&isChordLine(out[first])){
-   let end=first;
-   while(end<out.length&&(!out[end].trim()||isChordLine(out[end])))end++;
-   out.splice(first,0,'[Intro]');
-   if(end<out.length)out.splice(end+1,0,'[Verso]');
-  }else if(!chordOnly){
-   out.unshift('[Verso]');
-  }else{
-   out.unshift('[Intro]');
-  }
- }
- return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+ if(!hasSection)out.unshift(chordOnly?'[Intro]':'[Verso]');
+ return out.join('\\n').replace(/\\n{3,}/g,'\\n\\n').trim();
 }
 async function importFromLink(){
  const field=document.getElementById('wurl'),button=document.querySelector('[data-a="webfetch"]');
@@ -203,7 +212,7 @@ async function importFromLink(){
  catch(_){toast('Informe um link HTTPS ou HTTP válido.');return;}
  if(button){button.disabled=true;button.textContent='Buscando cifra…';}
  try{
-  const response=await fetch('https://r.jina.ai/'+target.href,{headers:{Accept:'application/json'}});
+  const response=await fetch('https://r.jina.ai/'+target.href,{headers:{Accept:'text/plain'}});
   const payload=await response.text();
   if(!response.ok)throw new Error('Leitor externo respondeu HTTP '+response.status);
   let source=payload,title='';
@@ -214,14 +223,13 @@ async function importFromLink(){
   }catch(_){}
   if(!source)source=payload;
   if(!source||source.length<30)throw new Error('O leitor não retornou conteúdo legível.');
-  title=title||(source.match(/^Title:\s*(.+)$/mi)||[])[1]||'';
-  let content=source.replace(/^Title:.*\n?/gmi,'').replace(/^URL Source:.*\n?/gmi,'').replace(/^Markdown Content:\s*\n?/gmi,'').trim();
+  title=title||(source.match(/^Title:\\s*(.+)$/mi)||[])[1]||'';
+  let content=source.replace(/^Title:.*\\n?/gmi,'').replace(/^URL Source:.*\\n?/gmi,'').replace(/^Markdown Content:\\s*\\n?/gmi,'').trim();
   const titleField=document.getElementById('wtitle'),artistField=document.getElementById('wartist');
   if(title&&!titleField.value.trim())titleField.value=title;
-  const knownTitle=titleField.value.trim();
-  const knownArtist=artistField.value.trim();
-  if(knownTitle)content=content.split('\n').filter((line,i)=>!(i<5&&line.replace(/^#+\s*/,'').trim().toLowerCase()===knownTitle.toLowerCase())).join('\n');
-  if(knownArtist)content=content.split('\n').filter((line,i)=>!(i<5&&line.trim().toLowerCase()===knownArtist.toLowerCase())).join('\n');
+  const knownTitle=titleField.value.trim(),knownArtist=artistField.value.trim();
+  if(knownTitle)content=content.split('\\n').filter((line,i)=>!(i<5&&line.replace(/^#+\\s*/,'').trim().toLowerCase()===knownTitle.toLowerCase())).join('\\n');
+  if(knownArtist)content=content.split('\\n').filter((line,i)=>!(i<5&&line.trim().toLowerCase()===knownArtist.toLowerCase())).join('\\n');
   const body=organizeImportedText(content,document.getElementById('wonly').checked);
   if(!body)throw new Error('A página foi lida, mas não encontrei conteúdo de cifra aproveitável.');
   document.getElementById('wbody').value=body;
