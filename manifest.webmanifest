@@ -12,7 +12,8 @@
   "theme_color": "#101010",
   "icons": [
     {
-      "src": "./sos-Logo.png",
+      "src": "./sos-Logo.png?v=1.1.1",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     }
