@@ -12,16 +12,10 @@
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "./icone-sos-cifras.svg?v=1.2.1",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "./Ic%C3%B4ni_correto.png?v=1.2.1",
+      "src": "./Ic%C3%B4ni_correto.png?v=1.2.2",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
