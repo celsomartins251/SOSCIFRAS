@@ -17,6 +17,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=JetBrains+Mono:wght@400;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#101010;--card:#1b1b1b;--ink:#f4f1e8;--mute:#aaa398;--line:#39342a;--brand:#d5aa42;--onbrand:#17130a;--chord:#f0c65b;--bar:#5a451b;--ok:#d5aa42}
+:root[data-theme="light"]{--bg:#f6f3eb;--card:#ffffff;--ink:#24211b;--mute:#6f695e;--line:#d8d0c1;--brand:#9b741c;--onbrand:#fffdf7;--chord:#76540b;--bar:#9b741c;--ok:#9b741c}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]):not([data-theme="light"]){--bg:#f6f3eb;--card:#ffffff;--ink:#24211b;--mute:#6f695e;--line:#d8d0c1;--brand:#9b741c;--onbrand:#fffdf7;--chord:#76540b;--bar:#9b741c;--ok:#9b741c}}
 :root[data-theme="dark"]{--bg:#101010;--card:#1b1b1b;--ink:#f4f1e8;--mute:#aaa398;--line:#39342a;--brand:#d5aa42;--onbrand:#17130a;--chord:#f0c65b;--bar:#5a451b}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:dark}
 :root[data-theme="light"]{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
