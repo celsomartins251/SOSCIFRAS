@@ -121,7 +121,7 @@ function splitChordRun(run){
 }
 function findTrailingChords(line){
  const end=line.length;
- for(let start=end-1;start>0;start--){
+ for(let start=1;start<end;start++){
   const run=line.slice(start,end).replace(/\\s+/g,'');
   if(!run)continue;
   const tokens=splitChordRun(run);
