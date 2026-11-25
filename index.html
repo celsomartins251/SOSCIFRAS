@@ -111,7 +111,7 @@ function splitChordRun(run){
   let best=null;
   for(let j=i+1;j<=run.length;j++){
    const token=run.slice(i,j);
-   if(!/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|m|M|°|º|ø|\\+|-)?(?:\\d+)?(?:[#b](?:\\d+)?)*(?:\\([^)]*\\))?(?:M|m|maj|min|dim|aug|sus|add|°|º|ø)?)$/.test(token))continue;
+   if(!/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|m|M|°|º|ø|\+|-)?(?:\d+)?(?:[#b](?:\d+)?)*(?:\([^)]*\))?(?:M|m|maj|min|dim|aug|sus|add|°|º|ø)?)$/.test(token))continue;
    const rest=solve(j);
    if(rest!==null){const candidate=[token,...rest];if(!best||candidate.length>best.length)best=candidate;}
   }
@@ -120,87 +120,115 @@ function splitChordRun(run){
  const result=solve(0);return result&&result.length>=2?result:null;
 }
 function findTrailingChords(line){
- const end=line.length;
- for(let start=1;start<end;start++){
-  const run=line.slice(start,end).replace(/\\s+/g,'');
+ for(let start=1;start<line.length;start++){
+  const run=line.slice(start).replace(/\s+/g,'');
   if(!run)continue;
   const tokens=splitChordRun(run);
-  const lyric=line.slice(0,start).replace(/\\s+$/,'');
-  // Aceita acordes colados após letras ou pontuação (ex.: "solidão...Gm7").
-  if(tokens && /[A-Za-zÀ-ÿ]/.test(lyric)){
-   return {lyric,tokens};
-  }
+  const lyric=line.slice(0,start).replace(/\s+$/,'');
+  if(tokens&&/[A-Za-zÀ-ÿ]/.test(lyric))return{lyric,tokens};
  }
  return null;
 }
-function splitChordRun(run){
- const memo=new Map();
- function solve(i){
-  if(i===run.length)return [];
-  if(memo.has(i))return memo.get(i);
-  let best=null;
-  for(let j=i+1;j<=run.length;j++){
-   const token=run.slice(i,j);
-   if(!/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|m|M|°|º|ø|\\+|-)?(?:\\d+)?(?:[#b](?:\\d+)?)*(?:\\([^)]*\\))?(?:M|m|maj|min|dim|aug|sus|add|°|º|ø)?)$/.test(token))continue;
-   const rest=solve(j);
-   if(rest!==null){const candidate=[token,...rest];if(!best||candidate.length>best.length)best=candidate;}
-  }
-  memo.set(i,best);return best;
- }
- const result=solve(0);return result&&result.length>=2?result:null;
-}
-function findTrailingChords(line){
- const end=line.length;
- for(let start=end-1;start>0;start--){
-  const run=line.slice(start,end).replace(/\\s+/g,'');
-  if(!run)continue;
-  const tokens=splitChordRun(run);
-  if(tokens && /[A-Za-zÀ-ÿ]/.test(line[start-1]) && !/[A-G](?:#|b)?$/.test(line.slice(0,start))){
-   return {lyric:line.slice(0,start).replace(/\\s+$/,''),tokens};
-  }
-  if(tokens && /\\s$/.test(line.slice(0,start))){
-   return {lyric:line.slice(0,start).replace(/\\s+$/,''),tokens};
-  }
- }
- return null;
+function isChordLine(line){
+ const parts=line.trim().split(/\s+/).filter(Boolean);
+ return parts.length>0&&parts.every(x=>x==='|'||CH.test(x))&&parts.some(x=>CH.test(x));
 }
 function organizeImportedText(raw,chordOnly){
  const out=[];
- const rows=String(raw||'').replace(/\\r/g,'').split('\\n');
+ const rows=String(raw||'').replace(/\r/g,'').split('\n');
  let inBank=false,hasSection=false;
  for(const original of rows){
-  const line=original.replace(/\\t/g,'    ').replace(/\\s+$/,'');
+  const line=original.replace(/\t/g,'    ').replace(/\s+$/,'');
   const t=line.trim();
-  if(/^\\s*Acordes da música\\s*$/i.test(line)){inBank=true;continue;}
+  if(/^\s*Acordes da música\s*$/i.test(line)){inBank=true;continue;}
   if(inBank){
    if(!t)continue;
-   const parts=t.split(/\\s+/);
-   const valid=parts.filter(x=>isChordLine(x));
-   if(valid.length)continue;
+   if(isChordLine(line))continue;
    inBank=false;
   }
   if(!t){if(out.length&&out[out.length-1]!=='')out.push('');continue;}
-  if(/^https?:\\/\\//i.test(t)||/^(Title|URL Source|Markdown Content):/i.test(t))continue;
-  if(/^Essa cifra te ajudou\\?/i.test(t))continue;
-  const heading=t.match(/^(?:#{1,6}\\s*)?\\[([^\\]]+)\\]$/);
+  if(/^https?:\/\//i.test(t)||/^(Title|URL Source|Markdown Content):/i.test(t))continue;
+  if(/^Essa cifra te ajudou\?/i.test(t))continue;
+  const heading=t.match(/^(?:#{1,6}\s*)?\[([^\]]+)\]$/);
   if(heading){const section=sectionName(heading[1]);if(section){out.push('['+section+']');hasSection=true;continue;}}
-  const named=t.replace(/^#{1,6}\\s*/,'');
-  const section=sectionName(named);
+  const section=sectionName(t.replace(/^#{1,6}\s*/,''));
   if(section){out.push('['+section+']');hasSection=true;continue;}
   const found=findTrailingChords(line);
   if(found&&found.lyric.trim()){
    if(!chordOnly){out.push(found.tokens.join('   '));out.push(found.lyric);}
    else out.push(found.tokens.join('   '));
-  }else if(isChordLine(line)){
-   if(!chordOnly)out.push(line);
-   else out.push(line);
-  }else if(!chordOnly)out.push(line);
+  }else if(isChordLine(line))out.push(line);
+  else if(!chordOnly)out.push(line);
  }
  while(out.length&&out[0]==='')out.shift();
  while(out.length&&out[out.length-1]==='')out.pop();
- if(!out.length)return '';
+ if(!out.length)return'';
  if(!hasSection)out.unshift(chordOnly?'[Intro]':'[Verso]');
- return out.join('\\n').replace(/\\n{3,}/g,'\\n\\n').trim();
+ return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function chordProToText(raw){
+ const out=[];
+ const meta={};
+ const lines=String(raw||'').replace(/\r/g,'').split('\n');
+ const chord=/^[A-G](?:#|b)?(?:m|M|maj|min|dim|aug|sus|add|°|º|ø)?(?:\d+)?(?:[#b]\d+)?(?:\([^)]*\))?(?:\/[A-G](?:#|b)?)?$/;
+ for(const line of lines){
+  const directive=line.match(/^\s*\{([^:}]+):?\s*([^}]*)\}\s*$/);
+  if(directive){
+   const tag=directive[1].toLowerCase().trim(),value=directive[2].trim();
+   if(['title','t'].includes(tag)){if(value)meta.title=value;continue;}
+   if(['artist','subtitle','st'].includes(tag)){if(value)meta.artist=value;continue;}
+   if(tag==='key'){if(value)meta.key=value;continue;}
+   if(['start_of_verse','sov'].includes(tag)){out.push('[Verso]');continue;}
+   if(['start_of_chorus','soc'].includes(tag)){out.push('[Refrão]');continue;}
+   if(['start_of_bridge','sob'].includes(tag)){out.push('[Ponte]');continue;}
+   if(['start_of_tab','sot','start_of_grid','sog'].includes(tag)){out.push('[Intro]');continue;}
+   if(['end_of_verse','eov','end_of_chorus','eoc','end_of_bridge','eob','end_of_tab','eot','end_of_grid','eog','new_page'].includes(tag)){out.push('');continue;}
+   if(['comment','c'].includes(tag)){if(value)out.push('['+value+']');continue;}
+   continue;
+  }
+  let lyric='',chordLine='',last=0,found=false,m;
+  const re=/\[([^\]\s]+)\]/g;
+  while((m=re.exec(line))){
+   const c=m[1];
+   if(!chord.test(c))continue;
+   const before=line.slice(last,m.index);lyric+=before;
+   chordLine=chordLine.padEnd(lyric.length,' ')+c;
+   found=true;last=re.lastIndex;
+  }
+  lyric+=line.slice(last);
+  if(found){out.push(chordLine.trimEnd());if(lyric.trim())out.push(lyric);}
+  else out.push(line);
+ }
+ return{body:out.join('\n'),meta};
+}
+function htmlFileToText(raw){
+ const doc=new DOMParser().parseFromString(raw,'text/html');
+ doc.querySelectorAll('script,style,noscript,svg,nav,header,footer,button,input,select,textarea').forEach(n=>n.remove());
+ doc.querySelectorAll('br').forEach(n=>n.replaceWith('\n'));
+ doc.querySelectorAll('p,div,section,article,li,tr,h1,h2,h3,h4').forEach(n=>n.append('\n'));
+ return(doc.body?.textContent||'').replace(/\u00a0/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+}
+async function loadChordFile(file){
+ const ext=(file.name.split('.').pop()||'').toLowerCase();
+ const raw=await file.text();
+ let source=raw,meta={};
+ if(['pro','chopro','cho'].includes(ext)){const converted=chordProToText(raw);source=converted.body;meta=converted.meta;}
+ else if(['html','htm'].includes(ext)){
+  source=htmlFileToText(raw);
+  if(!source||source.length<8){
+   if(/localStorage|const\s+SEED|id=["']app["']/.test(raw))throw new Error('Este arquivo é um aplicativo HTML, não uma cifra individual. Exporte a música como TXT ou ChordPro para importá-la.');
+   throw new Error('Não encontrei letra ou acordes legíveis neste HTML.');
+  }
+ }
+ const body=organizeImportedText(source,false);
+ if(!body)throw new Error('Não encontrei conteúdo de cifra aproveitável no arquivo.');
+ const titleField=document.getElementById('wtitle'),artistField=document.getElementById('wartist'),keyField=document.getElementById('wkey');
+ if(meta.title&&!titleField.value.trim())titleField.value=meta.title;
+ if(meta.artist&&!artistField.value.trim())artistField.value=meta.artist;
+ if(meta.key&&!keyField.value.trim())keyField.value=meta.key;
+ if(!titleField.value.trim())titleField.value=file.name.replace(/\.[^.]+$/,'');
+ document.getElementById('wbody').value=body;
+ toast('Arquivo carregado. Confira a cifra antes de importar.');
 }
 async function importFromLink(){
  const field=document.getElementById('wurl'),button=document.querySelector('[data-a="webfetch"]');
@@ -211,17 +239,16 @@ async function importFromLink(){
  catch(_){toast('Informe um link HTTPS ou HTTP válido.');return;}
  if(button){button.disabled=true;button.textContent='Buscando cifra…';}
  try{
-  const response=await fetch('https://r.jina.ai/'+target.href,{headers:{Accept:'text/plain'}});
-  const payload=await response.text();
-  if(!response.ok)throw new Error('Leitor externo respondeu HTTP '+response.status);
+  let payload='',lastError=null;
+  const readers=[
+   async()=>{const r=await fetch('https://r.jina.ai/'+target.href,{headers:{Accept:'text/plain'}});if(!r.ok)throw new Error('Leitor principal HTTP '+r.status);return r.text();},
+   async()=>{const r=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(target.href));if(!r.ok)throw new Error('Leitor alternativo HTTP '+r.status);return r.text();}
+  ];
+  for(const read of readers){try{payload=await read();if(payload&&payload.length>=30)break;}catch(err){lastError=err;}}
+  if(!payload||payload.length<30)throw new Error('Os serviços de leitura não conseguiram acessar essa página. '+(lastError?.message||'Tente carregar um arquivo ou colar o texto.'));
   let source=payload,title='';
-  try{
-   const data=JSON.parse(payload);
-   source=data?.data?.content||data?.content||'';
-   title=data?.data?.title||data?.title||'';
-  }catch(_){}
+  try{const data=JSON.parse(payload);source=data?.data?.content||data?.content||'';title=data?.data?.title||data?.title||'';}catch(_){}
   if(!source)source=payload;
-  if(!source||source.length<30)throw new Error('O leitor não retornou conteúdo legível.');
   title=title||(source.match(/^Title:\\s*(.+)$/mi)||[])[1]||'';
   let content=source.replace(/^Title:.*\\n?/gmi,'').replace(/^URL Source:.*\\n?/gmi,'').replace(/^Markdown Content:\\s*\\n?/gmi,'').trim();
   const titleField=document.getElementById('wtitle'),artistField=document.getElementById('wartist');
@@ -240,7 +267,7 @@ async function importFromLink(){
   if(button){button.disabled=false;button.textContent='Buscar cifra pelo link';}
  }
 }
-function vWeb(){return `<h1>Buscar e importar cifras</h1><p class="sub" style="text-align:left">Pesquise a música ou cole o link direto da página. O aplicativo tenta ler o conteúdo e organizar as seções automaticamente. Se o site bloquear a leitura, use copiar e colar.</p><label for="webq">Música ou artista</label><input id="webq" placeholder="Ex.: nome da música — artista"><div class="row" style="margin:8px 0"><button class="btn" data-a="webgoogle">Google</button><button class="btn ghost" data-a="webbing">Bing</button></div><label for="wurl">Link da cifra</label><input id="wurl" type="url" placeholder="https://site.com/cifra-da-musica"><button class="btn" style="width:100%;margin-top:8px" data-a="webfetch">Buscar cifra pelo link</button><h2>Dados da música</h2><label for="wtitle">Título</label><input id="wtitle" placeholder="Título da música"><label for="wartist">Artista</label><input id="wartist" placeholder="Artista"><label for="wkey">Tom original (opcional)</label><input id="wkey" placeholder="Ex.: G, F#m, Bb"><label class="row" style="justify-content:flex-start;gap:9px"><input id="wonly" type="checkbox" style="width:20px;height:20px;flex:none"> Importar somente os acordes, sem a letra</label><label for="wbody">Conteúdo importado ou cifra copiada</label><textarea id="wbody" placeholder="[Intro]\nG  D  Em  C\n\n[Verso]\nG..." spellcheck="false"></textarea><button class="btn" style="width:100%;margin-top:10px" data-a="webimport">Importar para minhas cifras</button>`}
+function vWeb(){return `<h1>Buscar e importar cifras</h1><p class="sub" style="text-align:left">Pesquise a música ou cole o link direto da página. O aplicativo tenta ler o conteúdo e organizar as seções automaticamente. Se o site bloquear a leitura, use copiar e colar.</p><label for="webq">Música ou artista</label><input id="webq" placeholder="Ex.: nome da música — artista"><div class="row" style="margin:8px 0"><button class="btn" data-a="webgoogle">Google</button><button class="btn ghost" data-a="webbing">Bing</button></div><label for="wurl">Link da cifra</label><input id="wurl" type="url" placeholder="https://site.com/cifra-da-musica"><button class="btn" style="width:100%;margin-top:8px" data-a="webfetch">Buscar cifra pelo link</button><h2>Dados da música</h2><label for="wtitle">Título</label><input id="wtitle" placeholder="Título da música"><label for="wartist">Artista</label><input id="wartist" placeholder="Artista"><label for="wkey">Tom original (opcional)</label><input id="wkey" placeholder="Ex.: G, F#m, Bb"><label class="row" style="justify-content:flex-start;gap:9px"><input id="wonly" type="checkbox" style="width:20px;height:20px;flex:none"> Importar somente os acordes, sem a letra</label><label for="wfile">Arquivo de cifra</label><div class="row"><button class="btn ghost" type="button" data-a="filepick">Carregar arquivo do dispositivo</button><span class="sub" style="text-align:left;margin:0">TXT, ChordPro, CRD e HTML</span></div><input id="wfile" type="file" accept=".txt,.pro,.chopro,.cho,.crd,.html,.htm,text/plain,text/html" style="display:none"><label for="wbody">Conteúdo importado, arquivo ou cifra copiada</label><textarea id="wbody" placeholder="[Intro]\nG  D  Em  C\n\n[Verso]\nG..." spellcheck="false"></textarea><button class="btn" style="width:100%;margin-top:10px" data-a="webimport">Importar para minhas cifras</button>`}
 function vBand(){return `<h1>Banda sincronizada</h1><p class="sub" style="text-align:left">Conecte os dispositivos da banda ao mesmo grupo. O líder controla a música atual e pode enviar o repertório e as setlists para os demais músicos.</p><h2>Configuração Firebase</h2><label for="fbapi">API Key</label><input id="fbapi" placeholder="Firebase apiKey" value="${e((D.firebase||{}).apiKey||'')}"><label for="fbdom">Auth Domain</label><input id="fbdom" placeholder="projeto.firebaseapp.com" value="${e((D.firebase||{}).authDomain||'')}"><label for="fbpid">Project ID</label><input id="fbpid" placeholder="Firebase Project ID" value="${e((D.firebase||{}).projectId||'')}"><label for="fbapp">App ID</label><input id="fbapp" placeholder="Firebase App ID" value="${e((D.firebase||{}).appId||'')}"><button class="btn" style="width:100%;margin-top:8px" data-a="fbconfig">Salvar configuração</button><h2>Conta do músico</h2><label for="fbemail">E-mail</label><input id="fbemail" type="email" autocomplete="username" placeholder="seu@email.com"><label for="fbpass">Senha</label><input id="fbpass" type="password" autocomplete="current-password" placeholder="Senha"><div class="row" style="margin-top:8px"><button class="btn" data-a="fblogin">Entrar</button><button class="btn ghost" data-a="fbcreate">Criar conta</button></div><h2>Grupo</h2><div class="row"><input id="fbcode" placeholder="Código do grupo"><button class="btn" data-a="fbjoin">Entrar no grupo</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbgroup">Criar grupo e ser líder</button><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbsync">Enviar repertório e setlists aos membros</button><p id="fbstatus" class="sub" style="text-align:left">Ainda não conectado.</p><p class="sub" style="text-align:left">A sincronização entre aparelhos só ficará ativa após configurar Authentication (e-mail/senha), Firestore e publicar as regras de segurança no Firebase.</p>`}
 
 function vPub(){const l=D.songs.filter(s=>s.src==='com');return `<h1>Público</h1><p class="sub" style="text-align:left">Cifras compartilhadas pela comunidade.</p>${l.map(s=>item(s)).join('')||'<div class="empty">Nenhuma cifra pública ainda.</div>'}`}
@@ -294,12 +321,14 @@ function toast(m){
 function openSong(id,ctx){S.song=id;S.ctx=ctx||null;S.pick=0;stopPlay();render();window.scrollTo(0,0);if(S.band?.role==='leader')fbSyncCurrent(id)}
 
 document.addEventListener('input',ev=>{if(ev.target.id==='q'){S.q=ev.target.value;render()}});
+document.addEventListener('change',ev=>{if(ev.target.id==='wfile'&&ev.target.files?.[0])loadChordFile(ev.target.files[0]).catch(err=>{console.error('Falha ao carregar arquivo:',err);toast(err?.message||'Não foi possível ler esse arquivo.');ev.target.value='';});});
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
  const s=S.song&&song(S.song),l=S.sl&&D.sets.find(x=>x.id===S.sl);
  switch(a){
  case'tab':S.tab=v;S.song=null;S.edit=null;S.sl=null;S.ctx=null;render();break;
  case'webgoogle':case'webbing':{const q=document.getElementById('webq').value.trim();if(q)window.open((a==='webgoogle'?'https://www.google.com/search?q=':'https://www.bing.com/search?q=')+encodeURIComponent(q+' cifra'),'_blank','noopener');break}
  case'webfetch':importFromLink();break;
+ case'filepick':document.getElementById('wfile')?.click();break;
  case'webimport':{const t=document.getElementById('wtitle').value.trim(),ar=document.getElementById('wartist').value.trim(),k=document.getElementById('wkey').value.trim(),only=document.getElementById('wonly').checked,body=organizeImportedText(document.getElementById('wbody').value,only);if(!t||!body){toast('Informe o título e o conteúdo da cifra.');break}const x={id:uid(),t,a:ar,k,body,type:only?'chords':'lyrics',src:'mine',fav:0,shift:0};D.songs.unshift(x);save();S.tab='busca';S.q='';openSong(x.id);break}
  case'fbconfig':D.firebase={apiKey:document.getElementById('fbapi').value.trim(),authDomain:document.getElementById('fbdom').value.trim(),projectId:document.getElementById('fbpid').value.trim(),appId:document.getElementById('fbapp').value.trim()};save();toast('Configuração salva neste dispositivo.');break;
  case'fbcreate':case'fblogin':case'fbjoin':case'fbgroup':case'fbsync':fbDo(a);break;
