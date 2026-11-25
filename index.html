@@ -66,28 +66,9 @@ details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 
 .vh{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;pointer-events:none}
 @media (prefers-reduced-motion:no-preference){.toast{animation:up .2s}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
 
-/* ===== ABERTURA SEM IMAGENS ===== */
-#splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 45%,#2a2110 0%,#101010 62%);overflow:hidden;cursor:pointer;transition:opacity .6s ease,visibility .6s}
-#splash.out{opacity:0;visibility:hidden}
-#splash .glow{position:absolute;width:140vmin;height:140vmin;left:50%;top:50%;margin:-70vmin 0 0 -70vmin;background:repeating-conic-gradient(from 0deg,rgba(240,198,91,.10) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 62%);mask:radial-gradient(circle,#000 0,transparent 62%);opacity:0}
-#splash .wordmark{position:relative;color:var(--brand);font-size:clamp(30px,8vw,54px);font-weight:800;letter-spacing:.08em;text-shadow:0 0 28px rgba(240,198,91,.35);opacity:0}
-#splash .bar{position:absolute;left:50%;bottom:calc(9vh + env(safe-area-inset-bottom,0px));width:120px;height:3px;margin-left:-60px;border-radius:3px;background:rgba(213,170,66,.2);overflow:hidden;opacity:0}
-#splash .bar i{display:block;height:100%;width:100%;background:var(--brand);transform:scaleX(0);transform-origin:left}
-@media (prefers-reduced-motion:no-preference){
-#splash .glow{animation:gl 2.6s ease-out .1s forwards,spin 14s linear infinite}
-#splash .wordmark{animation:pop 1s cubic-bezier(.2,1.25,.4,1) .15s forwards}
-#splash .bar{animation:fi .4s ease .5s forwards}
-#splash .bar i{animation:ld 1.9s ease-in-out .5s forwards}
-@keyframes pop{0%{opacity:0;transform:scale(.45) rotate(-8deg);filter:blur(8px)}60%{opacity:1;filter:blur(0)}100%{opacity:1;transform:scale(1) rotate(0)}}
-@keyframes gl{0%{opacity:0}40%{opacity:1}100%{opacity:.55}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fi{to{opacity:1}}
-@keyframes ld{to{transform:scaleX(1)}}}
-@media (prefers-reduced-motion:reduce){#splash .wordmark,#splash .glow,#splash .bar{opacity:1}#splash .bar i{transform:scaleX(1)}}
 </style>
 </head>
 <body>
-<div id="splash" aria-label="Abertura SOS CIFRAS"><div class="glow"></div><div class="wordmark">SOS CIFRAS</div><div class="bar"><i></i></div></div>
 <div class="sig"><span>Celso Martins Dica de Música</span><button class="helpbtn" data-a="tab" data-v="ajuda" aria-label="Abrir Ajuda">? Ajuda</button></div>
 <div id="app"></div>
 <nav class="tabs" aria-label="Navegação"><div id="tabs"></div></nav>
@@ -653,12 +634,7 @@ async function fbSyncCurrent(id){try{if(FB&&S.band?.role==='leader')await FB.upd
 
 render();
 </script>
-<script>
-(function(){var s=document.getElementById('splash');if(!s)return;var done=false,reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
-function close(){if(done)return;done=true;s.classList.add('out');setTimeout(function(){s.remove()},700)}
-s.addEventListener('click',close);document.addEventListener('keydown',close,{once:true});
-setTimeout(close,reduce?900:2900)})();
-</script>
+
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   window.addEventListener('load', function () {
