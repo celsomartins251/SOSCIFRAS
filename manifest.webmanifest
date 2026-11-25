@@ -8,12 +8,18 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#101010",
-  "theme_color": "#101010",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
-      "src": "./Ic%C3%B4ni_correto.png?v=1.2.0",
-      "sizes": "any",
+      "src": "./icone-sos-cifras.svg?v=1.2.1",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./Ic%C3%B4ni_correto.png?v=1.2.1",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     }
