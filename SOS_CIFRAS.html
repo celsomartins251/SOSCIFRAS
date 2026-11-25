@@ -104,27 +104,27 @@ function sectionName(raw){
  return null;
 }
 function organizeImportedText(raw, chordOnly){
- let lines=String(raw||'').replace(/\\r/g,'').split('\\n')
-  .map(x=>x.replace(/^\\s*>\\s?/,'').replace(/\\*\\*/g,'').replace(/^\\s*[-*_]{3,}\\s*$/,'').trimEnd());
+ let lines=String(raw||'').replace(/\r/g,'').split('\n')
+  .map(x=>x.replace(/^\s*>\s?/,'').replace(/\*\*/g,'').replace(/^\s*[-*_]{3,}\s*$/,'').trimEnd());
  const out=[]; let hasSection=false, glossary=false;
  for(const line of lines){
   const t=line.trim();
   if(!t) { if(out.length&&out[out.length-1]!=='')out.push(''); continue; }
   if(/^(?:Acordes da música|Acordes utilizados|Colaboradores|Enviado por|Corrigido por|Composição:|Talvez você queira|Vídeo|Video)$/i.test(t)){glossary=true;continue;}
   if(glossary)continue;
-  const heading=t.match(/^(?:#{1,6}\\s*)?(?:\\[([^\\]]+)\\]|([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ ]{1,24}))\\s*:?\\s*$/);
+  const heading=t.match(/^(?:#{1,6}\s*)?(?:\[([^\]]+)\]|([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ ]{1,24}))\s*:?\s*$/);
   const section=heading?sectionName(heading[1]||heading[2]):null;
   if(section){out.push('['+section+']');hasSection=true;continue;}
-  if(/^#{1,6}\\s/.test(t))continue;
-  if(/^(URL Source|Published Time|Markdown Content)\\s*:/i.test(t))continue;
-  if(/^(Tom|Capo|Acordes|Início|Inicio|Final|Fixo)\\s*(?:\\[Button:|$)/i.test(t))continue;
+  if(/^#{1,6}\s/.test(t))continue;
+  if(/^(URL Source|Published Time|Markdown Content)\s*:/i.test(t))continue;
+  if(/^(Tom|Capo|Acordes|Início|Inicio|Final|Fixo)\s*(?:\[Button:|$)/i.test(t))continue;
 
   // Algumas páginas colocam cada acorde em um botão junto da frase.
   // Converte os botões em uma linha de acordes e preserva a frase abaixo.
-  const marks=[...t.matchAll(/\\[Button:\\s*([^\\]]+)\\]/gi)];
+  const marks=[...t.matchAll(/\[Button:\s*([^\]]+)\]/gi)];
   if(marks.length){
    const chords=marks.map(m=>m[1].trim()).filter(x=>CH.test(x));
-   const lyric=t.replace(/\\[Button:\\s*[^\\]]+\\]/gi,'').replace(/^\\s*[-*]\\s*/,'').trim();
+   const lyric=t.replace(/\[Button:\s*[^\]]+\]/gi,'').replace(/^\s*[-*]\s*/,'').trim();
    if(chords.length){
     out.push(chords.join('  '));
     if(!chordOnly&&lyric)out.push(lyric);
@@ -150,7 +150,7 @@ function organizeImportedText(raw, chordOnly){
    out.unshift('[Intro]');
   }
  }
- return out.join('\\n').replace(/\\n{3,}/g,'\\n\\n').trim();
+ return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
 }
 async function importFromLink(){
  const field=document.getElementById('wurl'),button=document.querySelector('[data-a="webfetch"]');
@@ -172,14 +172,14 @@ async function importFromLink(){
   }catch(_){}
   if(!source)source=payload;
   if(!source||source.length<30)throw new Error('O leitor não retornou conteúdo legível.');
-  title=title||(source.match(/^Title:\\s*(.+)$/mi)||[])[1]||'';
-  let content=source.replace(/^Title:.*\\n?/gmi,'').replace(/^URL Source:.*\\n?/gmi,'').replace(/^Markdown Content:\\s*\\n?/gmi,'').trim();
+  title=title||(source.match(/^Title:\s*(.+)$/mi)||[])[1]||'';
+  let content=source.replace(/^Title:.*\n?/gmi,'').replace(/^URL Source:.*\n?/gmi,'').replace(/^Markdown Content:\s*\n?/gmi,'').trim();
   const titleField=document.getElementById('wtitle'),artistField=document.getElementById('wartist');
   if(title&&!titleField.value.trim())titleField.value=title;
   const knownTitle=titleField.value.trim();
   const knownArtist=artistField.value.trim();
-  if(knownTitle)content=content.split('\\n').filter((line,i)=>!(i<5&&line.replace(/^#+\\s*/,'').trim().toLowerCase()===knownTitle.toLowerCase())).join('\\n');
-  if(knownArtist)content=content.split('\\n').filter((line,i)=>!(i<5&&line.trim().toLowerCase()===knownArtist.toLowerCase())).join('\\n');
+  if(knownTitle)content=content.split('\n').filter((line,i)=>!(i<5&&line.replace(/^#+\s*/,'').trim().toLowerCase()===knownTitle.toLowerCase())).join('\n');
+  if(knownArtist)content=content.split('\n').filter((line,i)=>!(i<5&&line.trim().toLowerCase()===knownArtist.toLowerCase())).join('\n');
   const body=organizeImportedText(content,document.getElementById('wonly').checked);
   if(!body)throw new Error('A página foi lida, mas não encontrei conteúdo de cifra aproveitável.');
   document.getElementById('wbody').value=body;
