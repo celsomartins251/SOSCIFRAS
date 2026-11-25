@@ -104,16 +104,33 @@ function sectionName(raw){
  return null;
 }
 function organizeImportedText(raw, chordOnly){
- let lines=String(raw||'').replace(/\r/g,'').split('\n')
-  .map(x=>x.replace(/^\s*>\s?/,'').replace(/\*\*/g,'').replace(/^\s*[-*_]{3,}\s*$/,'').trimEnd());
- const out=[]; let hasSection=false;
+ let lines=String(raw||'').replace(/\\r/g,'').split('\\n')
+  .map(x=>x.replace(/^\\s*>\\s?/,'').replace(/\\*\\*/g,'').replace(/^\\s*[-*_]{3,}\\s*$/,'').trimEnd());
+ const out=[]; let hasSection=false, glossary=false;
  for(const line of lines){
   const t=line.trim();
   if(!t) { if(out.length&&out[out.length-1]!=='')out.push(''); continue; }
-  const heading=t.match(/^(?:#{1,6}\s*)?(?:\[([^\]]+)\]|([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ ]{1,24}))\s*:?\s*$/);
+  if(/^(?:Acordes da música|Acordes utilizados|Colaboradores|Enviado por|Corrigido por|Composição:|Talvez você queira|Vídeo|Video)$/i.test(t)){glossary=true;continue;}
+  if(glossary)continue;
+  const heading=t.match(/^(?:#{1,6}\\s*)?(?:\\[([^\\]]+)\\]|([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ ]{1,24}))\\s*:?\\s*$/);
   const section=heading?sectionName(heading[1]||heading[2]):null;
   if(section){out.push('['+section+']');hasSection=true;continue;}
-  if(/^(URL Source|Published Time|Markdown Content)\s*:/i.test(t))continue;
+  if(/^#{1,6}\\s/.test(t))continue;
+  if(/^(URL Source|Published Time|Markdown Content)\\s*:/i.test(t))continue;
+  if(/^(Tom|Capo|Acordes|Início|Inicio|Final|Fixo)\\s*(?:\\[Button:|$)/i.test(t))continue;
+
+  // Algumas páginas colocam cada acorde em um botão junto da frase.
+  // Converte os botões em uma linha de acordes e preserva a frase abaixo.
+  const marks=[...t.matchAll(/\\[Button:\\s*([^\\]]+)\\]/gi)];
+  if(marks.length){
+   const chords=marks.map(m=>m[1].trim()).filter(x=>CH.test(x));
+   const lyric=t.replace(/\\[Button:\\s*[^\\]]+\\]/gi,'').replace(/^\\s*[-*]\\s*/,'').trim();
+   if(chords.length){
+    out.push(chords.join('  '));
+    if(!chordOnly&&lyric)out.push(lyric);
+   }else if(!chordOnly&&lyric)out.push(lyric);
+   continue;
+  }
   if(chordOnly&&!isChordLine(t))continue;
   out.push(line);
  }
@@ -133,7 +150,7 @@ function organizeImportedText(raw, chordOnly){
    out.unshift('[Intro]');
   }
  }
- return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+ return out.join('\\n').replace(/\\n{3,}/g,'\\n\\n').trim();
 }
 async function importFromLink(){
  const field=document.getElementById('wurl'),button=document.querySelector('[data-a="webfetch"]');
@@ -144,22 +161,36 @@ async function importFromLink(){
  catch(_){toast('Informe um link HTTPS ou HTTP válido.');return;}
  if(button){button.disabled=true;button.textContent='Buscando cifra…';}
  try{
-  const response=await fetch('https://r.jina.ai/'+target.href,{headers:{Accept:'text/plain'}});
-  if(!response.ok)throw new Error('O site intermediário respondeu '+response.status);
-  const source=await response.text();
-  if(!source||source.length<30)throw new Error('A página não retornou conteúdo legível.');
-  const title=(source.match(/^Title:\s*(.+)$/mi)||[])[1]||'';
-  const content=source.replace(/^Title:.*\n?/gmi,'').replace(/^URL Source:.*\n?/gmi,'').replace(/^Markdown Content:\s*\n?/gmi,'').trim();
-  if(title&&!document.getElementById('wtitle').value.trim())document.getElementById('wtitle').value=title;
-  document.getElementById('wbody').value=organizeImportedText(content,document.getElementById('wonly').checked);
-  toast('Conteúdo recebido. Confira a cifra e importe.');
+  const response=await fetch('https://r.jina.ai/'+target.href,{headers:{Accept:'application/json'}});
+  const payload=await response.text();
+  if(!response.ok)throw new Error('Leitor externo respondeu HTTP '+response.status);
+  let source=payload,title='';
+  try{
+   const data=JSON.parse(payload);
+   source=data?.data?.content||data?.content||'';
+   title=data?.data?.title||data?.title||'';
+  }catch(_){}
+  if(!source)source=payload;
+  if(!source||source.length<30)throw new Error('O leitor não retornou conteúdo legível.');
+  title=title||(source.match(/^Title:\\s*(.+)$/mi)||[])[1]||'';
+  let content=source.replace(/^Title:.*\\n?/gmi,'').replace(/^URL Source:.*\\n?/gmi,'').replace(/^Markdown Content:\\s*\\n?/gmi,'').trim();
+  const titleField=document.getElementById('wtitle'),artistField=document.getElementById('wartist');
+  if(title&&!titleField.value.trim())titleField.value=title;
+  const knownTitle=titleField.value.trim();
+  const knownArtist=artistField.value.trim();
+  if(knownTitle)content=content.replace(new RegExp('^#+\\\\s*'+knownTitle.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&')+'\\\\s*$','mi'),'');
+  if(knownArtist)content=content.replace(new RegExp('^'+knownArtist.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&')+'\\\\s*$','mi'),'');
+  const body=organizeImportedText(content,document.getElementById('wonly').checked);
+  if(!body)throw new Error('A página foi lida, mas não encontrei conteúdo de cifra aproveitável.');
+  document.getElementById('wbody').value=body;
+  toast('Cifra recebida e organizada. Confira antes de importar.');
  }catch(err){
-  toast('Não foi possível ler esse site automaticamente. Use copiar/colar abaixo; alguns sites bloqueiam a leitura externa.');
+  console.error('Falha ao importar cifra:',err);
+  toast('Falha na leitura: '+(err?.message||'verifique o link e tente novamente.'));
  }finally{
   if(button){button.disabled=false;button.textContent='Buscar cifra pelo link';}
  }
 }
-
 function vWeb(){return `<h1>Buscar e importar cifras</h1><p class="sub" style="text-align:left">Pesquise a música ou cole o link direto da página. O aplicativo tenta ler o conteúdo e organizar as seções automaticamente. Se o site bloquear a leitura, use copiar e colar.</p><label for="webq">Música ou artista</label><input id="webq" placeholder="Ex.: nome da música — artista"><div class="row" style="margin:8px 0"><button class="btn" data-a="webgoogle">Google</button><button class="btn ghost" data-a="webbing">Bing</button></div><label for="wurl">Link da cifra</label><input id="wurl" type="url" placeholder="https://site.com/cifra-da-musica"><button class="btn" style="width:100%;margin-top:8px" data-a="webfetch">Buscar cifra pelo link</button><h2>Dados da música</h2><label for="wtitle">Título</label><input id="wtitle" placeholder="Título da música"><label for="wartist">Artista</label><input id="wartist" placeholder="Artista"><label for="wkey">Tom original (opcional)</label><input id="wkey" placeholder="Ex.: G, F#m, Bb"><label class="row" style="justify-content:flex-start;gap:9px"><input id="wonly" type="checkbox" style="width:20px;height:20px;flex:none"> Importar somente os acordes, sem a letra</label><label for="wbody">Conteúdo importado ou cifra copiada</label><textarea id="wbody" placeholder="[Intro]\nG  D  Em  C\n\n[Verso]\nG..." spellcheck="false"></textarea><button class="btn" style="width:100%;margin-top:10px" data-a="webimport">Importar para minhas cifras</button>`}
 function vBand(){return `<h1>Banda sincronizada</h1><p class="sub" style="text-align:left">Conecte os dispositivos da banda ao mesmo grupo. O líder controla a música atual e pode enviar o repertório e as setlists para os demais músicos.</p><h2>Configuração Firebase</h2><label for="fbapi">API Key</label><input id="fbapi" placeholder="Firebase apiKey" value="${e((D.firebase||{}).apiKey||'')}"><label for="fbdom">Auth Domain</label><input id="fbdom" placeholder="projeto.firebaseapp.com" value="${e((D.firebase||{}).authDomain||'')}"><label for="fbpid">Project ID</label><input id="fbpid" placeholder="Firebase Project ID" value="${e((D.firebase||{}).projectId||'')}"><label for="fbapp">App ID</label><input id="fbapp" placeholder="Firebase App ID" value="${e((D.firebase||{}).appId||'')}"><button class="btn" style="width:100%;margin-top:8px" data-a="fbconfig">Salvar configuração</button><h2>Conta do músico</h2><label for="fbemail">E-mail</label><input id="fbemail" type="email" autocomplete="username" placeholder="seu@email.com"><label for="fbpass">Senha</label><input id="fbpass" type="password" autocomplete="current-password" placeholder="Senha"><div class="row" style="margin-top:8px"><button class="btn" data-a="fblogin">Entrar</button><button class="btn ghost" data-a="fbcreate">Criar conta</button></div><h2>Grupo</h2><div class="row"><input id="fbcode" placeholder="Código do grupo"><button class="btn" data-a="fbjoin">Entrar no grupo</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbgroup">Criar grupo e ser líder</button><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbsync">Enviar repertório e setlists aos membros</button><p id="fbstatus" class="sub" style="text-align:left">Ainda não conectado.</p><p class="sub" style="text-align:left">A sincronização entre aparelhos só ficará ativa após configurar Authentication (e-mail/senha), Firestore e publicar as regras de segurança no Firebase.</p>`}
 
