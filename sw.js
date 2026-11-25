@@ -1,5 +1,5 @@
 const CACHE_NAME = 'sos-cifras-shell-v1.2.2';
-const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./sos-Logo.png?v=1.1.7','./Ic%C3%B4ni_correto.png?v=1.2.2','./icone-sos-cifras.svg?v=1.2.1'];
+const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./sos-Logo.png?v=1.1.7','./Ic%C3%B4ni_correto.png?v=1.2.2'];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
