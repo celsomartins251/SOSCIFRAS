@@ -6,6 +6,12 @@ Aplicativo web responsivo para organizar, editar e transpor cifras e setlists.
 Em Settings → Pages, selecione Deploy from a branch, branch main e pasta /(root). O ponto de entrada é index.html.
 URL esperada: https://celsomartins251.github.io/SOSCIFRAS/
 
+## PWA e atualizações
+- Aplicativo instalável pelo navegador em dispositivos compatíveis (HTTPS).
+- Shell do aplicativo armazenado em cache para abrir sem conexão após a primeira visita.
+- O service worker verifica novas versões; quando encontra uma atualização, oferece ao usuário a opção de aplicar e recarregar.
+- Para publicar uma atualização, envie os novos arquivos para a branch main. Ao alterar a lógica do cache, incremente CACHE_NAME em sw.js.
+
 ## Recursos implementados
 - Busca local por título/artista; leitura e edição de cifras.
 - Transposição de acordes e baixos slash; ajuste de fonte, rolagem automática e impressão.
