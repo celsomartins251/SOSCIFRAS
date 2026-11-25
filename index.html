@@ -129,10 +129,6 @@ function findTrailingChords(line){
  }
  return null;
 }
-function isChordLine(line){
- const parts=line.trim().split(/\s+/).filter(Boolean);
- return parts.length>0&&parts.every(x=>x==='|'||CH.test(x))&&parts.some(x=>CH.test(x));
-}
 function organizeImportedText(raw,chordOnly){
  const out=[];
  const rows=String(raw||'').replace(/\r/g,'').split('\n');
