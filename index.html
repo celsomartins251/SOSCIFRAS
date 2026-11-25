@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="./Ic%C3%B4ni_192.png?v=1.2.3">
-<link rel="apple-touch-icon" sizes="512x512" href="./Ic%C3%B4ni_correto.png?v=1.2.3">
+<link rel="icon" type="image/jpeg" sizes="512x512" href="./%C3%8Dcone_app.jpg?v=1.3.0">
+<link rel="apple-touch-icon" type="image/jpeg" sizes="512x512" href="./%C3%8Dcone_app.jpg?v=1.3.0">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -65,11 +65,30 @@ summary{font-weight:600;padding:12px 0;cursor:pointer;min-height:44px}
 details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 0}details p{margin:4px 0 12px}
 .rules{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;white-space:pre;overflow-x:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin:6px 0 10px}
 .vh{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;pointer-events:none}
-@media (prefers-reduced-motion:no-preference){.toast{animation:up .2s}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
+
+/* Abertura com a imagem oficial e brilho dourado */
+#splash{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 48%,#2a2110 0%,#101010 66%);overflow:hidden;opacity:1;visibility:visible;transition:opacity .65s ease,visibility .65s ease}
+#splash.out{opacity:0;visibility:hidden;pointer-events:none}
+#splash .glow{position:absolute;width:140vmax;height:140vmax;left:50%;top:50%;margin:-70vmax 0 0 -70vmax;background:repeating-conic-gradient(from 0deg,rgba(240,198,91,.12) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 62%);mask:radial-gradient(circle,#000 0,transparent 62%);opacity:0}
+#splash img{position:relative;display:block;width:min(72vw,72vh,390px);height:auto;max-width:78vw;max-height:78vh;object-fit:contain;border-radius:4px;opacity:0;transform:scale(.88);filter:drop-shadow(0 0 22px rgba(240,198,91,.28))}
+#splash .bar{position:absolute;left:50%;bottom:calc(9vh + env(safe-area-inset-bottom,0px));width:120px;height:3px;margin-left:-60px;border-radius:3px;background:rgba(213,170,66,.2);overflow:hidden;opacity:0}
+#splash .bar i{display:block;height:100%;width:100%;background:#d5aa42;transform:scaleX(0);transform-origin:left}
+@media (prefers-reduced-motion:no-preference){
+#splash .glow{animation:sosGlow 2.6s ease-out .1s forwards,sosSpin 14s linear infinite}
+#splash img{animation:sosLogoIn 1s cubic-bezier(.2,1.25,.4,1) .15s forwards}
+#splash .bar{animation:sosFade .4s ease .5s forwards}
+#splash .bar i{animation:sosLoad 1.9s ease-in-out .5s forwards}
+@keyframes sosLogoIn{0%{opacity:0;transform:scale(.45) rotate(-8deg);filter:blur(8px) drop-shadow(0 0 10px rgba(240,198,91,.1))}60%{opacity:1;filter:blur(0) drop-shadow(0 0 28px rgba(240,198,91,.42))}100%{opacity:1;transform:scale(1) rotate(0);filter:blur(0) drop-shadow(0 0 22px rgba(240,198,91,.28)}}
+@keyframes sosGlow{0%{opacity:0}40%{opacity:1}100%{opacity:.55}}
+@keyframes sosSpin{to{transform:rotate(360deg)}}
+@keyframes sosFade{to{opacity:1}}
+@keyframes sosLoad{to{transform:scaleX(1)}}}
+@media (prefers-reduced-motion:reduce){#splash .glow,#splash img,#splash .bar{opacity:1}#splash .bar i{transform:scaleX(1)}}
 
 </style>
 </head>
 <body>
+<div id="splash" role="img" aria-label="Logo de abertura SOS CIFRAS"><div class="glow"></div><img src="./Logo_de_abertura.jpg?v=1.3.0" alt="Logo oficial SOS CIFRAS"><div class="bar"><i></i></div></div>
 <div class="sig"><span>Celso Martins Dica de Música</span><button class="helpbtn" data-a="tab" data-v="ajuda" aria-label="Abrir Ajuda">? Ajuda</button></div>
 <div id="app"></div>
 <nav class="tabs" aria-label="Navegação"><div id="tabs"></div></nav>
@@ -634,6 +653,23 @@ function fbListen(ref){if(fbUnsub)fbUnsub();fbUnsub=FB.onSnapshot(ref,snap=>{if(
 async function fbSyncCurrent(id){try{if(FB&&S.band?.role==='leader')await FB.updateDoc(FB.doc(FB.db,'sos_cifras_groups',S.band.code),{currentSong:id,updatedAt:Date.now()})}catch(e){console.error(e)}}
 
 render();
+</script>
+
+<script>
+(function(){
+  var splash=document.getElementById('splash');
+  if(!splash)return;
+  var closed=false;
+  function closeSplash(){
+    if(closed)return;
+    closed=true;
+    splash.classList.add('out');
+    window.setTimeout(function(){splash.remove()},700);
+  }
+  splash.addEventListener('click',closeSplash);
+  document.addEventListener('keydown',closeSplash,{once:true});
+  window.setTimeout(closeSplash,3000);
+})();
 </script>
 
 <script>
