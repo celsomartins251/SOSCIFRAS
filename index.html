@@ -125,11 +125,10 @@ function findTrailingChords(line){
   const run=line.slice(start,end).replace(/\\s+/g,'');
   if(!run)continue;
   const tokens=splitChordRun(run);
-  if(tokens && /[A-Za-zÀ-ÿ]/.test(line[start-1]) && !/[A-G](?:#|b)?$/.test(line.slice(0,start))){
-   return {lyric:line.slice(0,start).replace(/\\s+$/,''),tokens};
-  }
-  if(tokens && /\\s$/.test(line.slice(0,start))){
-   return {lyric:line.slice(0,start).replace(/\\s+$/,''),tokens};
+  const lyric=line.slice(0,start).replace(/\\s+$/,'');
+  // Aceita acordes colados após letras ou pontuação (ex.: "solidão...Gm7").
+  if(tokens && /[A-Za-zÀ-ÿ]/.test(lyric)){
+   return {lyric,tokens};
   }
  }
  return null;
