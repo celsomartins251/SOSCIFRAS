@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sos-cifras-shell-v1.2.9';
+const CACHE_NAME = 'sos-cifras-shell-v1.2.10';
 const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./atualizar.html'];
 
 self.addEventListener('install', event => {
