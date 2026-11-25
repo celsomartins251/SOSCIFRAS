@@ -181,16 +181,23 @@ function splitChordRun(run){
  }
  return solve(0);
 }
-/* Acordes grudados no fim da letra (ex.: "amanheceuDG7MA7"). Só age quando o trecho final não tem espaços. */
+/* Detecta a sequência completa de acordes no fim, inclusive grupos separados por espaços. */
 function findTrailingChords(line){
  for(let start=1;start<line.length;start++){
-  const spaced=/\s/.test(line[start-1]);
-  const tail=line.slice(start);
-  if(!/^[A-G]\S*$/.test(tail))continue;
-  const tokens=splitChordRun(tail);
+  if(!/[A-G]/.test(line[start]))continue;
+  const tail=line.slice(start).trim();
+  if(!tail)continue;
+  const groups=tail.split(/\s+/),tokens=[];
+  let valid=true;
+  for(const group of groups){
+   const parsed=splitChordRun(group);
+   if(!parsed||!parsed.length){valid=false;break;}
+   tokens.push(...parsed);
+  }
+  if(!valid||!tokens.length)continue;
   const lyric=line.slice(0,start).replace(/\s+$/,'');
-  if(!tokens||!tokens.length||!/[A-Za-zÀ-ÿ]/.test(lyric))continue;
-  if(tokens.length>=2||(!spaced&&/[a-zà-ÿ.,;:!?…)"'’]$/.test(line[start-1])))return{lyric,tokens};
+  if(!/[A-Za-zÀ-ÿ]/.test(lyric))continue;
+  if(tokens.length>=2||/[a-zà-ÿ.,;:!?…)'’]$/.test(line[start-1]))return{lyric,tokens};
  }
  return null;
 }
@@ -236,6 +243,18 @@ function organizeImportedText(raw,chordOnly){
  if(!hasSection)out.unshift(chordOnly?'[Intro]':'[Verso]');
  return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
 }
+/* Migração das cifras já salvas em versões anteriores: separa acordes colados
+   à letra sem apagar músicas, favoritos, setlists ou configurações. */
+let migratedSongs=false;
+if(Array.isArray(D.songs)){
+ for(const savedSong of D.songs){
+  if(typeof savedSong.body!=='string')continue;
+  const correctedBody=organizeImportedText(savedSong.body,savedSong.type==='chords');
+  if(correctedBody&&correctedBody!==savedSong.body){savedSong.body=correctedBody;migratedSongs=true;}
+ }
+}
+if(migratedSongs)save();
+
 function chordProToText(raw){
  const out=[];
  const meta={};
