@@ -234,10 +234,15 @@ function vEdit(){const s=S.edit;return `<div class="top"><div class="row"><butto
 function render(){stopIfLeft();applyTheme();let h;
  if(S.edit)h=vEdit();else if(S.song)h=vSong();else h={busca:vBusca,pub:vPub,sets:vSets,web:vWeb,band:vBand,conta:vConta}[S.tab]();
  const q=document.getElementById('q'),f=q&&document.activeElement===q,pos=q&&q.selectionStart;
- document.getElementById('app').innerHTML=h+(S.msg?`<div class="toast" role="status">${e(S.msg)}</div>`:'');
+ document.getElementById('app').innerHTML=h;
  tabs();if(f){const n=document.getElementById('q');n.focus();n.setSelectionRange(pos,pos)}}
 function stopIfLeft(){if(!S.song&&S.play)stopPlay()}
-function toast(m){S.msg=m;render();setTimeout(()=>{S.msg='';render()},1800)}
+let toastTimer=null;
+function toast(m){
+ const previous=document.querySelector('.toast');if(previous)previous.remove();
+ const el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=String(m);
+ document.body.appendChild(el);clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.remove(),1800);
+}
 function openSong(id,ctx){S.song=id;S.ctx=ctx||null;S.pick=0;stopPlay();render();window.scrollTo(0,0);if(S.band?.role==='leader')fbSyncCurrent(id)}
 
 document.addEventListener('input',ev=>{if(ev.target.id==='q'){S.q=ev.target.value;render()}});
