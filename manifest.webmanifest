@@ -12,10 +12,10 @@
   "theme_color": "#101010",
   "icons": [
     {
-      "src": "./icon.svg?v=1.1.9",
+      "src": "./Ic%C3%B4ni_correto.png?v=1.2.0",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
