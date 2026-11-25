@@ -54,7 +54,7 @@ label{font-size:13px;color:var(--mute);display:block;margin:12px 0 4px}
 <nav class="tabs" aria-label="Navegação"><div id="tabs"></div></nav>
 <script>
 const N=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],FL={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
-const CH=/^([A-G][#b]?)((?:m|M|maj|min|dim|aug|sus|add|\d+|[#b+\-]|\([^)]*\))*)(?:\/([A-G][#b]?))?$/;
+const CH=/^([A-G][#b]?)((?:m|M|maj|min|dim|aug|sus|add|dim|°|º|ø|\d+|[#b+\-]|\([^)]*\))*)(?:\/([A-G][#b]?))?$/;
 const nn=(n,s)=>N[((N.indexOf(FL[n]||n)+s)%12+12)%12];
 const trTok=(t,s)=>{const m=t.match(CH);return m?nn(m[1],s)+m[2]+(m[3]?'/'+nn(m[3],s):''):t};
 const isChordLine=l=>{const k=l.trim().split(/\s+/).filter(Boolean);return k.length>0&&k.every(t=>t==='|'||/^\|?$/.test(t)||CH.test(t))&&k.some(t=>CH.test(t))};
@@ -103,6 +103,37 @@ function sectionName(raw){
  if(/^(outro|ending|end|final|coda)$/.test(x))return'Final';
  return null;
 }
+function splitChordRun(run){
+ const memo=new Map();
+ function solve(i){
+  if(i===run.length)return [];
+  if(memo.has(i))return memo.get(i);
+  let best=null;
+  for(let j=i+1;j<=run.length;j++){
+   const token=run.slice(i,j);
+   if(!/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|m|M|°|º|ø|\\+|-)?(?:\\d+)?(?:[#b](?:\\d+)?)*(?:\\([^)]*\\))?(?:M|m|maj|min|dim|aug|sus|add|°|º|ø)?)$/.test(token))continue;
+   const rest=solve(j);
+   if(rest!==null){const candidate=[token,...rest];if(!best||candidate.length>best.length)best=candidate;}
+  }
+  memo.set(i,best);return best;
+ }
+ const result=solve(0);return result&&result.length>=2?result:null;
+}
+function findTrailingChords(line){
+ const end=line.length;
+ for(let start=end-1;start>0;start--){
+  const run=line.slice(start,end).replace(/\\s+/g,'');
+  if(!run)continue;
+  const tokens=splitChordRun(run);
+  if(tokens && /[A-Za-zÀ-ÿ]/.test(line[start-1]) && !/[A-G](?:#|b)?$/.test(line.slice(0,start))){
+   return {lyric:line.slice(0,start).replace(/\\s+$/,''),tokens};
+  }
+  if(tokens && /\\s$/.test(line.slice(0,start))){
+   return {lyric:line.slice(0,start).replace(/\\s+$/,''),tokens};
+  }
+ }
+ return null;
+}
 function organizeImportedText(raw, chordOnly){
  let lines=String(raw||'').replace(/\r/g,'').split('\n')
   .map(x=>x.replace(/^\s*>\s?/,'').replace(/\*\*/g,'').replace(/^\s*[-*_]{3,}\s*$/,'').trimEnd());
@@ -130,6 +161,16 @@ function organizeImportedText(raw, chordOnly){
     out.push(chords.join('  '));
     if(!chordOnly&&lyric)out.push(lyric);
    }else if(!chordOnly&&lyric)out.push(lyric);
+   continue;
+  }
+  const trailing=findTrailingChords(t);
+  if(trailing&&trailing.lyric.trim()){
+   if(!chordOnly){
+    out.push(trailing.tokens.join('   '));
+    out.push(trailing.lyric);
+   }else{
+    out.push(trailing.tokens.join('   '));
+   }
    continue;
   }
   if(chordOnly&&!isChordLine(t))continue;
