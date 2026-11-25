@@ -178,8 +178,8 @@ async function importFromLink(){
   if(title&&!titleField.value.trim())titleField.value=title;
   const knownTitle=titleField.value.trim();
   const knownArtist=artistField.value.trim();
-  if(knownTitle)content=content.replace(new RegExp('^#+\\\\s*'+knownTitle.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&')+'\\\\s*$','mi'),'');
-  if(knownArtist)content=content.replace(new RegExp('^'+knownArtist.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&')+'\\\\s*$','mi'),'');
+  if(knownTitle)content=content.split('\\n').filter((line,i)=>!(i<5&&line.replace(/^#+\\s*/,'').trim().toLowerCase()===knownTitle.toLowerCase())).join('\\n');
+  if(knownArtist)content=content.split('\\n').filter((line,i)=>!(i<5&&line.trim().toLowerCase()===knownArtist.toLowerCase())).join('\\n');
   const body=organizeImportedText(content,document.getElementById('wonly').checked);
   if(!body)throw new Error('A página foi lida, mas não encontrei conteúdo de cifra aproveitável.');
   document.getElementById('wbody').value=body;
