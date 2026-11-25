@@ -542,6 +542,7 @@ function vAjuda(){return `<h1>Ajuda</h1><p class="sub" style="text-align:left">T
 <li><b>O link não importa</b>: o site pode bloquear a leitura. Copie a cifra e cole no campo.</li>
 <li><b>Transposição</b>: o tom exibido é o tom original da cifra mais o deslocamento escolhido. Preencha o campo Tom ao criar ou importar para vê-lo.</li></ul></details>`}
 function vConta(){return `<h1>Conta</h1><h2>Aparência</h2><div class="row"><button class="btn ghost" data-a="th" data-v="light">Claro</button><button class="btn ghost" data-a="th" data-v="dark">Escuro</button><button class="btn ghost" data-a="th" data-v="">Automático</button></div>
+ <h2>Atualizações</h2><p style="color:var(--mute)">Confira manualmente se existe uma versão nova do aplicativo. A atualização só será aplicada quando você tocar em “Atualizar agora”.</p><button class="btn ghost" data-a="checkupdates" id="pwa-check">Verificar atualizações</button><p id="pwa-status" role="status" aria-live="polite" style="color:var(--mute);min-height:1.4em;margin:8px 0 18px">Versão instalada: 1.0.8</p>
  <h2>Dados</h2><p style="color:var(--mute)">As cifras ficam salvas neste navegador. Para sincronizar outros aparelhos, use a aba Banda com Firebase configurado.</p><button class="btn ghost" data-a="reset">Restaurar exemplos</button>`}
 
 function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
@@ -654,91 +655,41 @@ render();
 (()=>{const sp=document.getElementById('splash');if(!sp)return;let gone=0;const kill=()=>{if(gone)return;gone=1;sp.classList.add('out');setTimeout(()=>sp.remove(),700)};setTimeout(kill,2700);sp.addEventListener('click',kill)})();
 </script>
 <script>
-/* PWA: instalação, funcionamento offline e aviso visual de atualizações */
+/* PWA: instalação, funcionamento offline e verificação manual/automática */
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  let reloadingForUpdate = false;
-  let dismissedWorker = null;
-  let updateBanner = null;
-
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloadingForUpdate) return;
-    reloadingForUpdate = true;
-    location.reload();
-  });
-
+  let reloadingForUpdate = false, dismissedWorker = null, updateBanner = null, pwaRegistration = null, manualCheckRunning = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloadingForUpdate) return; reloadingForUpdate = true; location.reload(); });
+  const setPwaStatus = message => { const status = document.getElementById('pwa-status'); if (status) status.textContent = message; };
   const announceUpdate = registration => {
     const waiting = registration && registration.waiting;
     if (!waiting || !navigator.serviceWorker.controller || updateBanner || dismissedWorker === waiting) return;
-
-    const banner = document.createElement('section');
-    banner.setAttribute('role', 'alert');
-    banner.setAttribute('aria-live', 'polite');
+    const banner = document.createElement('section'); banner.setAttribute('role','alert'); banner.setAttribute('aria-live','polite');
     banner.style.cssText = 'position:fixed;z-index:10000;left:12px;right:12px;bottom:calc(78px + env(safe-area-inset-bottom,0px));max-width:700px;margin:0 auto;padding:14px;background:#211b0d;border:1px solid #d5aa42;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.45);color:#f4f1e8;font:600 14px/1.4 system-ui,sans-serif';
-    const message = document.createElement('div');
-    message.textContent = 'Uma nova versão do S.O.S. Cifras está disponível.';
-    message.style.marginBottom = '10px';
-    const actions = document.createElement('div');
-    actions.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap';
-    const later = document.createElement('button');
-    later.type = 'button';
-    later.textContent = 'Depois';
-    later.style.cssText = 'padding:10px 16px;border:1px solid #8c7540;border-radius:9px;background:#302817;color:#f4f1e8;font:600 14px system-ui';
-    later.addEventListener('click', () => {
-      dismissedWorker = waiting;
-      banner.remove();
-      updateBanner = null;
-    });
-    const apply = document.createElement('button');
-    apply.type = 'button';
-    apply.textContent = 'Atualizar agora';
-    apply.style.cssText = 'padding:10px 16px;border:0;border-radius:9px;background:#d5aa42;color:#17130a;font:700 14px system-ui';
-    apply.addEventListener('click', () => {
-      apply.disabled = true;
-      apply.textContent = 'Atualizando…';
-      waiting.postMessage({type:'SKIP_WAITING'});
-    });
-    actions.append(later, apply);
-    banner.append(message, actions);
-    document.body.appendChild(banner);
-    updateBanner = banner;
+    const message = document.createElement('div'); message.textContent = 'Uma nova versão do S.O.S. Cifras está disponível.'; message.style.marginBottom = '10px';
+    const actions = document.createElement('div'); actions.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap';
+    const later = document.createElement('button'); later.type='button'; later.textContent='Depois'; later.style.cssText='padding:10px 16px;border:1px solid #8c7540;border-radius:9px;background:#302817;color:#f4f1e8;font:600 14px system-ui';
+    later.addEventListener('click',()=>{dismissedWorker=waiting;banner.remove();updateBanner=null;});
+    const apply = document.createElement('button'); apply.type='button'; apply.textContent='Atualizar agora'; apply.style.cssText='padding:10px 16px;border:0;border-radius:9px;background:#d5aa42;color:#17130a;font:700 14px system-ui';
+    apply.addEventListener('click',()=>{apply.disabled=true;apply.textContent='Atualizando…';waiting.postMessage({type:'SKIP_WAITING'});});
+    actions.append(later,apply); banner.append(message,actions); document.body.appendChild(banner); updateBanner=banner;
   };
-
   const watchInstalling = registration => {
-    const worker = registration.installing;
-    if (!worker || worker.__sosUpdateWatched) return;
-    worker.__sosUpdateWatched = true;
-    worker.addEventListener('statechange', () => {
-      if (worker.state === 'installed') announceUpdate(registration);
-    });
+    const worker=registration.installing; if(!worker||worker.__sosUpdateWatched)return; worker.__sosUpdateWatched=true;
+    worker.addEventListener('statechange',()=>{if(worker.state==='installed')setTimeout(()=>{announceUpdate(registration);if(registration.waiting&&manualCheckRunning)setPwaStatus('Nova versão encontrada. Confirme em “Atualizar agora” no aviso.');},150);});
   };
-
-  window.addEventListener('load', async () => {
-    try {
-      const registration = await navigator.serviceWorker.register('./sw.js', {scope:'./'});
-      registration.addEventListener('updatefound', () => watchInstalling(registration));
-      watchInstalling(registration);
-      announceUpdate(registration);
-
-      const checkForUpdate = async () => {
-        try {
-          await registration.update();
-          watchInstalling(registration);
-          announceUpdate(registration);
-        } catch (error) {
-          console.warn('Falha ao verificar atualização do S.O.S. Cifras:', error);
-        }
-      };
-
-      setTimeout(checkForUpdate, 1200);
-      window.addEventListener('focus', checkForUpdate);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') checkForUpdate();
-      });
-      setInterval(checkForUpdate, 15 * 60 * 1000);
-    } catch (error) {
-      console.warn('Não foi possível ativar as atualizações do PWA:', error);
-    }
-  });
-}</script>
+  const checkForUpdate = async (manual=false) => {
+    if(!pwaRegistration){if(manual)setPwaStatus('O serviço de atualização ainda está iniciando. Tente novamente em alguns segundos.');return;}
+    if(manualCheckRunning)return; manualCheckRunning=true; const button=document.getElementById('pwa-check');
+    if(manual&&button){button.disabled=true;button.textContent='Verificando…';} if(manual)setPwaStatus('Consultando o servidor…');
+    try { const before=pwaRegistration.waiting; await pwaRegistration.update(); watchInstalling(pwaRegistration); await new Promise(resolve=>setTimeout(resolve,1200));
+      const waiting=pwaRegistration.waiting; if(waiting){announceUpdate(pwaRegistration);if(manual)setPwaStatus('Nova versão disponível. Confirme em “Atualizar agora” no aviso.');}
+      else if(manual)setPwaStatus(before?'A atualização está sendo preparada. Aguarde alguns instantes.':'Você já está usando a versão mais recente.');
+    } catch(error){console.warn('Falha ao verificar atualização do S.O.S. Cifras:',error);if(manual)setPwaStatus('Não foi possível consultar o servidor. Verifique a conexão e tente novamente.');}
+    finally{manualCheckRunning=false;if(manual&&button){button.disabled=false;button.textContent='Verificar atualizações';}}
+  };
+  document.addEventListener('click',event=>{const button=event.target.closest('[data-a="checkupdates"]');if(button)checkForUpdate(true);});
+  window.addEventListener('load',async()=>{try{pwaRegistration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});pwaRegistration.addEventListener('updatefound',()=>watchInstalling(pwaRegistration));watchInstalling(pwaRegistration);announceUpdate(pwaRegistration);setTimeout(()=>checkForUpdate(false),1200);window.addEventListener('focus',()=>checkForUpdate(false));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdate(false);});setInterval(()=>checkForUpdate(false),15*60*1000);}catch(error){console.warn('Não foi possível ativar as atualizações do PWA:',error);setPwaStatus('Atualizações automáticas indisponíveis neste momento.');}});
+}
+</script>
 </body>
 </html>
