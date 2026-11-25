@@ -12,9 +12,10 @@
   "theme_color": "#101010",
   "icons": [
     {
-      "src": "./sos-Logo.png?v=1.1.7",
-      "type": "image/png",
-      "purpose": "any"
+      "src": "./icon.svg?v=1.1.9",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
