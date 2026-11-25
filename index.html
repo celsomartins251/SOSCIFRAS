@@ -249,13 +249,14 @@ async function importFromLink(){
   let source=payload,title='';
   try{const data=JSON.parse(payload);source=data?.data?.content||data?.content||'';title=data?.data?.title||data?.title||'';}catch(_){}
   if(!source)source=payload;
-  title=title||(source.match(/^Title:\\s*(.+)$/mi)||[])[1]||'';
-  let content=source.replace(/^Title:.*\\n?/gmi,'').replace(/^URL Source:.*\\n?/gmi,'').replace(/^Markdown Content:\\s*\\n?/gmi,'').trim();
+  title=title||(source.match(/^Title:\s*(.+)$/mi)||[])[1]||'';
+  if(/^\s*(?:<!doctype html|<html)/i.test(source))source=htmlFileToText(source);
+  let content=source.replace(/^Title:.*\n?/gmi,'').replace(/^URL Source:.*\n?/gmi,'').replace(/^Markdown Content:\s*\n?/gmi,'').trim();
   const titleField=document.getElementById('wtitle'),artistField=document.getElementById('wartist');
   if(title&&!titleField.value.trim())titleField.value=title;
   const knownTitle=titleField.value.trim(),knownArtist=artistField.value.trim();
-  if(knownTitle)content=content.split('\\n').filter((line,i)=>!(i<5&&line.replace(/^#+\\s*/,'').trim().toLowerCase()===knownTitle.toLowerCase())).join('\\n');
-  if(knownArtist)content=content.split('\\n').filter((line,i)=>!(i<5&&line.trim().toLowerCase()===knownArtist.toLowerCase())).join('\\n');
+  if(knownTitle)content=content.split('\n').filter((line,i)=>!(i<5&&line.replace(/^#+\s*/,'').trim().toLowerCase()===knownTitle.toLowerCase())).join('\n');
+  if(knownArtist)content=content.split('\n').filter((line,i)=>!(i<5&&line.trim().toLowerCase()===knownArtist.toLowerCase())).join('\n');
   const body=organizeImportedText(content,document.getElementById('wonly').checked);
   if(!body)throw new Error('A página foi lida, mas não encontrei conteúdo de cifra aproveitável.');
   document.getElementById('wbody').value=body;
