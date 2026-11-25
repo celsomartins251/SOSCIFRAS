@@ -40,7 +40,7 @@ button{font:inherit;cursor:pointer;border:0;color:var(--ink);background:none}
 .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
 .tabs>div{display:flex;width:100%;max-width:760px;align-items:center}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--mute);min-height:48px;justify-content:center}
-.tab.on{color:var(--brand);font-weight:700}.tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.tab.on{color:var(--brand);font-weight:700}.tab .tabicon{font-size:22px;line-height:22px;height:22px;display:block}
 .tab.mid{flex:none;width:58px;height:58px;border-radius:50%;background:var(--brand);color:var(--onbrand);margin-top:-26px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 16px;border-radius:12px;font-weight:600;z-index:9}
 .seq{position:fixed;left:0;right:0;bottom:calc(66px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;gap:8px;z-index:4}
@@ -77,9 +77,9 @@ const song=id=>D.songs.find(x=>x.id===id);
 let timer=null;const stopPlay=()=>{clearInterval(timer);S.play=0};
 const applyTheme=()=>{if(D.theme)document.documentElement.dataset.theme=D.theme;else delete document.documentElement.dataset.theme};
 
-const IC={web:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',band:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-4 12-4 12 0M16 11a3 3 0 1 0 0-6M18 16c2 0 3 2 3 4"/>',busca:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',sets:'<path d="M3 7h6l2 2h10v10H3z"/>',pub:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 4 3 14 0 18M12 3c-3 4-3 14 0 18"/>',conta:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/>'};
+const IC={web:"⌕",band:"♬",busca:"⌕",sets:"▤",pub:"◎",conta:"●"};
 function tabs(){const t=[['pub','Público'],['sets','Setlists'],['web','Web'],['busca','Busca'],['band','Banda'],['conta','Conta']];
- document.getElementById('tabs').innerHTML=t.map(([k,n])=>`<button class="tab ${k==='busca'?'mid':''} ${S.tab===k&&!S.song&&!S.edit?'on':''}" data-a="tab" data-v="${k}" aria-label="${n}"><svg viewBox="0 0 24 24">${IC[k]}</svg>${k==='busca'?'':n}</button>`).join('')}
+ document.getElementById('tabs').innerHTML=t.map(([k,n])=>`<button class="tab ${k==='busca'?'mid':''} ${S.tab===k&&!S.song&&!S.edit?'on':''}" data-a="tab" data-v="${k}" aria-label="${n}"><span class="tabicon">${IC[k]}</span>${k==='busca'?'':n}</button>`).join('')}
 
 const item=(s,extra='')=>`<button class="item" data-a="open" data-v="${s.id}"><span class="ico">♪</span><span style="flex:1"><b>${e(s.t)}</b><small>${e(s.a||'')}</small></span>${s.fav?'<span class="chip">★</span>':''}${extra}</button>`;
 
