@@ -179,7 +179,8 @@ function fromFretwork(entry,x,key){
  .filter(s=>validVoicing(s.notes,x,ins));
 }
 function fromChordsDb(x,key){
- const ins=INS[key];if(key!=='guitar6'&&key!=='guitar7'||!chordsDb)return[];\n if(x.bass!==null&&x.quality&&!/^(M|maj|major)$/i.test(x.quality))return[];
+ const ins=INS[key];if(key!=='guitar6'&&key!=='guitar7'||!chordsDb)return[];
+ if(x.bass!==null&&x.quality&&!/^(M|maj|major)$/i.test(x.quality))return[];
  const keyName=(chordsDb.keys||[]).find(k=>rootIndex(k)===x.root);
  const keys=chordsDb.chords[keyName]||[];
  const suffix=chordDbSuffix(x);
