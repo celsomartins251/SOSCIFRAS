@@ -139,7 +139,8 @@ function fretworkKey(x){
 }
 const getShapesFallback=getShapes;
 getShapes=function(x,key){
- if(fretworkDB&&(key==='guitar6'||key==='guitar7')){
+ if(key==='guitar6'||key==='guitar7'){
+  if(!fretworkDB)return [];
   const entry=fretworkDB.find(c=>c.symbol.toLowerCase()===fretworkKey(x).toLowerCase());
   if(entry&&Array.isArray(entry.shapes)){
    const offset=key==='guitar7'?1:0;
