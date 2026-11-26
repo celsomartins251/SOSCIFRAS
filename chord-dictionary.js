@@ -202,15 +202,22 @@ function fromChordsDb(x,key){
  }).filter(s=>validVoicing(s.notes,x,ins));
 }
 function uniqueAndOrder(shapes){
- const seen=new Set(),out=[];
- for(const s of shapes){
-  const signature=s.notes.map(n=>n.string+':'+n.fret).sort().join('|');
-  if(seen.has(signature))continue;seen.add(signature);out.push(s);
+ const out=[],seen=new Set();
+ for(const shape of shapes){
+  const sig=shape.notes.map(n=>n.string+':'+n.fret).sort().join('|');
+  if(!seen.has(sig)){seen.add(sig);out.push(shape)}
  }
- return out.sort((a,b)=>{
-  const af=a.notes.filter(n=>n.fret>0).map(n=>n.fret),bf=b.notes.filter(n=>n.fret>0).map(n=>n.fret);const amin=af.length?Math.min(...af):0,bmin=bf.length?Math.min(...bf):0;
+ const sets=out.map(v=>new Set(v.notes.map(n=>n.string+':'+n.fret)));
+ const filtered=out.filter((shape,i)=>!out.some((other,j)=>{
+  if(i===j||sets[i].size>=sets[j].size||sets[j].size-sets[i].size>1)return false;
+  for(const note of sets[i])if(!sets[j].has(note))return false;
+  return true;
+ }));
+ return filtered.sort((a,b)=>{
+  const af=a.notes.filter(n=>n.fret>0).map(n=>n.fret),bf=b.notes.filter(n=>n.fret>0).map(n=>n.fret);
+  const amin=af.length?Math.min(...af):0,bmin=bf.length?Math.min(...bf):0;
   const ar=a.open?0:amin,br=b.open?0:bmin;return ar-br;
- }).slice(0,4).map((s,i)=>({...s,name:s.name&&s.name!=='Posição'?s.name:'Posição '+(i+1)}));
+ }).slice(0,4).map((v,i)=>({...v,name:v.name&&v.name!=='Posição'?v.name:'Posição '+(i+1)}));
 }
 function getShapes(x,key){
  const ins=INS[key]||INS.guitar6;
@@ -219,7 +226,8 @@ function getShapes(x,key){
   const primary=entry?fromFretwork(entry,x,key):[];
   const curated=fromHausSlash(x,key);
   const secondary=fromChordsDb(x,key);
-  return uniqueAndOrder([...primary,...curated,...secondary]);
+  const generated=(primary.length+curated.length+secondary.length<4)?calculateShapes(x,key).filter(v=>validVoicing(v.notes,x,ins)):[];
+  return uniqueAndOrder([...primary,...curated,...secondary,...generated]);
  }
  return uniqueAndOrder(calculateShapes(x,key).filter(v=>v.notes&&validVoicing(v.notes,x,ins)));
 }
