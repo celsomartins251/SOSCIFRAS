@@ -35,7 +35,7 @@ function apiShapes(x){
 function calculateShapes(x,key){
  const ins=INS[key],out=[],seen=new Set(),maxF=key==="bass4"?17:14,minNotes=key==="bass4"?2:Math.min(3,ins.tuning.length);
  for(let base=0;base<=Math.min(9,maxF-4);base++){
-  const options=ins.tuning.map((t,s)=>{const a=[null];for(let f=0;f<=maxF;f++){if(f!==0&&(f<base||f>base+4))continue;const p=pc(t+f);if(x.tones.includes(p))a.push({string:s,fret:f,pc:p,finger:0})}a=a.slice(1).sort((u,v)=>Math.abs(u.fret-(base+2))-Math.abs(v.fret-(base+2)));return [null].concat(a.slice(0,2))});
+  const options=ins.tuning.map((t,s)=>{const a=[null];for(let f=0;f<=maxF;f++){if(f!==0&&(f<base||f>base+4))continue;const p=pc(t+f);if(x.tones.includes(p))a.push({string:s,fret:f,pc:p,finger:0})}const sorted=a.slice(1).sort((u,v)=>Math.abs(u.fret-(base+2))-Math.abs(v.fret-(base+2)));return [null].concat(sorted.slice(0,2))});
   const selected=Array(ins.tuning.length).fill(null);
   function evaluate(){
    const notes=selected.filter(Boolean);if(notes.length<minNotes)return;
