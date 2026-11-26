@@ -724,7 +724,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./sw.js?v=1.2.31', { scope: './', updateViaCache: 'none' })
+    navigator.serviceWorker.register('./sw.js?v=1.2.34', { scope: './', updateViaCache: 'none' })
       .then(function (reg) {
         console.info('SOS CIFRAS: PWA ativo', reg.scope);
         function activateWhenReady(worker) {
