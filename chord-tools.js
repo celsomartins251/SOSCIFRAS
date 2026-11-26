@@ -15,7 +15,7 @@ function parse(token){
  var dim=/dim|°|º|ø/.test(low),aug=/aug|\+/.test(low);
  var sus4=/sus4|sus/.test(low)&&!/sus2/.test(low),sus2=/sus2/.test(low);
  var ints=dim?[0,3,6]:aug?[0,4,8]:sus4?[0,5,7]:sus2?[0,2,7]:minor?[0,3,7]:[0,4,7];
- var maj7=/maj7|Maj7|M7|7M|Δ7/.test(q),has7=/(^|[^0-9])7/.test(q)||maj7||/^(maj|Maj)(9|11|13)/.test(q);
+ var maj7=/maj7|Maj7|M7|7M|Δ7|^(?:maj|Maj)(?:9|11|13)/.test(q),has7=/(^|[^0-9])7/.test(q)||maj7||/^(maj|Maj)(9|11|13)/.test(q)||(/(^|[^0-9])(?:9|11|13)(?:$|[^0-9])/.test(q)&&!/add9/.test(q));
  function add(v){if(ints.indexOf(v)<0)ints.push(v);}
  if(has7)add(/dim7|°7|º7/.test(q)?9:(maj7?11:10));
  if(/6/.test(q)&&!/(1[236])/.test(q))add(9);
@@ -36,6 +36,7 @@ function parse(token){
  else if(dim){scale="Lócrio";formula=[0,1,3,5,6,8,10];}
  else if(minor&&maj7){scale="Menor melódica";formula=[0,2,3,5,7,9,11];}
  else if(minor){scale="Dórico";formula=[0,2,3,5,7,9,10];}
+ else if(maj7){scale="Maior (Jônio)";formula=[0,2,4,5,7,9,11];}
  else if(has7||sus4){scale="Mixolídio";formula=[0,2,4,5,7,9,10];}
  else if(aug){scale="Tons inteiros";formula=[0,2,4,6,8,10];}
  return {name:raw,root:rootName,tones:tones,intervals:ints,inversions:inversions.slice(0,4),scale:scale,scaleNotes:formula.map(function(v){return note(root+v);})};
