@@ -51,7 +51,7 @@ function calculateShapes(x,key){
    const k=notes.map(n=>n.string+":"+n.fret).join("|");if(seen.has(k))return;
    const avg=frets.length?frets.reduce((u,v)=>u+v,0)/frets.length:0,score=missing.length*100+span*7+Math.abs(avg-(base+2))*1.5-notes.length*2+base*.08;
    const ranks=[...new Set(frets)].sort((u,v)=>u-v);
-   out.push({name:"Posição",base:base===0?1:base,open:notes.some(n=>n.fret===0),notes:notes.map(n=>({...n,finger:n.fret===0?0:ranks.indexOf(n.fret)+1})),barres:[],score,source:"Digitação calculada"});seen.add(k);
+   out.push({name:"Posição",base:base===0?1:base,open:base===0,notes:notes.map(n=>({...n,finger:n.fret===0?0:ranks.indexOf(n.fret)+1})),barres:[],score,source:"Digitação calculada"});seen.add(k);
   }
   function walk(i){if(i===choices.length){evaluate();return}for(const n of choices[i]){selected[i]=n;walk(i+1)}selected[i]=null}
   walk(0);
@@ -155,16 +155,18 @@ function chordDbSuffix(x){
 function notePC(midi){return pc(midi)}
 function validVoicing(notes,x,ins){
  if(!notes||notes.length<3)return false;
- const pitches=notes.map(n=>pc(ins.tuning[n.string]+n.fret));
- if(pitches.some(p=>!x.tones.includes(p)))return false;
- const unique=[...new Set(pitches)];
+ const sounding=notes.map(n=>({note:n,midi:ins.tuning[n.string]+n.fret,p:pc(ins.tuning[n.string]+n.fret)})).sort((a,b)=>a.midi-b.midi);
+ const lowest=sounding[0];
+ // A nota do baixo pode ser uma nota de passagem/inversão fora da tríade,
+ // mas nenhuma outra nota pode sair da estrutura do acorde.
+ if(x.bass!==null&&lowest.p!==x.bass)return false;
+ if(sounding.some((v,i)=>!x.tones.includes(v.p)&&!(i===0&&x.bass!==null&&v.p===x.bass)))return false;
+ const unique=[...new Set(sounding.map(v=>v.p))];
  const third=x.intervals.includes(3)?3:x.intervals.includes(4)?4:x.intervals.includes(2)?2:x.intervals.includes(5)?5:null;
  const required=[x.root];if(third!==null)required.push(pc(x.root+third));
  if(x.intervals.includes(10))required.push(pc(x.root+10));else if(x.intervals.includes(11))required.push(pc(x.root+11));
  x.intervals.filter(v=>[1,2,5,6,8,9].includes(v)).forEach(v=>required.push(pc(x.root+v)));
  if(required.some(p=>!unique.includes(p)))return false;
- const lowest=notes.map(n=>({p:pc(ins.tuning[n.string]+n.fret),m:ins.tuning[n.string]+n.fret})).sort((a,b)=>a.m-b.m)[0];
- if(x.bass!==null&&lowest.p!==x.bass)return false;
  return true;
 }
 function fromFretwork(entry,x,key){
@@ -186,10 +188,18 @@ function fromChordsDb(x,key){
   :String(c.suffix).toLowerCase()===suffix.toLowerCase());
  if(!entry)return[];
  const offset=key==='guitar7'?1:0;
- return (entry.positions||[]).map(p=>({
-  name:'Posição',base:Number(p.baseFret||1),open:p.frets.some(f=>f===0),barres:p.barres||[],source:'chords-db MIT',
-  notes:p.frets.map((f,j)=>f===-1||f===null?null:{string:j+offset,fret:Number(f),finger:Number((p.fingers||[])[j]||0),pc:pc(ins.tuning[j+offset]+Number(f))}).filter(Boolean)
- })).filter(s=>validVoicing(s.notes,x,ins));
+ return (entry.positions||[]).map(p=>{
+  const base=Number(p.baseFret||1);
+  return {
+   name:'Posição',base,open:base<=1,barres:p.barres||[],source:'chords-db MIT',
+   // chords-db armazena casas relativas a baseFret; convertemos para casas absolutas.
+   notes:p.frets.map((f,j)=>{
+    if(f===-1||f===null)return null;
+    const actual=Number(f)===0?0:Number(f)+base-1;
+    return {string:j+offset,fret:actual,finger:Number((p.fingers||[])[j]||0),pc:pc(ins.tuning[j+offset]+actual)};
+   }).filter(Boolean)
+  };
+ }).filter(s=>validVoicing(s.notes,x,ins));
 }
 function uniqueAndOrder(shapes){
  const seen=new Set(),out=[];
@@ -227,5 +237,5 @@ function loadFretwork(){
  });
 }
 loadFretwork();
-window.SOSChordDictionary={parseChord,calculateShapes,refresh:refreshPanel,loadDatabase:loadFretwork};
+window.SOSChordDictionary={parseChord,calculateShapes,getShapes,refresh:refreshPanel,loadDatabase:loadFretwork};
 })()
