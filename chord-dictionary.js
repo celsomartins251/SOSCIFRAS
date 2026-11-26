@@ -136,7 +136,7 @@ document.head.appendChild(style);
 let fretworkDB=[],chordsDb=null,hausSlashDB=[];
 function fretworkKey(x){
  const q=(x.quality||'').trim(),r=x.rootName;
- if(x.bass!==null)return r+'/'+PC[x.bass];
+ if(x.bass!==null){if(q&&!/^(M|maj|major)$/i.test(q))return r+q+'/'+PC[x.bass];return r+'/'+PC[x.bass];}
  if(!q)return r;
  if(/^(7M|M7|maj7|maj9|maj11|maj13)$/i.test(q))return r+'maj7';
  if(/^(m7b5|m7\\(b5\\)|ø)$/i.test(q))return r+'m7b5';
@@ -179,7 +179,7 @@ function fromFretwork(entry,x,key){
  .filter(s=>validVoicing(s.notes,x,ins));
 }
 function fromChordsDb(x,key){
- const ins=INS[key];if(key!=='guitar6'&&key!=='guitar7'||!chordsDb)return[];
+ const ins=INS[key];if(key!=='guitar6'&&key!=='guitar7'||!chordsDb)return[];\n if(x.bass!==null&&x.quality&&!/^(M|maj|major)$/i.test(x.quality))return[];
  const keyName=(chordsDb.keys||[]).find(k=>rootIndex(k)===x.root);
  const keys=chordsDb.chords[keyName]||[];
  const suffix=chordDbSuffix(x);
