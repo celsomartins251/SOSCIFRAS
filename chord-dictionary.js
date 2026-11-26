@@ -59,7 +59,7 @@ function getShapes(x,key){
 }
 function diagram(shape,ins,x){
  if(ins.tuning.length===4&&ins.tuning[0]===28){
-  const left=28,top=25,cell=27,frets=12,w=388,h=top+ins.tuning.length*cell+12;let svg='<div class="dict-bass-scroll"><svg viewBox="0 0 '+w+' '+h+'" class="dict-bass-svg" role="img" aria-label="Posição '+x.symbol+' no contrabaixo">';
+  const left=28,top=25,cell=27,frets=17,w=533,h=top+ins.tuning.length*cell+12;let svg='<div class="dict-bass-scroll"><svg viewBox="0 0 '+w+' '+h+'" class="dict-bass-svg" role="img" aria-label="Posição '+x.symbol+' no contrabaixo">';
   for(let f=0;f<=frets;f++){const xx=left+f*29;svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+ins.tuning.length*cell)+'" class="'+(f===0?"dict-nut":"dict-fret")+'"/><text x="'+xx+'" y="14" text-anchor="middle" class="dict-fret-no">'+f+'</text>'}
   ins.tuning.forEach((t,s)=>{const yy=top+s*cell;svg+='<text x="2" y="'+(yy+4)+'" class="dict-bass-name">'+ins.names[s]+'</text><line x1="'+left+'" y1="'+yy+'" x2="'+(left+frets*29)+'" y2="'+yy+'" class="dict-string"/>'});
   shape.notes.forEach(n=>{const xx=left+n.fret*29,yy=top+n.string*cell;svg+='<circle cx="'+xx+'" cy="'+yy+'" r="8.5" class="'+(n.pc===x.root?"dict-root":"dict-dot")+'"/><text x="'+xx+'" y="'+(yy+3)+'" text-anchor="middle" class="dict-dot-txt">'+pitch(n.pc)+'</text>'});
