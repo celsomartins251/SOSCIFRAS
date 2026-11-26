@@ -22,7 +22,7 @@ function parseChord(symbol){
  if(/#11/.test(q))add(6);else if(/(^|[^#b])11/.test(q))add(5);if(/b13/.test(q))add(8);else if(/(^|[^#b])13/.test(q))add(9);
  if(/add2/.test(q)||/add9/.test(q))add(2);if(/add4/.test(q))add(5);if(/6/.test(q)&&!/(1[236])/.test(q))add(9);
  ints=ints.filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b);
- return{symbol,root,rootName,quality:q,intervals:ints,tones:ints.map(v=>pc(root+v))};
+ return{symbol,root,rootName,quality:q,intervals:ints,tones:ints.map(v=>pc(root+v)),bass:m[4]?rootIndex(m[4]+(m[5]||"")):null};
 }
 function apiShapes(x){
  if(!apiData)return[];const all=Array.isArray(apiData.chords)?apiData.chords:Object.values(apiData.chords||{});
@@ -39,7 +39,7 @@ function calculateShapes(x,key){
   const selected=Array(ins.tuning.length).fill(null);
   function evaluate(){
    const notes=selected.filter(Boolean);if(notes.length<minNotes)return;
-   const pcs=[...new Set(notes.map(n=>n.pc))];if(!pcs.includes(x.root))return;
+   const pcs=[...new Set(notes.map(n=>n.pc))];if(!pcs.includes(x.root))return;if(x.bass!==null){const lowest=notes.slice().sort((a,b)=>a.string-b.string)[0];if(lowest.pc!==x.bass)return;}
    const missing=x.tones.filter(p=>!pcs.includes(p));if(missing.length>x.tones.length-2)return;
    const fs=notes.filter(n=>n.fret>0).map(n=>n.fret),span=fs.length?Math.max(...fs)-Math.min(...fs):0;if(span>4)return;
    const k=notes.map(n=>n.string+":"+n.fret).join(",");if(seen.has(k))return;
@@ -98,5 +98,6 @@ document.addEventListener("click",function(ev){
 document.addEventListener("change",function(ev){if(ev.target&&ev.target.id==="chord-instrument"){const p=ev.target.closest(".dict-panel");if(!p)return;window.SOSChordInstrument=ev.target.value;refreshPanel(p,ev.target.value);ev.stopImmediatePropagation()}},true);
 const style=document.createElement("style");style.textContent=`
 .dict-panel{max-width:540px;margin:10px auto 16px}.dict-panel .chord-panel-card{background:#17191c;border:1px solid #39342a;border-radius:15px;padding:12px}.dict-top,.dict-shape-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.dict-top{color:#d5aa42;font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:9px}.dict-top button{font-size:23px;color:#aaa;background:none;border:0}.dict-shapes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dict-shape{min-width:0;background:#101010;border:1px solid #39342a;border-radius:10px;padding:7px}.dict-shape-head b{font-size:11px;color:#f0c65b}.dict-play{border:1px solid #5a451b;border-radius:7px;background:#2b2415;color:#f0c65b;padding:5px 7px;font-size:10px}.dict-svg{display:block;width:100%;height:auto;max-height:170px}.dict-string{stroke:#8a8a8a;stroke-width:1.4}.dict-fret{stroke:#555;stroke-width:1.3}.dict-nut{stroke:#d5aa42;stroke-width:4}.dict-dot{fill:#f1f2f4;stroke:#f1f2f4}.dict-dot-txt{fill:#191919;font-size:7px;font-weight:800}.dict-open,.dict-fret-no,.dict-bass-name{fill:#aaa;font-size:10px}.dict-strings{text-align:center;color:#aaa;font:9px monospace;white-space:nowrap}.dict-shape>small{display:block;color:#8f8a80;font-size:9px;line-height:1.3;margin-top:5px}.dict-bass-scroll{overflow-x:auto}.dict-bass-svg{display:block;width:100%;min-width:290px;height:auto}.dict-root{fill:#d5aa42;stroke:#f0c65b}.dict-foot{font-size:10px;color:#aaa398;margin:10px 2px 0}.dict-panel .chord-instrument{margin:0 0 8px}@media(max-width:360px){.dict-shapes{grid-template-columns:1fr}.dict-shape{max-width:300px;width:100%;margin:auto}}`;
-document.head.appendChild(style);api();
+document.head.appendChild(style);api().then(()=>{const p=document.querySelector(".dict-panel");if(p&&window.SOSChordInstrument==="guitar6")refreshPanel(p,"guitar6")});
+window.SOSChordDictionary={parseChord:parseChord,calculateShapes:calculateShapes,refresh:refreshPanel};
 })();
