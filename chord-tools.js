@@ -44,7 +44,7 @@ function parse(token){
 function renderLine(line,shift){
  var NAMES=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
  function transpose(t){var m=t.match(/^([A-G][#b]?)(.*?)(?:\/([A-G][#b]?|\d+))?$/);if(!m)return t;var r=FL[m[1]]||m[1],i=NAMES.indexOf(r);if(i<0)return t;var bass=m[3]?(/^\d/.test(m[3])?m[3]:NAMES[((NAMES.indexOf(FL[m[3]]||m[3])+shift)%12+12)%12]):"";return NAMES[((i+shift)%12+12)%12]+m[2]+(bass?"/"+bass:"");}
- return line.replace(/(\S+)( *)/g,function(_,t,sp){var pre=(t.match(/^\(+/)||[""])[0],core=t.slice(pre.length),suf="";while(core.endsWith(")")&&(core.match(/\)/g)||[]).length>(core.match(/\(/g)||[]).length){core=core.slice(0,-1);suf+=")";}if(!parse(core))return esc(t+sp);var tr=transpose(core);return esc(pre)+'<button type="button" class="chordTap" data-chord="'+esc(tr)+'" aria-label="Ver opções do acorde '+esc(tr)+'">'+esc(tr)+'</button>'+esc(suf+sp);});
+ return line.replace(/D\.S\.\s+al\s+Coda|(\S+)( *)/gi,function(full,t,sp){if(/^D\.S\.\s+al\s+Coda$/i.test(full))return '<span class="music-inline-marker">D.S. al Coda</span>';if(!t)return esc(full);if(t==="|"||t==="‖")return '<span class="music-inline-marker '+(t==="‖"?'doublebar':'barline')+'">'+esc(t)+'</span>'+esc(sp||"");var pre=(t.match(/^\(+/)||[""])[0],core=t.slice(pre.length),suf="";while(core.endsWith(")")&&(core.match(/\)/g)||[]).length>(core.match(/\(/g)||[]).length){core=core.slice(0,-1);suf+=")";}if(!parse(core))return esc(t+sp);var tr=transpose(core);return esc(pre)+'<button type="button" class="chordTap" data-chord="'+esc(tr)+'" aria-label="Ver opções do acorde '+esc(tr)+'">'+esc(tr)+'</button>'+esc(suf+sp);});
 }
 function panel(){
  var x=parse(window.SOSChordSelected||"");if(!x)return "";
@@ -65,7 +65,7 @@ document.addEventListener("click",function(ev){
  if(mark){
   var area=document.getElementById("eb");if(!area)return;
   var start=area.selectionStart,end=area.selectionEnd,text=area.value,symbol=mark.getAttribute("data-mark"),ins;
-  if(symbol==="|"||symbol==="‖"){
+  if(symbol==="|"||symbol==="‖"||symbol==="D.S. al Coda"){
    var lineStart=text.lastIndexOf("\n",Math.max(0,start-1))+1;
    var left=text.slice(lineStart,start),right=text.slice(end);
    var before=left&&!/\s$/.test(left)?" ":"";
