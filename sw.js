@@ -1,5 +1,5 @@
-const CACHE_NAME = 'sos-cifras-shell-v1.2.17';
-const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./atualizar.html','./chord-tools.js?v=1.0.4','./chord-tools.css?v=1.0.1','./Logo_de_abertura.jpg?v=1.3.0','./%C3%8Dcone_app.jpg?v=1.3.0'];
+const CACHE_NAME = 'sos-cifras-shell-v1.2.18';
+const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./atualizar.html','./chord-tools.js?v=1.0.5','./chord-tools.css?v=1.0.2','./Logo_de_abertura.jpg?v=1.3.0','./%C3%8Dcone_app.jpg?v=1.3.0'];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
@@ -29,7 +29,7 @@ self.addEventListener('fetch', event => {
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       try {
-        const fresh = await fetch(request);
+        const fresh = await fetch(new Request(request, { cache: 'no-store' }));
         if (fresh && fresh.ok) {
           const cache = await caches.open(CACHE_NAME);
           cache.put('./index.html', fresh.clone());
