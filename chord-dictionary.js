@@ -103,7 +103,7 @@ function panel(symbol){
  let html='<div class="chord-panel-inline dict-panel" data-selected-chord="'+symbol.replace(/"/g,"&quot;")+'"><section class="chord-panel-card"><div class="dict-top"><span>ACORDE</span><button type="button" data-close-chord aria-label="Fechar">×</button></div><select id="chord-instrument" class="chord-instrument" aria-label="Instrumento">';
  Object.keys(INS).forEach(k=>html+='<option value="'+k+'" '+(k===key?"selected":"")+'>'+INS[k].label+'</option>');
  html+='</select><div class="chord-diagram-title">'+symbol+'</div><div class="dict-carousel" aria-label="Deslize para ver outras posições">';
- shapes.forEach((shape,i)=>{html+=shapeSlide(shape,i,ins,x)});
+ shapes.forEach((shape,i)=>{html+=shapeSlide(shape,i,ins,x)});if(!shapes.length)html+='<p class="chord-diagram-empty">Carregando banco de acordes ou posição não cadastrada para este acorde.</p>';
  html+='</div><div class="dict-swipe-hint">'+(shapes.length>1?'Deslize para o lado para ver outras posições':'Posição disponível')+'</div></section></div>';
  return html;
 }
