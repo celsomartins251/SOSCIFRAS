@@ -76,3 +76,21 @@
 .scale-dot{display:block;width:12px;height:12px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 1px var(--onbrand);border:1px solid var(--brand)}
 .scale-string-row:nth-child(2) .scale-fret-cell{border-top:2px solid var(--brand)}
 .chord-panel-inline{margin:7px 0 12px}
+
+/* Diagrama compacto de acorde, seguindo a referência visual enviada */
+.chord-panel-inline{margin:8px auto 14px;max-width:330px}
+.chord-panel-card{width:100%;padding:12px 14px 14px;background:#17191c;border:1px solid #292c31;border-radius:18px;box-shadow:0 8px 24px #0008}
+.chord-panel-head{display:none}
+.chord-instrument{margin:0 0 10px;min-height:40px;font-size:13px}
+.chord-diagram-title{text-align:center;color:var(--ink);font-size:22px;font-weight:800;line-height:1.25;margin:4px 0 10px}
+.scale-neck-host{width:100%;display:flex;justify-content:center}
+.chord-diagram{width:min(100%,250px);margin:0 auto;overflow:hidden}
+.chord-diagram-svg{display:block;width:100%;height:auto;max-height:260px}
+.chord-string{stroke:#777b83;stroke-width:2}
+.chord-fret{stroke:#62666e;stroke-width:1.8}
+.chord-nut{stroke:#858991;stroke-width:5;stroke-linecap:round}
+.chord-finger-dot{fill:#f1f2f4;stroke:#f1f2f4;stroke-width:1}
+.chord-finger-number{fill:#24262a;font-size:11px;font-weight:800}
+.chord-open{fill:#777b83;font-size:13px;font-weight:700}
+.chord-fret-number{fill:#858991;font-size:10px}
+.chord-diagram-empty{padding:24px 8px;text-align:center;color:var(--mute);font-size:13px}
