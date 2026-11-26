@@ -171,13 +171,17 @@ function fromFretwork(entry,x,key){
 }
 function fromChordsDb(x,key){
  const ins=INS[key];if(key!=='guitar6'&&key!=='guitar7'||!chordsDb)return[];
- const keys=chordsDb.chords[x.rootName]||chordsDb.chords[FL[x.rootName]||x.rootName]||[];
+ const keyName=(chordsDb.keys||[]).find(k=>rootIndex(k)===x.root);
+ const keys=chordsDb.chords[keyName]||[];
  const suffix=chordDbSuffix(x);
- const entry=keys.find(c=>String(c.suffix).toLowerCase()===suffix.toLowerCase());
+ const entry=keys.find(c=>x.bass!==null
+  ?String(c.suffix).startsWith('/')&&rootIndex(String(c.suffix).slice(1))===x.bass
+  :String(c.suffix).toLowerCase()===suffix.toLowerCase());
  if(!entry)return[];
+ const offset=key==='guitar7'?1:0;
  return (entry.positions||[]).map(p=>({
   name:'Posição',base:Number(p.baseFret||1),barres:p.barres||[],source:'chords-db MIT',
-  notes:p.frets.map((f,j)=>f===-1||f===null?null:{string:j,fret:Number(f),finger:Number((p.fingers||[])[j]||0),pc:pc(ins.tuning[j]+Number(f))}).filter(Boolean)
+  notes:p.frets.map((f,j)=>f===-1||f===null?null:{string:j+offset,fret:Number(f),finger:Number((p.fingers||[])[j]||0),pc:pc(ins.tuning[j+offset]+Number(f))}).filter(Boolean)
  })).filter(s=>validVoicing(s.notes,x,ins));
 }
 function uniqueAndOrder(shapes){
