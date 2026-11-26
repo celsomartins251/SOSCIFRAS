@@ -34,59 +34,109 @@ function apiShapes(x){
  .map(v=>({name:v.name,base:v.base,notes:v.frets.map((f,s)=>f==="x"||f===null?null:{string:s,fret:Number(f),finger:Number((v.fingers||[])[s]||0)}).filter(Boolean),barres:v.barres,source:v.source}));
 }
 function calculateShapes(x,key){
- const ins=INS[key],out=[],seen=new Set(),maxF=key==="bass4"?17:14,minNotes=key==="bass4"?2:Math.min(3,ins.tuning.length);
- for(let base=0;base<=Math.min(9,maxF-4);base++){
-  const options=ins.tuning.map((t,s)=>{const a=[null];for(let f=0;f<=maxF;f++){if(f!==0&&(f<base||f>base+4))continue;const p=pc(t+f);if(x.tones.includes(p))a.push({string:s,fret:f,pc:p,finger:0})}const sorted=a.slice(1).sort((u,v)=>Math.abs(u.fret-(base+2))-Math.abs(v.fret-(base+2)));return [null].concat(sorted.slice(0,2))});
+ const ins=INS[key],out=[],seen=new Set(),maxF=key==="bass4"?17:15;
+ const required=[x.root],third=x.intervals.includes(3)?3:x.intervals.includes(4)?4:x.intervals.includes(2)?2:x.intervals.includes(5)?5:null;
+ if(third!==null)required.push(pc(x.root+third));
+ if(x.intervals.includes(10))required.push(pc(x.root+10));else if(x.intervals.includes(11))required.push(pc(x.root+11));
+ if(required.length===1)required.push(...x.tones.slice(1,Math.min(3,x.tones.length)));
+ for(let base=0;base<=Math.min(12,maxF-4);base++){
+  const choices=ins.tuning.map((t,s)=>{const arr=[];for(let fret=0;fret<=maxF;fret++){if(base===0?(fret>4):(fret<base||fret>base+4))continue;const tone=pc(t+fret);if(x.tones.includes(tone))arr.push({string:s,fret,pc:tone})}arr.sort((u,v)=>Math.abs(u.fret-(base+2))-Math.abs(v.fret-(base+2)));return[null,...arr.slice(0,3)]});
   const selected=Array(ins.tuning.length).fill(null);
   function evaluate(){
-   const notes=selected.filter(Boolean);if(notes.length<minNotes)return;
-   const pcs=[...new Set(notes.map(n=>n.pc))];const required=[x.root];if(x.intervals.includes(3))required.push(pc(x.root+3));else if(x.intervals.includes(4))required.push(pc(x.root+4));else if(x.intervals.includes(2))required.push(pc(x.root+2));else if(x.intervals.includes(5))required.push(pc(x.root+5));if(x.intervals.includes(10))required.push(pc(x.root+10));else if(x.intervals.includes(11))required.push(pc(x.root+11));else if(x.intervals.includes(9)&&x.tones.length>3)required.push(pc(x.root+9));if(x.tones.length<=3)x.tones.forEach(p=>required.push(p));if(required.some(p=>!pcs.includes(p)))return;if(x.bass!==null){const lowest=notes.slice().sort((a,b)=>a.string-b.string)[0];if(lowest.pc!==x.bass)return;}
-   const missing=x.tones.filter(p=>!pcs.includes(p));if(missing.length>x.tones.length-2)return;
-   const fs=notes.filter(n=>n.fret>0).map(n=>n.fret),span=fs.length?Math.max(...fs)-Math.min(...fs):0;if(span>4||new Set(fs).size>4)return;
-   const k=notes.map(n=>n.string+":"+n.fret).join(",");if(seen.has(k))return;
-   const score=missing.length*100+span*5+Math.abs((fs.reduce((a,b)=>a+b,0)/(fs.length||1))-(base+1))*1.2+(key==="bass4"?Math.max(0,notes.length-3)*2:0)-notes.length*1.4;
-   out.push({name:"Região "+(base+1),base:base+1,notes:notes.map(n=>({...n,finger:n.fret===0?0:[...new Set(fs)].sort((a,b)=>a-b).indexOf(n.fret)+1})),barres:[],score,source:"Calculado pela afinação"});seen.add(k);
+   const notes=selected.filter(Boolean);if(notes.length<(key==="bass4"?2:3))return;
+   const pcs=[...new Set(notes.map(n=>n.pc))];if(required.some(t=>!pcs.includes(t)))return;
+   if(x.bass!==null&&notes.slice().sort((u,v)=>u.string-v.string)[0].pc!==x.bass)return;
+   const frets=notes.filter(n=>n.fret>0).map(n=>n.fret),span=frets.length?Math.max(...frets)-Math.min(...frets):0;if(span>4)return;
+   const missing=x.tones.filter(t=>!pcs.includes(t));if(missing.length>(x.tones.length>3?2:0))return;
+   const k=notes.map(n=>n.string+":"+n.fret).join("|");if(seen.has(k))return;
+   const avg=frets.length?frets.reduce((u,v)=>u+v,0)/frets.length:0,score=missing.length*100+span*7+Math.abs(avg-(base+2))*1.5-notes.length*2+base*.08;
+   const ranks=[...new Set(frets)].sort((u,v)=>u-v);
+   out.push({name:"Posição",base:base===0?1:base,notes:notes.map(n=>({...n,finger:n.fret===0?0:ranks.indexOf(n.fret)+1})),barres:[],score,source:"Digitação calculada"});seen.add(k);
   }
-  function walk(i){if(i===options.length){evaluate();return}for(const v of options[i]){selected[i]=v;walk(i+1)}selected[i]=null}
+  function walk(i){if(i===choices.length){evaluate();return}for(const n of choices[i]){selected[i]=n;walk(i+1)}selected[i]=null}
   walk(0);
  }
- out.sort((a,b)=>a.score-b.score);return out.slice(0,4);
-}
-function getShapes(x,key){
- let shapes=key==="guitar6"?apiShapes(x):[];
- if(shapes.length<4){const generated=calculateShapes(x,key),used=new Set(shapes.map(s=>s.notes.map(n=>n.string+":"+n.fret).join("|")));
-  for(const s of generated){const k=s.notes.map(n=>n.string+":"+n.fret).join("|");if(!used.has(k)){shapes.push(s);used.add(k)}if(shapes.length>=4)break}}
- return shapes.slice(0,4);
+ out.sort((u,v)=>u.score-v.score);return out.slice(0,4).map((s,i)=>({...s,name:"Posição "+(i+1)}));
 }
 function diagram(shape,ins,x){
- if(ins.tuning.length===4&&ins.tuning[0]===28){
-  const left=28,top=31,cell=30,frets=12,w=left+frets*27+8,h=top+ins.tuning.length*cell+12;
-  let svg='<div class="dict-bass-scroll"><svg viewBox="0 0 '+w+' '+h+'" class="dict-bass-svg" role="img" aria-label="Braço do contrabaixo: '+x.symbol+'">';
-  for(let f=0;f<=frets;f++){const xx=left+f*27;svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+ins.tuning.length*cell)+'" class="'+(f===0?"dict-nut":"dict-fret")+'"/><text x="'+xx+'" y="19" text-anchor="middle" class="dict-fret-no">'+f+'</text>'}
-  ins.tuning.forEach((t,s)=>{const yy=top+s*cell;svg+='<text x="2" y="'+(yy+4)+'" class="dict-bass-name">'+ins.names[s]+'</text><line x1="'+left+'" y1="'+yy+'" x2="'+(left+frets*27)+'" y2="'+yy+'" class="dict-string"/>'});
-  shape.notes.forEach(n=>{const xx=left+n.fret*27,yy=top+n.string*cell;svg+='<circle cx="'+xx+'" cy="'+yy+'" r="9" class="'+(n.pc===x.root?"dict-root":"dict-dot")+'"/><text x="'+xx+'" y="'+(yy+3)+'" text-anchor="middle" class="dict-dot-txt">'+pitch(n.pc)+'</text>'});
-  return svg+'</svg></div>';
- }
- const strings=ins.tuning.length,cell=30,top=42,left=28,step=36,w=left*2+(strings-1)*step,h=top+5*cell+18;
- const fs=shape.notes.map(n=>n.fret).filter(f=>f>0),min=fs.length?Math.min(...fs):0;
- const start=min===0?0:Math.max(1,Math.min(Number(shape.base)||min,min));
- let svg='<div class="dict-guitar-wrap"><svg viewBox="0 0 '+w+' '+h+'" class="dict-svg" role="img" aria-label="Diagrama do acorde '+x.symbol+'">';
- for(let st=0;st<strings;st++){
-  const xx=left+st*step,n=shape.notes.find(v=>v.string===st);
-  svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+5*cell)+'" class="dict-string"/>';
-  svg+='<text x="'+xx+'" y="'+(top-10)+'" text-anchor="middle" class="dict-open">'+(n?(n.fret===0?"○":""):"×")+'</text>';
- }
- for(let fret=0;fret<=5;fret++){
-  const yy=top+fret*cell,klass=(fret===0&&start===0)?"dict-nut":"dict-fret";
-  svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-left)+'" y2="'+yy+'" class="'+klass+'"/>';
- }
- if(start>0)svg+='<text x="3" y="'+(top+cell*.62)+'" class="dict-fret-no">'+start+'ª casa</text>';
- const byFret={};shape.notes.forEach(n=>{if(n.fret>0){(byFret[n.fret]||(byFret[n.fret]=[])).push(n)}});
- Object.keys(byFret).forEach(f=>{const group=byFret[f].slice().sort((a,b)=>a.string-b.string);if(group.length>=3&&group[group.length-1].string-group[0].string===group.length-1){const y=top+(Number(f)-start+.5)*cell;if(y>=top&&y<=top+5*cell){const x1=left+group[0].string*step,x2=left+group[group.length-1].string*step;svg+='<rect x="'+(x1-7)+'" y="'+(y-8)+'" width="'+(x2-x1+14)+'" height="16" rx="8" class="dict-barre"/>'}}});
- shape.notes.forEach(n=>{if(n.fret===0)return;const cy=top+(n.fret-start+.5)*cell;if(cy<top||cy>top+5*cell)return;const cx=left+n.string*step;svg+='<circle cx="'+cx+'" cy="'+cy+'" r="9" class="dict-dot"/><text x="'+cx+'" y="'+(cy+3)+'" text-anchor="middle" class="dict-dot-txt">'+(n.finger||"")+'</text>'});
+ const strings=ins.tuning.length,step=strings===7?31:strings===6?36:42,left=24,right=24,top=42,cell=42,frets=5,w=left+right+(strings-1)*step,h=top+cell*frets+24;
+ const fs=shape.notes.map(n=>n.fret).filter(f=>f>0),min=fs.length?Math.min(...fs):0,start=min===0?0:Math.max(1,Math.min(Number(shape.base)||min,min));
+ let svg='<div class="dict-guitar-wrap"><svg viewBox="0 0 '+w+' '+h+'" class="dict-svg" role="img" aria-label="Braço do instrumento '+x.symbol+'">';
+ for(let s=0;s<strings;s++){const xx=left+s*step,n=shape.notes.find(v=>v.string===s);svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+cell*frets)+'" class="dict-string"/><text x="'+xx+'" y="'+(top-13)+'" text-anchor="middle" class="dict-open">'+(n?(n.fret===0?"○":""):"×")+'</text>'}
+ for(let f=0;f<=frets;f++){const yy=top+f*cell;svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" class="'+(f===0&&start===0?"dict-nut":"dict-fret")+'"/>'}
+ if(start>0)svg+='<text x="'+(w/2)+'" y="'+(top+cell*2.65)+'" text-anchor="middle" class="dict-position-label">'+start+'ª casa</text>';
+ const bm={};shape.notes.forEach(n=>{if(n.fret>0)(bm[n.fret]||(bm[n.fret]=[])).push(n.string)});
+ Object.keys(bm).forEach(f=>{const ss=bm[f].sort((a,b)=>a-b);if(ss.length>=3&&ss[ss.length-1]-ss[0]+1===ss.length){const y=top+(Number(f)-start+.5)*cell;if(y>=top&&y<=top+cell*frets)svg+='<line x1="'+(left+ss[0]*step)+'" y1="'+y+'" x2="'+(left+ss[ss.length-1]*step)+'" y2="'+y+'" class="dict-barre"/>'}});
+ shape.notes.forEach(n=>{if(n.fret===0)return;const cy=top+(n.fret-start+.5)*cell;if(cy<top||cy>top+cell*frets)return;const cx=left+n.string*step;svg+='<circle cx="'+cx+'" cy="'+cy+'" r="10" class="'+(n.pc===x.root?"dict-root":"dict-dot")+'"/>'});
  svg+='</svg></div>';return svg;
 }
+let audioContext=null;
+function playShape(shape,ins){
+ const AC=window.AudioContext||window.webkitAudioContext;if(!AC||!shape||!shape.notes||!shape.notes.length)return;
+ try{
+  audioContext=audioContext||new AC();const ctx=audioContext;if(ctx.state==="suspended")ctx.resume();
+  const master=ctx.createGain(),tone=ctx.createBiquadFilter(),now=ctx.currentTime;
+  tone.type="lowpass";tone.frequency.setValueAtTime(ins.tuning[0]<35?2400:4200,now);tone.Q.value=.7;
+  master.gain.setValueAtTime(.82,now);master.connect(tone);tone.connect(ctx.destination);
+  shape.notes.slice().sort((a,b)=>a.string-b.string).forEach((n,i)=>{
+   const midi=ins.tuning[n.string]+n.fret,f=440*Math.pow(2,(midi-69)/12),t=now+i*.045,duration=ins.tuning[0]<35?1.65:1.35;
+   const env=ctx.createGain(),body=ctx.createBiquadFilter();body.type="lowpass";body.frequency.setValueAtTime(Math.min(6000,f*7),t);body.Q.value=.45;
+   env.gain.setValueAtTime(.0001,t);env.gain.linearRampToValueAtTime(.16,t+.009);env.gain.exponentialRampToValueAtTime(.0001,t+duration);
+   body.connect(env);env.connect(master);
+   [[1,.72,"triangle"],[2.01,.19,"sine"],[3.02,.07,"sine"]].forEach(([ratio,level,type])=>{
+    const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(f*ratio,t);gain.gain.value=level;osc.connect(gain);gain.connect(body);osc.start(t);osc.stop(t+duration+.04);
+   });
+  });
+  setTimeout(()=>{try{master.disconnect()}catch(_){}},2100);
+ }catch(err){console.warn("Áudio do acorde:",err)}
+}
 
+function shapeSlide(shape,i,ins,x){
+ return '<article class="dict-shape dict-slide"><div class="dict-shape-head"><b>Posição '+(i+1)+' de '+(window.__sosCurrentShapes||[]).length+'</b><button type="button" class="dict-play" data-play-shape="'+i+'" aria-label="Ouvir acorde '+x.symbol+'">▶ Ouvir</button></div>'+diagram(shape,ins,x)+'</article>';
+}
+function panel(symbol){
+ const x=parseChord(symbol);if(!x)return"";
+ const key=window.SOSChordInstrument||"guitar6",ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);
+ window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
+ let html='<div class="chord-panel-inline dict-panel" data-selected-chord="'+symbol.replace(/"/g,"&quot;")+'"><section class="chord-panel-card"><div class="dict-top"><span>ACORDE</span><button type="button" data-close-chord aria-label="Fechar">×</button></div><select id="chord-instrument" class="chord-instrument" aria-label="Instrumento">';
+ Object.keys(INS).forEach(k=>html+='<option value="'+k+'" '+(k===key?"selected":"")+'>'+INS[k].label+'</option>');
+ html+='</select><div class="chord-diagram-title">'+symbol+'</div><div class="dict-carousel" aria-label="Deslize para ver outras posições">';
+ shapes.forEach((shape,i)=>{html+=shapeSlide(shape,i,ins,x)});
+ html+='</div><div class="dict-swipe-hint">'+(shapes.length>1?'Deslize para o lado para ver outras posições':'Posição disponível')+'</div></section></div>';
+ return html;
+}
+
+function refreshPanel(p,key){
+ const symbol=p.getAttribute("data-selected-chord"),x=parseChord(symbol);if(!x)return;
+ const ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
+ p.querySelector(".dict-carousel").innerHTML=shapes.map((shape,i)=>shapeSlide(shape,i,ins,x)).join("")||'<p class="chord-diagram-empty">Posição não encontrada.</p>';
+ p.querySelector(".dict-swipe-hint").textContent=shapes.length>1?"Deslize para o lado para ver outras posições":"Posição disponível";
+}
+document.addEventListener("click",function(ev){
+ const chord=ev.target.closest&&ev.target.closest("[data-chord]");
+ if(chord){ev.preventDefault();ev.stopImmediatePropagation();const symbol=chord.getAttribute("data-chord"),current=document.querySelector(".dict-panel");if(current&&current.getAttribute("data-selected-chord")===symbol){current.remove();window.SOSChordSelected="";return}if(current)current.remove();document.querySelectorAll(".chord-panel-inline:not(.dict-panel)").forEach(el=>el.remove());window.SOSChordSelected=symbol;const row=chord.closest(".cs")||chord.parentElement;row.insertAdjacentHTML("afterend",panel(symbol));return}
+ const play=ev.target.closest&&ev.target.closest("[data-play-shape]");if(play){ev.preventDefault();const i=Number(play.getAttribute("data-play-shape")),s=(window.__sosCurrentShapes||[])[i],ins=INS[window.__sosCurrentInstrument||"guitar6"];if(s)playShape(s,ins);ev.stopImmediatePropagation();return}
+ if(ev.target.closest&&ev.target.closest("[data-close-chord]")){ev.target.closest(".dict-panel")?.remove();window.SOSChordSelected="";ev.stopImmediatePropagation();return}
+},true);
+document.addEventListener("change",function(ev){if(ev.target&&ev.target.id==="chord-instrument"){const p=ev.target.closest(".dict-panel");if(!p)return;window.SOSChordInstrument=ev.target.value;refreshPanel(p,ev.target.value);ev.stopImmediatePropagation()}},true);
+const style=document.createElement("style");style.textContent=`
+.dict-panel{max-width:420px;margin:8px auto 12px}.dict-panel .chord-panel-card{background:#17191c;border:1px solid #39342a;border-radius:15px;padding:10px}.dict-top,.dict-shape-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.dict-top{color:#d5aa42;font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:9px}.dict-top button{font-size:23px;color:#aaa;background:none;border:0}.dict-carousel{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom;scrollbar-width:none}.dict-carousel::-webkit-scrollbar{display:none}.dict-shape{flex:0 0 100%;min-width:0;scroll-snap-align:center;background:#101010;border:1px solid #39342a;border-radius:10px;padding:10px}.dict-shape-head b{font-size:11px;color:#f0c65b}.chord-diagram-title{font-size:25px;font-weight:800;color:#f0c65b;text-align:center;margin:4px 0 10px}.dict-play{border:1px solid #5a451b;border-radius:7px;background:#2b2415;color:#f0c65b;padding:5px 7px;font-size:10px}.dict-guitar-wrap{width:100%;display:flex;justify-content:center;background:#f6f4ee;border-radius:8px;padding:8px 3px}.dict-svg{display:block;width:auto;max-width:100%;height:auto;max-height:360px}.dict-string{stroke:#222;stroke-width:2}.dict-fret{stroke:#222;stroke-width:2}.dict-nut{stroke:#080808;stroke-width:8}.dict-open{fill:#222;font-size:15px;font-weight:800}.dict-dot{fill:#080808;stroke:#080808;stroke-width:1}.dict-root{fill:#080808;stroke:#080808;stroke-width:1}.dict-barre{stroke:#080808;stroke-width:17;stroke-linecap:round}.dict-position-label{fill:#fff;font-size:17px;font-weight:800}.dict-fret-no,.dict-bass-name{fill:#222;font-size:11px}.dict-strings{text-align:center;color:#aaa;font:9px monospace;white-space:nowrap}.dict-shape>small{display:block;color:#8f8a80;font-size:9px;line-height:1.3;margin-top:5px}.dict-bass-scroll{width:100%;overflow:hidden}.dict-bass-svg{display:block;width:100%;min-width:0;height:auto;background:#f6f4ee;border-radius:8px;padding:5px 2px;box-sizing:border-box}.dict-root{fill:#d5aa42;stroke:#f0c65b}.dict-swipe-hint{text-align:center;color:#aaa398;font-size:10px;margin:7px 0 0}.dict-panel .chord-instrument{margin:0 0 8px}`;
+document.head.appendChild(style);
+window.SOSChordDictionary={parseChord:parseChord,calculateShapes:calculateShapes,refresh:refreshPanel};
+})()function getShapes(x,key){return calculateShapes(x,key).filter(s=>s.notes&&s.notes.length).slice(0,4);}
+
+function diagram(shape,ins,x){
+ const strings=ins.tuning.length,step=strings===7?31:strings===6?36:42,left=24,right=24,top=42,cell=42,frets=5,w=left+right+(strings-1)*step,h=top+cell*frets+24;
+ const fs=shape.notes.map(n=>n.fret).filter(f=>f>0),min=fs.length?Math.min(...fs):0,start=min===0?0:Math.max(1,Math.min(Number(shape.base)||min,min));
+ let svg='<div class="dict-guitar-wrap"><svg viewBox="0 0 '+w+' '+h+'" class="dict-svg" role="img" aria-label="Braço do instrumento '+x.symbol+'">';
+ for(let s=0;s<strings;s++){const xx=left+s*step,n=shape.notes.find(v=>v.string===s);svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+cell*frets)+'" class="dict-string"/><text x="'+xx+'" y="'+(top-13)+'" text-anchor="middle" class="dict-open">'+(n?(n.fret===0?"○":""):"×")+'</text>'}
+ for(let f=0;f<=frets;f++){const yy=top+f*cell;svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" class="'+(f===0&&start===0?"dict-nut":"dict-fret")+'"/>'}
+ if(start>0)svg+='<text x="'+(w/2)+'" y="'+(top+cell*2.65)+'" text-anchor="middle" class="dict-position-label">'+start+'ª casa</text>';
+ const bm={};shape.notes.forEach(n=>{if(n.fret>0)(bm[n.fret]||(bm[n.fret]=[])).push(n.string)});
+ Object.keys(bm).forEach(f=>{const ss=bm[f].sort((a,b)=>a-b);if(ss.length>=3&&ss[ss.length-1]-ss[0]+1===ss.length){const y=top+(Number(f)-start+.5)*cell;if(y>=top&&y<=top+cell*frets)svg+='<line x1="'+(left+ss[0]*step)+'" y1="'+y+'" x2="'+(left+ss[ss.length-1]*step)+'" y2="'+y+'" class="dict-barre"/>'}});
+ shape.notes.forEach(n=>{if(n.fret===0)return;const cy=top+(n.fret-start+.5)*cell;if(cy<top||cy>top+cell*frets)return;const cx=left+n.string*step;svg+='<circle cx="'+cx+'" cy="'+cy+'" r="10" class="'+(n.pc===x.root?"dict-root":"dict-dot")+'"/>'});
+ svg+='</svg></div>';return svg;
+}
 let audioContext=null;
 function playShape(shape,ins){
  const AC=window.AudioContext||window.webkitAudioContext;if(!AC||!shape||!shape.notes||!shape.notes.length)return;
