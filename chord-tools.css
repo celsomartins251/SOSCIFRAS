@@ -16,3 +16,43 @@
 .music-markers .coda-bar{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:16px;padding:0;border:0;border-radius:0;line-height:1;vertical-align:middle}
 .music-markers .coda-symbol{display:inline-flex;align-items:center;justify-content:center;min-width:0;padding:0;border:0;border-radius:0;font-size:1.75em;line-height:.82;color:var(--brand);font-weight:900}
 .music-markers .coda-bar .barline,.music-markers .coda-bar .doublebar{display:inline-flex;align-items:center;justify-content:center;min-width:12px;padding:0 3px;border:0;border-radius:0;font-size:1.35em;line-height:1.1}
+
+/* Diagramas de acordes e escalas por instrumento */
+.chord-panel-card{max-height:90vh}
+.chord-panel-title{font-size:26px;font-weight:800;color:var(--brand)}
+.instrument-label{display:block;margin:14px 0 5px;color:var(--mute);font-size:12px}
+.chord-instrument{width:100%;min-height:44px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px}
+.chord-help{font-size:12px;color:var(--mute);margin:4px 0 10px}
+.chord-shapes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.shape-card{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:8px}
+.shape-card>b{display:block;color:var(--brand);font-size:14px}
+.shape-card>small{display:block;color:var(--mute);font-size:10px;line-height:1.35;min-height:28px}
+.shape-diagram{overflow:hidden}
+.fret-svg{display:block;width:100%;height:auto;max-height:165px}
+.fret-string{stroke:var(--mute);stroke-width:1.2}
+.fret-line{stroke:var(--line);stroke-width:1.2}
+.fret-nut{stroke:var(--brand);stroke-width:4}
+.fret-dot{fill:var(--brand);stroke:var(--brand);stroke-width:1}
+.fret-dot-text{fill:#17130a;font-size:7px;font-weight:800}
+.fret-open{fill:var(--brand);font-size:14px;font-weight:800}
+.fret-number{fill:var(--mute);font-size:9px}
+.fret-string-names{text-align:center;color:var(--mute);font:9px "JetBrains Mono",monospace;white-space:nowrap}
+.neck-unavailable{padding:24px 5px;color:var(--mute);font-size:12px}
+.chord-theory{margin-top:12px}
+.bass-neck{overflow-x:auto;padding:6px 0}
+.bass-fret-head,.bass-row{display:grid;grid-template-columns:48px repeat(13,minmax(25px,1fr));gap:2px;min-width:390px}
+.bass-fret-head{font-size:9px;color:var(--mute);margin-bottom:4px}
+.bass-row{align-items:center;margin:3px 0}
+.bass-row>b{color:var(--brand);font:700 12px "JetBrains Mono",monospace}
+.bass-row>span{height:29px;display:grid;place-items:center;border:1px solid var(--line);border-radius:5px;color:var(--mute);font:10px "JetBrains Mono",monospace}
+.bass-row>span.scale-note{background:var(--brand);border-color:var(--brand);color:#17130a;font-weight:800}
+.bass-legend{font-size:11px;color:var(--mute);margin:8px 0}
+.bass-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--brand);margin-right:5px}
+.chord-hover{position:absolute;z-index:25;width:min(380px,90vw);background:var(--card);border:1px solid var(--brand);border-radius:12px;padding:10px;box-shadow:0 8px 28px #000b;color:var(--ink)}
+.chord-hover>b{display:block;color:var(--brand);margin-bottom:6px}
+.hover-shapes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.hover-shapes>div{background:var(--bg);border-radius:7px;padding:4px;min-width:0}
+.hover-shapes strong{font-size:11px;color:var(--brand)}
+.chord-hover>small{color:var(--mute);font-size:10px}
+@media(max-width:380px){.chord-shapes{gap:6px}.shape-card{padding:5px}.fret-string-names{font-size:8px}}
+@media(hover:none){.chord-hover{display:none}}
