@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<link rel="manifest" href="./manifest.webmanifest">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.19">
 <link rel="icon" type="image/jpeg" sizes="512x512" href="./%C3%8Dcone_app.jpg?v=1.3.0">
 <link rel="apple-touch-icon" type="image/jpeg" sizes="512x512" href="./%C3%8Dcone_app.jpg?v=1.3.0">
 <meta name="theme-color" content="#101010">
@@ -597,6 +597,7 @@ function showDeleteSongPrompt(id){
  document.body.appendChild(layer);
 }
 document.addEventListener('pointerdown',ev=>{
+ if(suppressSongOpen&&!document.querySelector('.delete-song-overlay'))suppressSongOpen=false;
  const target=ev.target.closest('[data-hold-delete="1"]');if(!target)return;
  clearSongHold();songHoldTarget=target;songHoldX=ev.clientX;songHoldY=ev.clientY;
  const id=target.dataset.v;
@@ -604,6 +605,7 @@ document.addEventListener('pointerdown',ev=>{
 });
 document.addEventListener('pointerup',clearSongHold);
 document.addEventListener('pointercancel',clearSongHold);
+document.addEventListener('contextmenu',ev=>{if(ev.target.closest('[data-hold-delete="1"]'))ev.preventDefault();});
 document.addEventListener('pointermove',ev=>{
  if(!songHoldTimer||!songHoldTarget)return;
  if(Math.abs(ev.clientX-songHoldX)>14||Math.abs(ev.clientY-songHoldY)>14)clearSongHold();
@@ -710,7 +712,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./sw.js?v=1.2.18', { scope: './', updateViaCache: 'none' })
+    navigator.serviceWorker.register('./sw.js?v=1.2.19', { scope: './', updateViaCache: 'none' })
       .then(function (reg) {
         console.info('SOS CIFRAS: PWA ativo', reg.scope);
         function activateWhenReady(worker) {
