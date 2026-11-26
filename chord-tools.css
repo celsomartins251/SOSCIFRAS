@@ -84,8 +84,8 @@
 .chord-instrument{margin:0 0 10px;min-height:40px;font-size:13px}
 .chord-diagram-title{text-align:center;color:var(--ink);font-size:22px;font-weight:800;line-height:1.25;margin:4px 0 10px}
 .scale-neck-host{width:100%;display:flex;justify-content:center}
-.chord-diagram{width:min(100%,250px);margin:0 auto;overflow:hidden}
-.chord-diagram-svg{display:block;width:100%;height:auto;max-height:260px}
+.chord-diagram{width:100%;display:flex;justify-content:center;margin:0 auto;overflow:visible}
+.chord-diagram-svg{display:block;width:auto;height:auto;max-width:100%;max-height:none;flex:none}
 .chord-string{stroke:#777b83;stroke-width:2}
 .chord-fret{stroke:#62666e;stroke-width:1.8}
 .chord-nut{stroke:#858991;stroke-width:5;stroke-linecap:round}
