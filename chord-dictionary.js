@@ -60,19 +60,31 @@ function getShapes(x,key){
 }
 function diagram(shape,ins,x){
  if(ins.tuning.length===4&&ins.tuning[0]===28){
-  const left=28,top=25,cell=27,frets=12,w=left+frets*29+8,h=top+ins.tuning.length*cell+12;let svg='<div class="dict-bass-scroll"><svg viewBox="0 0 '+w+' '+h+'" class="dict-bass-svg" role="img" aria-label="Posição '+x.symbol+' no contrabaixo">';
-  for(let f=0;f<=frets;f++){const xx=left+f*29;svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+ins.tuning.length*cell)+'" class="'+(f===0?"dict-nut":"dict-fret")+'"/><text x="'+xx+'" y="14" text-anchor="middle" class="dict-fret-no">'+f+'</text>'}
-  ins.tuning.forEach((t,s)=>{const yy=top+s*cell;svg+='<text x="2" y="'+(yy+4)+'" class="dict-bass-name">'+ins.names[s]+'</text><line x1="'+left+'" y1="'+yy+'" x2="'+(left+frets*29)+'" y2="'+yy+'" class="dict-string"/>'});
-  shape.notes.forEach(n=>{const xx=left+n.fret*29,yy=top+n.string*cell;svg+='<circle cx="'+xx+'" cy="'+yy+'" r="8.5" class="'+(n.pc===x.root?"dict-root":"dict-dot")+'"/><text x="'+xx+'" y="'+(yy+3)+'" text-anchor="middle" class="dict-dot-txt">'+pitch(n.pc)+'</text>'});
+  const left=28,top=31,cell=30,frets=12,w=left+frets*27+8,h=top+ins.tuning.length*cell+12;
+  let svg='<div class="dict-bass-scroll"><svg viewBox="0 0 '+w+' '+h+'" class="dict-bass-svg" role="img" aria-label="Braço do contrabaixo: '+x.symbol+'">';
+  for(let f=0;f<=frets;f++){const xx=left+f*27;svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+ins.tuning.length*cell)+'" class="'+(f===0?"dict-nut":"dict-fret")+'"/><text x="'+xx+'" y="19" text-anchor="middle" class="dict-fret-no">'+f+'</text>'}
+  ins.tuning.forEach((t,s)=>{const yy=top+s*cell;svg+='<text x="2" y="'+(yy+4)+'" class="dict-bass-name">'+ins.names[s]+'</text><line x1="'+left+'" y1="'+yy+'" x2="'+(left+frets*27)+'" y2="'+yy+'" class="dict-string"/>'});
+  shape.notes.forEach(n=>{const xx=left+n.fret*27,yy=top+n.string*cell;svg+='<circle cx="'+xx+'" cy="'+yy+'" r="9" class="'+(n.pc===x.root?"dict-root":"dict-dot")+'"/><text x="'+xx+'" y="'+(yy+3)+'" text-anchor="middle" class="dict-dot-txt">'+pitch(n.pc)+'</text>'});
   return svg+'</svg></div>';
  }
- const count=5,top=27,left=18,w=ins.tuning.length===7?224:ins.tuning.length===4?154:194,step=w/(ins.tuning.length-1),cell=25,fs=shape.notes.map(n=>n.fret),min=fs.length?Math.min(...fs):0,start=min===0?0:Math.max(1,Math.min(shape.base||min,min));
- let svg='<svg viewBox="0 0 '+(w+36)+' 172" class="dict-svg" role="img" aria-label="Diagrama '+x.symbol+'">';
- for(let s=0;s<ins.tuning.length;s++){const xx=left+s*step,n=shape.notes.find(v=>v.string===s);svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+count*cell)+'" class="dict-string"/><text x="'+xx+'" y="17" text-anchor="middle" class="dict-open">'+(n?(n.fret===0?"○":""):"×")+'</text>'}
- for(let f=0;f<=count;f++){const yy=top+f*cell;svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(left+w)+'" y2="'+yy+'" class="'+(f===0&&start===0?"dict-nut":"dict-fret")+'"/>'}
- if(start>0)svg+='<text x="2" y="'+(top+cell*2.8)+'" class="dict-fret-no">'+start+'ª</text>';
- shape.notes.forEach(n=>{if(n.fret===0)return;const cy=top+(n.fret-start+.5)*cell;if(cy<top||cy>top+count*cell)return;const cx=left+n.string*step;svg+='<circle cx="'+cx+'" cy="'+cy+'" r="8.2" class="dict-dot"/><text x="'+cx+'" y="'+(cy+3)+'" text-anchor="middle" class="dict-dot-txt">'+(n.finger||"")+'</text>'});
- svg+='</svg><div class="dict-strings">'+ins.names.join("　")+'</div>';return svg;
+ const strings=ins.tuning.length,cell=30,top=42,left=28,step=36,w=left*2+(strings-1)*step,h=top+5*cell+18;
+ const fs=shape.notes.map(n=>n.fret).filter(f=>f>0),min=fs.length?Math.min(...fs):0;
+ const start=min===0?0:Math.max(1,Math.min(Number(shape.base)||min,min));
+ let svg='<div class="dict-guitar-wrap"><svg viewBox="0 0 '+w+' '+h+'" class="dict-svg" role="img" aria-label="Diagrama do acorde '+x.symbol+'"><text x="'+(w/2)+'" y="17" text-anchor="middle" class="dict-svg-title">'+x.symbol+'</text>';
+ for(let st=0;st<strings;st++){
+  const xx=left+st*step,n=shape.notes.find(v=>v.string===st);
+  svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+5*cell)+'" class="dict-string"/>';
+  svg+='<text x="'+xx+'" y="'+(top-10)+'" text-anchor="middle" class="dict-open">'+(n?(n.fret===0?"○":""):"×")+'</text>';
+ }
+ for(let fret=0;fret<=5;fret++){
+  const yy=top+fret*cell,klass=(fret===0&&start===0)?"dict-nut":"dict-fret";
+  svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-left)+'" y2="'+yy+'" class="'+klass+'"/>';
+ }
+ if(start>0)svg+='<text x="3" y="'+(top+cell*.62)+'" class="dict-fret-no">'+start+'ª casa</text>';
+ const byFret={};shape.notes.forEach(n=>{if(n.fret>0){(byFret[n.fret]||(byFret[n.fret]=[])).push(n)}});
+ Object.keys(byFret).forEach(f=>{const group=byFret[f].slice().sort((a,b)=>a.string-b.string);if(group.length>=3&&group[group.length-1].string-group[0].string===group.length-1){const y=top+(Number(f)-start+.5)*cell;if(y>=top&&y<=top+5*cell){const x1=left+group[0].string*step,x2=left+group[group.length-1].string*step;svg+='<rect x="'+(x1-7)+'" y="'+(y-8)+'" width="'+(x2-x1+14)+'" height="16" rx="8" class="dict-barre"/>'}}});
+ shape.notes.forEach(n=>{if(n.fret===0)return;const cy=top+(n.fret-start+.5)*cell;if(cy<top||cy>top+5*cell)return;const cx=left+n.string*step;svg+='<circle cx="'+cx+'" cy="'+cy+'" r="9" class="dict-dot"/><text x="'+cx+'" y="'+(cy+3)+'" text-anchor="middle" class="dict-dot-txt">'+(n.finger||"")+'</text>'});
+ svg+='</svg></div>';return svg;
 }
 
 let audioContext=null;
@@ -80,18 +92,19 @@ function playShape(shape,ins){
  const AC=window.AudioContext||window.webkitAudioContext;if(!AC||!shape||!shape.notes||!shape.notes.length)return;
  try{
   audioContext=audioContext||new AC();const ctx=audioContext;if(ctx.state==="suspended")ctx.resume();
-  const master=ctx.createGain(),filter=ctx.createBiquadFilter(),now=ctx.currentTime;
-  filter.type="lowpass";filter.frequency.value=5200;filter.Q.value=.55;master.gain.setValueAtTime(.72,now);master.connect(filter);filter.connect(ctx.destination);
+  const master=ctx.createGain(),tone=ctx.createBiquadFilter(),now=ctx.currentTime;
+  tone.type="lowpass";tone.frequency.setValueAtTime(ins.tuning[0]<35?2400:4200,now);tone.Q.value=.7;
+  master.gain.setValueAtTime(.82,now);master.connect(tone);tone.connect(ctx.destination);
   shape.notes.slice().sort((a,b)=>a.string-b.string).forEach((n,i)=>{
-   const midi=ins.tuning[n.string]+n.fret,f=440*Math.pow(2,(midi-69)/12),t=now+i*.035;
-   const voice=ctx.createGain(),body=ctx.createBiquadFilter(),fund=ctx.createOscillator(),harm=ctx.createOscillator(),blend=ctx.createGain();
-   fund.type="triangle";fund.frequency.setValueAtTime(f,t);harm.type="sine";harm.frequency.setValueAtTime(f*2.01,t);
-   body.type="lowpass";body.frequency.setValueAtTime(Math.min(6500,f*8),t);blend.gain.value=.2;
-   voice.gain.setValueAtTime(.0001,t);voice.gain.linearRampToValueAtTime(.105,t+.012);voice.gain.exponentialRampToValueAtTime(.0001,t+(ins.tuning[0]<35?1.15:.9));
-   fund.connect(body);harm.connect(blend);blend.connect(body);body.connect(voice);voice.connect(master);
-   fund.start(t);harm.start(t);fund.stop(t+1.2);harm.stop(t+1.2);
+   const midi=ins.tuning[n.string]+n.fret,f=440*Math.pow(2,(midi-69)/12),t=now+i*.045,duration=ins.tuning[0]<35?1.65:1.35;
+   const env=ctx.createGain(),body=ctx.createBiquadFilter();body.type="lowpass";body.frequency.setValueAtTime(Math.min(6000,f*7),t);body.Q.value=.45;
+   env.gain.setValueAtTime(.0001,t);env.gain.linearRampToValueAtTime(.16,t+.009);env.gain.exponentialRampToValueAtTime(.0001,t+duration);
+   body.connect(env);env.connect(master);
+   [[1,.72,"triangle"],[2.01,.19,"sine"],[3.02,.07,"sine"]].forEach(([ratio,level,type])=>{
+    const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(f*ratio,t);gain.gain.value=level;osc.connect(gain);gain.connect(body);osc.start(t);osc.stop(t+duration+.04);
+   });
   });
-  setTimeout(()=>{try{master.disconnect()}catch(_){}},1600);
+  setTimeout(()=>{try{master.disconnect()}catch(_){}},2100);
  }catch(err){console.warn("Áudio do acorde:",err)}
 }
 
@@ -124,7 +137,7 @@ document.addEventListener("click",function(ev){
 },true);
 document.addEventListener("change",function(ev){if(ev.target&&ev.target.id==="chord-instrument"){const p=ev.target.closest(".dict-panel");if(!p)return;window.SOSChordInstrument=ev.target.value;refreshPanel(p,ev.target.value);ev.stopImmediatePropagation()}},true);
 const style=document.createElement("style");style.textContent=`
-.dict-panel{max-width:420px;margin:8px auto 12px}.dict-panel .chord-panel-card{background:#17191c;border:1px solid #39342a;border-radius:15px;padding:10px}.dict-top,.dict-shape-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.dict-top{color:#d5aa42;font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:9px}.dict-top button{font-size:23px;color:#aaa;background:none;border:0}.dict-carousel{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom;scrollbar-width:none}.dict-carousel::-webkit-scrollbar{display:none}.dict-shape{flex:0 0 100%;min-width:0;scroll-snap-align:center;background:#101010;border:1px solid #39342a;border-radius:10px;padding:10px}.dict-shape-head b{font-size:11px;color:#f0c65b}.chord-diagram-title{font-size:25px;font-weight:800;color:#f0c65b;text-align:center;margin:4px 0 10px}.dict-play{border:1px solid #5a451b;border-radius:7px;background:#2b2415;color:#f0c65b;padding:5px 7px;font-size:10px}.dict-svg{display:block;width:100%;height:auto;max-height:190px}.dict-string{stroke:#8a8a8a;stroke-width:1.4}.dict-fret{stroke:#555;stroke-width:1.3}.dict-nut{stroke:#d5aa42;stroke-width:4}.dict-dot{fill:#f1f2f4;stroke:#f1f2f4}.dict-dot-txt{fill:#191919;font-size:7px;font-weight:800}.dict-open,.dict-fret-no,.dict-bass-name{fill:#aaa;font-size:10px}.dict-strings{text-align:center;color:#aaa;font:9px monospace;white-space:nowrap}.dict-shape>small{display:block;color:#8f8a80;font-size:9px;line-height:1.3;margin-top:5px}.dict-bass-scroll{width:100%;overflow:hidden}.dict-bass-svg{display:block;width:100%;min-width:0;height:auto}.dict-root{fill:#d5aa42;stroke:#f0c65b}.dict-swipe-hint{text-align:center;color:#aaa398;font-size:10px;margin:7px 0 0}.dict-panel .chord-instrument{margin:0 0 8px}`;
+.dict-panel{max-width:420px;margin:8px auto 12px}.dict-panel .chord-panel-card{background:#17191c;border:1px solid #39342a;border-radius:15px;padding:10px}.dict-top,.dict-shape-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.dict-top{color:#d5aa42;font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:9px}.dict-top button{font-size:23px;color:#aaa;background:none;border:0}.dict-carousel{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom;scrollbar-width:none}.dict-carousel::-webkit-scrollbar{display:none}.dict-shape{flex:0 0 100%;min-width:0;scroll-snap-align:center;background:#101010;border:1px solid #39342a;border-radius:10px;padding:10px}.dict-shape-head b{font-size:11px;color:#f0c65b}.chord-diagram-title{font-size:25px;font-weight:800;color:#f0c65b;text-align:center;margin:4px 0 10px}.dict-play{border:1px solid #5a451b;border-radius:7px;background:#2b2415;color:#f0c65b;padding:5px 7px;font-size:10px}.dict-guitar-wrap{width:100%;display:flex;justify-content:center;background:#f6f4ee;border-radius:8px;padding:5px 2px}.dict-svg{display:block;width:100%;max-width:300px;height:auto;max-height:270px}.dict-svg-title{fill:#171717;font-size:16px;font-weight:800}.dict-string{stroke:#222;stroke-width:1.7}.dict-fret{stroke:#555;stroke-width:1.5}.dict-nut{stroke:#111;stroke-width:5}.dict-open,.dict-fret-no{fill:#222;font-size:11px;font-weight:700}.dict-dot{fill:#111;stroke:#111;stroke-width:1}.dict-dot-txt{fill:#fff;font-size:8px;font-weight:800}.dict-barre{fill:#111;stroke:#111;stroke-width:1}.dict-string{stroke:#8a8a8a;stroke-width:1.4}.dict-fret{stroke:#555;stroke-width:1.3}.dict-nut{stroke:#d5aa42;stroke-width:4}.dict-dot{fill:#f1f2f4;stroke:#f1f2f4}.dict-dot-txt{fill:#191919;font-size:7px;font-weight:800}.dict-open,.dict-fret-no,.dict-bass-name{fill:#aaa;font-size:10px}.dict-strings{text-align:center;color:#aaa;font:9px monospace;white-space:nowrap}.dict-shape>small{display:block;color:#8f8a80;font-size:9px;line-height:1.3;margin-top:5px}.dict-bass-scroll{width:100%;overflow:hidden}.dict-bass-svg{display:block;width:100%;min-width:0;height:auto;background:#f6f4ee;border-radius:8px;padding:5px 2px;box-sizing:border-box}.dict-root{fill:#d5aa42;stroke:#f0c65b}.dict-swipe-hint{text-align:center;color:#aaa398;font-size:10px;margin:7px 0 0}.dict-panel .chord-instrument{margin:0 0 8px}`;
 document.head.appendChild(style);api().then(()=>{const p=document.querySelector(".dict-panel");if(p&&window.SOSChordInstrument==="guitar6")refreshPanel(p,"guitar6")});
 window.SOSChordDictionary={parseChord:parseChord,calculateShapes:calculateShapes,refresh:refreshPanel};
 })();
