@@ -107,12 +107,12 @@ function panel(){
  var x=parse(window.SOSChordSelected||"");if(!x)return "";
  x.rootIndex=N.indexOf(FL[x.root]||x.root);
  var key=window.SOSChordInstrument||"guitar6",data=chordShapes(x,key);
- var html='<div class="chord-panel" data-close-chord="1"><section class="chord-panel-card" role="dialog" aria-modal="true" aria-label="Diagramas do acorde"><div class="chord-panel-head"><div><small style="color:var(--mute)">ACORDE SELECIONADO</small><div class="chord-panel-title">'+esc(x.name)+'</div></div><button type="button" class="tb" data-close-chord="1" aria-label="Fechar">✕</button></div>';
+ var html='<div class="chord-panel-inline"><section class="chord-panel-card" role="region" aria-label="Diagramas do acorde"><div class="chord-panel-head"><div><small style="color:var(--mute)">ACORDE SELECIONADO</small><div class="chord-panel-title">'+esc(x.name)+'</div></div><button type="button" class="tb" data-close-chord="1" aria-label="Fechar">✕</button></div>';
  html+='<label class="instrument-label" for="chord-instrument">Instrumento</label><select id="chord-instrument" class="chord-instrument"><option value="guitar6" '+(key==="guitar6"?"selected":"")+'>Violão de 6 cordas · E A D G B E</option><option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão de 7 cordas · C E A D G B E</option><option value="bass4" '+(key==="bass4"?"selected":"")+'>Contrabaixo · E A D G</option></select>';
  if(key==="bass4"){html+='<h3>Escala no braço do contrabaixo</h3>'+bassNeck(x);}
  else{
-  html+='<h3>Formas de acorde no braço</h3><p class="chord-help">Quatro referências de posição: A, C, E e D. A digitação é calculada para as notas deste acorde e para a afinação selecionada.</p><div class="chord-shapes">';
-  data.shapes.forEach(function(sh){html+='<article class="shape-card"><b>Forma '+sh.name+'</b><div class="shape-diagram">'+fretSvg(sh,data.instrument)+'</div><small>'+(sh.notes.length?(sh.complete?"Todas as notas do acorde incluídas.":"Voicing adaptado; notas omitidas: "+sh.missing.map(fretNote).join(", "))+(sh.barres.length?" Pestana indicada.":""):"Posição indisponível")+'</small></article>';});
+  html+='<h3>Formas de acorde no braço</h3><p class="chord-help">Quatro referências de posição: A, C, E e D. As formas mostram as notas do acorde, com indicação de pestana quando aplicável.</p><div class="chord-shapes">';
+  data.shapes.forEach(function(sh){html+='<article class="shape-card"><b>Forma '+sh.name+'</b><div class="shape-diagram">'+fretSvg(sh,data.instrument)+'</div><small>'+(sh.notes.length?(sh.complete?"Todas as notas do acorde incluídas.":"Voicing adaptado; notas omitidas: "+sh.missing.map(fretNote).join(", "))+(sh.barres.length?" · Com pestana.":" · Sem pestana."):"Posição indisponível")+'</small></article>';});
   html+='</div>';
  }
  html+='<details class="chord-theory"><summary>Ver notas e estrutura do acorde</summary><p>Notas: <b>'+x.tones.join(" · ")+'</b></p><p>Intervalos: '+x.intervals.join(" – ")+' semitons a partir da tônica</p><p>Escala sugerida: <b>'+esc(x.scale)+'</b></p><p>'+x.scaleNotes.join(" – ")+'</p></details></section></div>';
@@ -120,42 +120,71 @@ function panel(){
 }
 window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\s𝄆𝄇𝄋𝄌①②1ª2ª.\-|‖]+|D\.S\. al Coda)$/.test(t)&&(/[|‖𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\.S\. al Coda/.test(t));}};
 document.addEventListener("change",function(ev){
- if(ev.target&&ev.target.id==="chord-instrument"){window.SOSChordInstrument=ev.target.value;var p=document.querySelector(".chord-panel");if(p)p.outerHTML=panel();}
+ if(ev.target&&ev.target.id==="chord-instrument"){
+  window.SOSChordInstrument=ev.target.value;
+  var p=document.querySelector(".chord-panel-inline");
+  if(p){var owner=p.getAttribute("data-selected-chord")||window.SOSChordSelected;p.outerHTML=panel();p=document.querySelector(".chord-panel-inline");if(p)p.setAttribute("data-selected-chord",owner);}
+ }
 });
 document.addEventListener("click",function(ev){
- var chord=ev.target.closest("[data-chord]");
- if(chord){ev.preventDefault();window.SOSChordSelected=chord.getAttribute("data-chord");var old=document.querySelector(".chord-panel");if(old)old.remove();document.body.insertAdjacentHTML("beforeend",panel());return;}
- if(ev.target.closest("[data-close-chord]")){var p=document.querySelector(".chord-panel");if(p)p.remove();window.SOSChordSelected="";return;}
- var mark=ev.target.closest("[data-mark]");
- if(!mark&&!ev.target.closest(".chord-panel-card")){var active=document.querySelector(".chord-panel");if(active)active.remove();window.SOSChordSelected="";}
+ var chord=ev.target.closest&&ev.target.closest("[data-chord]");
+ if(chord){
+  ev.preventDefault();
+  var selected=chord.getAttribute("data-chord"),current=document.querySelector(".chord-panel-inline");
+  var same=current&&current.getAttribute("data-selected-chord")===selected;
+  if(current)current.remove();
+  var hover=document.querySelector(".chord-hover");if(hover)hover.remove();
+  if(same){window.SOSChordSelected="";return;}
+  window.SOSChordSelected=selected;
+  var row=chord.closest(".cs")||chord.parentElement;
+  row.insertAdjacentHTML("afterend",panel());
+  var opened=document.querySelector(".chord-panel-inline");if(opened)opened.setAttribute("data-selected-chord",selected);
+  return;
+ }
+ if(ev.target.closest&&ev.target.closest("[data-close-chord]")){
+  var p=document.querySelector(".chord-panel-inline");if(p)p.remove();
+  window.SOSChordSelected="";return;
+ }
+ var mark=ev.target.closest&&ev.target.closest("[data-mark]");
  if(mark){
   var area=document.getElementById("eb");if(!area)return;
   var start=area.selectionStart,end=area.selectionEnd,text=area.value,symbol=mark.getAttribute("data-mark"),ins;
   if(symbol==="|"||symbol==="‖"||symbol==="D.S. al Coda"){
-   var lineStart=text.lastIndexOf("\n",Math.max(0,start-1))+1;
+   var lineStart=text.lastIndexOf("\\n",Math.max(0,start-1))+1;
    var left=text.slice(lineStart,start),right=text.slice(end);
-   var before=left&&!/\s$/.test(left)?" ":"";
-   var after=right&&!/^\s/.test(right)?" ":"";
+   var before=left&&!/\\s$/.test(left)?" ":"";
+   var after=right&&!/^\\s/.test(right)?" ":"";
    ins=before+symbol+after;
-  }else{ins="\n"+symbol+"\n";}
+  }else{ins="\\n"+symbol+"\\n";}
   area.value=text.slice(0,start)+ins+text.slice(end);
   area.focus();area.selectionStart=area.selectionEnd=start+ins.length;return;
+ }
+ if(!(ev.target.closest&&ev.target.closest(".chord-panel-inline"))){
+  var active=document.querySelector(".chord-panel-inline");if(active)active.remove();
+  window.SOSChordSelected="";
  }
 });
 document.addEventListener("pointerover",function(ev){
  if(!window.matchMedia||!window.matchMedia("(hover: hover) and (pointer: fine)").matches)return;
- var chord=ev.target.closest("[data-chord]");if(!chord)return;
- var old=document.querySelector(".chord-hover");if(old)old.remove();
- window.SOSChordSelected=chord.getAttribute("data-chord");
- var x=parse(window.SOSChordSelected);if(!x)return;x.rootIndex=N.indexOf(FL[x.root]||x.root);
- var data=chordShapes(x,"guitar6"),html='<div class="chord-hover"><b>'+esc(x.name)+' · violão 6 cordas</b><div class="hover-shapes">';
+ var chord=ev.target.closest&&ev.target.closest("[data-chord]");if(!chord)return;
+ if(document.querySelector(".chord-panel-inline"))return;
+ var selected=chord.getAttribute("data-chord"),old=document.querySelector(".chord-hover");
+ if(old&&old.getAttribute("data-preview-chord")===selected)return;
+ if(old)old.remove();
+ window.SOSChordSelected=selected;
+ var x=parse(selected);if(!x)return;x.rootIndex=N.indexOf(FL[x.root]||x.root);
+ var data=chordShapes(x,"guitar6"),html='<div class="chord-hover" data-preview-chord="'+esc(selected)+'"><b>'+esc(x.name)+' · violão 6 cordas</b><div class="hover-shapes">';
  data.shapes.forEach(function(sh){html+='<div><strong>'+sh.name+'</strong>'+fretSvg(sh,data.instrument)+'</div>';});
- html+='</div><small>Clique para ampliar e escolher o instrumento</small></div>';
- chord.insertAdjacentHTML("afterend",html);
+ html+='</div><small>Toque ou clique na cifra para escolher o instrumento e ampliar os diagramas</small></div>';
+ var row=chord.closest(".cs")||chord.parentElement;
+ row.insertAdjacentHTML("afterend",html);
+ var preview=document.querySelector(".chord-hover");
+ if(preview)preview.addEventListener("pointerleave",function(){preview.remove();});
 });
 document.addEventListener("pointerout",function(ev){
- var chord=ev.target.closest("[data-chord]");if(!chord)return;
- if(ev.relatedTarget&&chord.contains(ev.relatedTarget))return;
+ var chord=ev.target.closest&&ev.target.closest("[data-chord]");if(!chord)return;
+ var next=ev.relatedTarget;
+ if(next&&(chord.contains(next)||(next.closest&&next.closest(".chord-hover"))))return;
  var hover=document.querySelector(".chord-hover");if(hover)hover.remove();
 });
 })();
