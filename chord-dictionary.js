@@ -62,7 +62,7 @@ function getShapes(x,key){return calculateShapes(x,key).filter(v=>v.notes&&v.not
 
 function diagram(shape,ins,x){
  const strings=ins.tuning.length,step=strings===7?25:strings===6?29:38,left=24,right=24,top=48,cell=50,frets=5,w=left+right+(strings-1)*step,h=top+cell*frets+24;
- const fs=shape.notes.map(n=>n.fret).filter(f=>f>0),min=fs.length?Math.min(...fs):0,start=min===0?0:Math.max(1,Math.min(Number(shape.base)||min,min));
+ const fs=shape.notes.map(n=>n.fret).filter(f=>f>0),min=fs.length?Math.min(...fs):0,start=shape.open?0:(min===0?0:Math.max(1,Math.min(Number(shape.base)||min,min)));
  let svg='<div class="dict-guitar-wrap"><svg viewBox="0 0 '+w+' '+h+'" class="dict-svg" role="img" aria-label="Braço do instrumento '+x.symbol+'">';
  for(let s=0;s<strings;s++){const xx=left+s*step,n=shape.notes.find(v=>v.string===s);svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+cell*frets)+'" class="dict-string"/><text x="'+xx+'" y="'+(top-13)+'" text-anchor="middle" class="dict-open">'+(n?(n.fret===0?"○":""):"×")+'</text>'}
  for(let f=0;f<=frets;f++){const yy=top+f*cell;svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" class="'+(f===0&&start===0?"dict-nut":"dict-fret")+'"/>'}
@@ -144,7 +144,7 @@ getShapes=function(x,key){
   const entry=fretworkDB.find(c=>c.symbol.toLowerCase()===fretworkKey(x).toLowerCase());
   if(entry&&Array.isArray(entry.shapes)){
    const offset=key==='guitar7'?1:0;
-   return entry.shapes.map((v,i)=>({name:v.position||('Posição '+(i+1)),base:(v.frets.filter(n=>n!==null&&n>0).sort((a,b)=>a-b)[0]||1),notes:v.frets.map((f,j)=>f===null?null:{string:j+offset,fret:Number(f),finger:0}).filter(Boolean),barres:[],source:'Fretwork CC BY 4.0',fretString:v.fret_string})).filter(v=>v.notes.length).slice(0,4);
+   return entry.shapes.map((v,i)=>({name:v.position||('Posição '+(i+1)),base:v.open?0:(v.frets.filter(n=>n!==null&&n>0).sort((a,b)=>a-b)[0]||1),open:!!v.open,barre:!!v.barre,notes:v.frets.map((f,j)=>f===null?null:{string:j+offset,fret:Number(f),finger:0}).filter(Boolean),barres:[],source:'Fretwork CC BY 4.0',fretString:v.fret_string})).filter(v=>v.notes.length).slice(0,4);
   }
   return [];
  }
