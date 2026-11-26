@@ -102,7 +102,7 @@ function panel(symbol){
  window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
  let html='<div class="chord-panel-inline dict-panel" data-selected-chord="'+symbol.replace(/"/g,"&quot;")+'"><section class="chord-panel-card"><div class="dict-top"><span>ACORDE</span><button type="button" data-close-chord aria-label="Fechar">×</button></div><select id="chord-instrument" class="chord-instrument" aria-label="Instrumento">';
  Object.keys(INS).forEach(k=>html+='<option value="'+k+'" '+(k===key?"selected":"")+'>'+INS[k].label+'</option>');
- html+='</select><div class="chord-diagram-title">'+symbol+'</div><div class="dict-credit">Banco de posições: Fretwork · CC BY 4.0</div><div class="dict-carousel" aria-label="Deslize para ver outras posições">';
+ html+='</select><div class="chord-diagram-title">'+symbol+'</div><div class="dict-credit">'+((key==='guitar6'||key==='guitar7')?'Banco de posições: Fretwork · CC BY 4.0':'Posições calculadas para a afinação selecionada')+'</div><div class="dict-carousel" aria-label="Deslize para ver outras posições">';
  shapes.forEach((shape,i)=>{html+=shapeSlide(shape,i,ins,x)});if(!shapes.length)html+='<p class="chord-diagram-empty">Carregando banco de acordes ou posição não cadastrada para este acorde.</p>';
  html+='</div><div class="dict-swipe-hint">'+(shapes.length>1?'Deslize para o lado para ver outras posições':'Posição disponível')+'</div></section></div>';
  return html;
@@ -110,7 +110,7 @@ function panel(symbol){
 
 function refreshPanel(p,key){
  const symbol=p.getAttribute("data-selected-chord"),x=parseChord(symbol);if(!x)return;
- const ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
+ const ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);const credit=p.querySelector('.dict-credit');if(credit)credit.textContent=(key==='guitar6'||key==='guitar7')?'Banco de posições: Fretwork · CC BY 4.0':'Posições calculadas para a afinação selecionada';window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
  p.querySelector(".dict-carousel").innerHTML=shapes.map((shape,i)=>shapeSlide(shape,i,ins,x)).join("")||'<p class="chord-diagram-empty">Posição não encontrada.</p>';
  p.querySelector(".dict-swipe-hint").textContent=shapes.length>1?"Deslize para o lado para ver outras posições":"Posição disponível";
 }
