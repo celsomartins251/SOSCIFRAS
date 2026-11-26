@@ -39,7 +39,7 @@ function parse(token){
  else if(maj7){scale="Maior (Jônio)";formula=[0,2,4,5,7,9,11];}
  else if(has7||sus4){scale="Mixolídio";formula=[0,2,4,5,7,9,10];}
  else if(aug){scale="Tons inteiros";formula=[0,2,4,6,8,10];}
- return {name:raw,root:rootName,tones:tones,intervals:ints,inversions:inversions.slice(0,4),scale:scale,scaleNotes:formula.map(function(v){return note(root+v);})};
+ return {name:raw,root:rootName,rootIndex:root,tones:tones,intervals:ints,inversions:inversions.slice(0,4),scale:scale,scaleNotes:formula.map(function(v){return note(root+v);})};
 }
 function renderLine(line,shift){
  var NAMES=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -101,32 +101,79 @@ function fretSvg(shape,ins){
 }
 function frettedNeck(x,key){
  var ins=INSTRUMENTS[key]||INSTRUMENTS.guitar6;
- var scalePC=x.scaleNotes.map(function(n){return N.indexOf(n);}).filter(function(n){return n>=0;});
- var html='<div class="scale-neck-wrap"><div class="scale-neck"><div class="scale-fret-head"><span></span>';
- for(var f=0;f<=12;f++)html+='<span>'+f+'</span>';
- html+='</div>';
- for(var s=ins.strings-1;s>=0;s--){
-  html+='<div class="scale-string-row"><span class="scale-string-line"></span>';
-  for(var fr=0;fr<=12;fr++){
-   var active=scalePC.indexOf(((ins.tuning[s]+fr)%12))>=0;
-   html+='<span class="scale-fret-cell">'+(active?'<i class="scale-dot"></i>':'')+'</span>';
+ var pcs=x.intervals.map(function(v){return (x.rootIndex+v)%12;});
+ var best=null;
+ for(var base=0;base<=8;base++){
+  var choices=[];
+  for(var s=0;s<ins.strings;s++){
+   var arr=[];
+   for(var fr=base;fr<=base+4;fr++){
+    var pc=(ins.tuning[s]+fr)%12;
+    if(pcs.indexOf(pc)>=0)arr.push({string:s,fret:fr,pc:pc});
+   }
+   arr.sort(function(a,b){return a.fret-b.fret;});
+   choices.push([null].concat(arr.slice(0,3)));
   }
-  html+='</div>';
+  var selected=[];
+  function test(){
+   var used=selected.filter(Boolean);
+   if(used.length<3)return;
+   var present=used.map(function(n){return n.pc;});
+   if(present.indexOf(x.rootIndex)<0)return;
+   var missing=pcs.filter(function(pc){return present.indexOf(pc)<0;});
+   var frets=used.map(function(n){return n.fret;});
+   var span=Math.max.apply(null,frets)-Math.min.apply(null,frets);
+   if(span>4)return;
+   var lowest=used.slice().sort(function(a,b){return a.string-b.string;})[0];
+   var score=missing.length*100+span*5+frets.reduce(function(a,b){return a+b;},0)*.35-used.length*1.5+(lowest.pc===x.rootIndex?-5:0);
+   if(!best||score<best.score)best={score:score,notes:used.slice(),base:base};
+  }
+  function walk(i){
+   if(i===ins.strings){test();return;}
+   choices[i].forEach(function(v){selected[i]=v;walk(i+1);});
+  }
+  walk(0);
  }
- html+='</div></div>';
- return html;
+ if(!best)return '<div class="chord-diagram-empty">Posição não disponível</div>';
+ var notes=best.notes,used={};
+ notes.forEach(function(n){used[n.string]=n;});
+ var frets=notes.map(function(n){return n.fret;}),min=Math.min.apply(null,frets),max=Math.max.apply(null,frets);
+ var base=min===0?0:Math.max(1,Math.min(best.base,min));
+ var w=ins.strings===4?148:ins.strings===7?206:184,left=14,right=14,step=(w-left-right)/(ins.strings-1),top=24,cell=31;
+ var width=w,height=top+cell*5+24,svg='<svg class="chord-diagram-svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Diagrama do acorde '+esc(x.name)+'">';
+ for(var s2=0;s2<ins.strings;s2++){
+  var xx=left+s2*step;
+  svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+cell*5)+'" class="chord-string"/>';
+  var n=used[s2];
+  svg+='<text x="'+xx+'" y="15" text-anchor="middle" class="chord-open">'+(n?(n.fret===0?'○':''):'×')+'</text>';
+ }
+ for(var f=0;f<=5;f++){
+  var yy=top+f*cell;
+  svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" class="'+(f===0&&base===0?'chord-nut':'chord-fret')+'"/>';
+ }
+ if(base>0)svg+='<text x="1" y="'+(top+cell*2.7)+'" class="chord-fret-number">'+base+'</text>';
+ var fretRanks=frets.filter(function(v){return v>0;}).sort(function(a,b){return a-b;}).filter(function(v,i,a){return a.indexOf(v)===i;});
+ for(var s3=0;s3<ins.strings;s3++){
+  var n2=used[s3];if(!n2||n2.fret===0)continue;
+  var cy=top+(n2.fret-base+.5)*cell;
+  if(cy<top||cy>top+cell*5)continue;
+  var finger=String(fretRanks.indexOf(n2.fret)+1);
+  svg+='<circle cx="'+(left+s3*step)+'" cy="'+cy+'" r="11" class="chord-finger-dot"/>';
+  svg+='<text x="'+(left+s3*step)+'" y="'+(cy+4)+'" text-anchor="middle" class="chord-finger-number">'+finger+'</text>';
+ }
+ svg+='</svg>';
+ return '<div class="chord-diagram">'+svg+'</div>';
 }
 function panel(){
  var x=parse(window.SOSChordSelected||"");if(!x)return "";
  var key=window.SOSChordInstrument||"guitar6";
- var html='<div class="chord-panel-inline"><section class="chord-panel-card" role="region" aria-label="Escala no braço do instrumento">';
- html+='<div class="chord-panel-head"><span class="scale-panel-label">ESCALA NO BRAÇO</span><button type="button" class="tb" data-close-chord="1" aria-label="Fechar">✕</button></div>';
+ var html='<div class="chord-panel-inline" data-selected-chord="'+esc(x.name)+'"><section class="chord-panel-card" role="region" aria-label="Diagrama do acorde">';
  html+='<select id="chord-instrument" class="chord-instrument" aria-label="Instrumento">';
  html+='<option value="guitar6" '+(key==="guitar6"?"selected":"")+'>Violão · 6 cordas</option>';
- html+='<option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão · 7 cordas</option>';
+ html+='<option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão · 7 cordas (Dó)</option>';
  html+='<option value="bass4" '+(key==="bass4"?"selected":"")+'>Contrabaixo · 4 cordas</option>';
  html+='<option value="cavaquinho4" '+(key==="cavaquinho4"?"selected":"")+'>Cavaquinho · 4 cordas</option>';
- html+='</select><div class="scale-neck-host">'+frettedNeck(x,key)+'</div></section></div>';
+ html+='</select><div class="chord-diagram-title">'+esc(x.name)+'</div><div class="scale-neck-host">'+frettedNeck(x,key)+'</div></section></div>';
  return html;
 }
 window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\s𝄆𝄇𝄋𝄌①②1ª2ª.\-|‖]+|D\.S\. al Coda)$/.test(t)&&(/[|‖𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\.S\. al Coda/.test(t));}};
@@ -141,7 +188,7 @@ document.addEventListener("change",function(ev){
  window.SOSChordInstrument=key;
  var host=panelEl.querySelector(".scale-neck-host");
  if(!host||!parsed)return;
- host.innerHTML=frettedNeck(parsed,key);
+ var title=panelEl.querySelector(".chord-diagram-title");if(title)title.textContent=parsed.name;host.innerHTML=frettedNeck(parsed,key);
 });
 document.addEventListener("click",function(ev){
  var chord=ev.target.closest&&ev.target.closest("[data-chord]");
