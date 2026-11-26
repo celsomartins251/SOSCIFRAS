@@ -163,7 +163,7 @@ function validVoicing(notes,x,ins){
 function fromFretwork(entry,x,key){
  const ins=INS[key],offset=key==='guitar7'?1:0;
  return (entry.shapes||[]).map((v)=>({
-  name:v.position||'Posição',base:v.open?0:(v.root_fret||Math.min(...v.frets.filter(n=>n!==null&&n>0),1)),
+  name:v.position||'Posição',base:v.open?0:(v.root_fret||(v.frets.filter(n=>n!==null&&n>0).length?Math.min(...v.frets.filter(n=>n!==null&&n>0)):1)),
   open:!!v.open,barre:!!v.barre,source:'Fretwork CC BY 4.0',
   notes:v.frets.map((f,j)=>f===null?null:{string:j+offset,fret:Number(f),finger:0,pc:pc(ins.tuning[j+offset]+Number(f))}).filter(Boolean)
  })).filter(s=>s.notes.length===ins.tuning.length-1||s.notes.length>=3)
@@ -187,7 +187,7 @@ function uniqueAndOrder(shapes){
   if(seen.has(signature))continue;seen.add(signature);out.push(s);
  }
  return out.sort((a,b)=>{
-  const amin=Math.min(...a.notes.filter(n=>n.fret>0).map(n=>n.fret),0),bmin=Math.min(...b.notes.filter(n=>n.fret>0).map(n=>n.fret),0);
+  const af=a.notes.filter(n=>n.fret>0).map(n=>n.fret),bf=b.notes.filter(n=>n.fret>0).map(n=>n.fret);const amin=af.length?Math.min(...af):0,bmin=bf.length?Math.min(...bf):0;
   const ar=a.open?0:amin,br=b.open?0:bmin;return ar-br;
  }).slice(0,4).map((s,i)=>({...s,name:s.name&&s.name!=='Posição'?s.name:'Posição '+(i+1)}));
 }
