@@ -19,7 +19,7 @@
 <script>
 (async function(){
  const status=document.getElementById('status'),detail=document.getElementById('detail');
- const home='./?atualizacao=1.2.18';
+ const home='./?atualizacao=1.2.19';
  function finish(message){status.textContent=message;detail.textContent='Abrindo o SOS CIFRAS atualizado…';setTimeout(()=>location.replace(home),900)}
  if(!('serviceWorker' in navigator)){status.textContent='Este navegador não oferece atualização automática.';detail.innerHTML='<a href="./">Abrir SOS CIFRAS</a>';return}
  try{
