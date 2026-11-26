@@ -34,3 +34,13 @@ A configuração Web é armazenada localmente no navegador. Não há credenciais
 - Pesquisa externa abre Google/Bing; o usuário escolhe a fonte e importa o texto manualmente. O app não raspa sites nem importa catálogos automaticamente.
 - O modo Banda exige teste real com duas contas/dispositivos após configurar o Firebase.
 - Um documento Firestore tem limite de 1 MiB; repertórios muito extensos precisam ser divididos em coleções.
+
+
+## Dicionário interativo de acordes
+- Ao tocar em uma cifra, abre um painel com até quatro variações de shape e reprodução sonora individual.
+- Violão de seis cordas: consulta a base JSON pública do Open Guitar Chords (com geração local complementar quando necessário).
+- Violão de sete cordas (C–E–A–D–G–B–E), cavaquinho (D–G–B–D) e contrabaixo (E–A–D–G): shapes calculados conforme a afinação de cada instrumento.
+- O contrabaixo mostra o braço horizontal até a 17ª casa, inspirado na visualização de braço do Songtive.
+- O módulo `chord-dictionary.js` integra a interface e é incluído no cache offline do PWA. A consulta remota do Open Guitar Chords requer conexão; os shapes calculados localmente continuam disponíveis offline.
+
+Fontes de referência: [Open Guitar Chords — Developer Data](https://openguitarchords.com/data) e [Songtive — Bass Fretboard](https://www.songtive.com/en/apps/bass-fretboard).
