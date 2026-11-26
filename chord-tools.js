@@ -62,6 +62,18 @@ document.addEventListener("click",function(ev){
  if(ev.target.closest("[data-close-chord]")){var p=document.querySelector(".chord-panel");if(p)p.remove();window.SOSChordSelected="";return;}
  var mark=ev.target.closest("[data-mark]");
  if(!mark){var active=document.querySelector(".chord-panel");if(active)active.remove();window.SOSChordSelected="";}
- if(mark){var area=document.getElementById("eb");if(!area)return;var start=area.selectionStart,end=area.selectionEnd,text=area.value,ins="\n"+mark.getAttribute("data-mark")+"\n";area.value=text.slice(0,start)+ins+text.slice(end);area.focus();area.selectionStart=area.selectionEnd=start+ins.length;return;}
+ if(mark){
+  var area=document.getElementById("eb");if(!area)return;
+  var start=area.selectionStart,end=area.selectionEnd,text=area.value,symbol=mark.getAttribute("data-mark"),ins;
+  if(symbol==="|"||symbol==="‖"){
+   var lineStart=text.lastIndexOf("\n",Math.max(0,start-1))+1;
+   var left=text.slice(lineStart,start),right=text.slice(end);
+   var before=left&&!/\s$/.test(left)?" ":"";
+   var after=right&&!/^\s/.test(right)?" ":"";
+   ins=before+symbol+after;
+  }else{ins="\n"+symbol+"\n";}
+  area.value=text.slice(0,start)+ins+text.slice(end);
+  area.focus();area.selectionStart=area.selectionEnd=start+ins.length;return;
+ }
 });
 })();
