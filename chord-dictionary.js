@@ -61,7 +61,7 @@ function calculateShapes(x,key){
 function fromHausSlash(x,key){
  const ins=INS[key],offset=key==='guitar7'?1:0;
  return hausSlashDB.filter(v=>String(v.symbol).toLowerCase()===String(x.symbol).replace(/♯/g,'#').replace(/♭/g,'b').toLowerCase()).map(v=>({
-  name:'Posição publicada',base:Math.min(...v.frets.filter(n=>n!==null&&n>0),1),source:'Haus of Chords CC BY 4.0',
+  name:'Posição publicada',base:(v.frets.filter(n=>n!==null&&n>0).length?Math.min(...v.frets.filter(n=>n!==null&&n>0)):1),source:'Haus of Chords CC BY 4.0',
   notes:v.frets.map((f,j)=>f===null?null:{string:j+offset,fret:Number(f),finger:0,pc:pc(ins.tuning[j+offset]+Number(f))}).filter(Boolean)
  })).filter(v=>validVoicing(v.notes,x,ins));
 }
@@ -117,7 +117,7 @@ function panel(symbol){
 
 function refreshPanel(p,key){
  const symbol=p.getAttribute("data-selected-chord"),x=parseChord(symbol);if(!x)return;
- const ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);const credit=p.querySelector('.dict-credit');if(credit)credit.textContent=(key==='guitar6'||key==='guitar7')?'Banco de posições: Fretwork · CC BY 4.0':'Posições calculadas para a afinação selecionada';window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
+ const ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);const credit=p.querySelector('.dict-credit');if(credit)credit.textContent=(key==='guitar6'||key==='guitar7')?'Dados: Fretwork + Haus of Chords (CC BY 4.0) · chords-db (MIT)':'Posições calculadas para a afinação selecionada';window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
  p.querySelector(".dict-carousel").innerHTML=shapes.map((shape,i)=>shapeSlide(shape,i,ins,x)).join("")||'<p class="chord-diagram-empty">Posição não encontrada.</p>';
  p.querySelector(".dict-swipe-hint").textContent=shapes.length>1?"Deslize para o lado para ver outras posições":"Posição disponível";
 }
@@ -215,7 +215,7 @@ function getShapes(x,key){
 function loadFretwork(){
  return fetch('./chord-data.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(d=>{
   if(!d||!Array.isArray(d.fretwork)||!d.chordsdb)throw Error('Banco local inválido');
-  fretworkDB=d.fretwork;chordsDb=d.chordsdb;
+  fretworkDB=d.fretwork;chordsDb=d.chordsdb;hausSlashDB=Array.isArray(d.hausSlash)?d.hausSlash:[];
   try{localStorage.setItem('sos_fretwork_chords_v1',JSON.stringify(fretworkDB))}catch(_){}
   const p=document.querySelector('.dict-panel');if(p)refreshPanel(p,window.SOSChordInstrument||'guitar6');
   window.SOSChordDatabaseStatus={source:'Fretwork + Haus of Chords + chords-db',fretworkRecords:fretworkDB.length,hausSlashRecords:hausSlashDB.length,loaded:true,offlineReady:true};
