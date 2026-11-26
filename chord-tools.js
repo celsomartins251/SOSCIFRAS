@@ -125,16 +125,23 @@ function panel(){
  html+='<option value="guitar6" '+(key==="guitar6"?"selected":"")+'>Violão · 6 cordas</option>';
  html+='<option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão · 7 cordas</option>';
  html+='<option value="bass4" '+(key==="bass4"?"selected":"")+'>Contrabaixo · 4 cordas</option>';
- html+='</select>'+frettedNeck(x,key)+'</section></div>';
+ html+='<option value="cavaquinho4" '+(key==="cavaquinho4"?"selected":"")+'>Cavaquinho · 4 cordas</option>';
+ html+='</select><div class="scale-neck-host">'+frettedNeck(x,key)+'</div></section></div>';
  return html;
 }
 window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\s𝄆𝄇𝄋𝄌①②1ª2ª.\-|‖]+|D\.S\. al Coda)$/.test(t)&&(/[|‖𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\.S\. al Coda/.test(t));}};
 document.addEventListener("change",function(ev){
- if(ev.target&&ev.target.id==="chord-instrument"){
-  window.SOSChordInstrument=ev.target.value;
-  var p=document.querySelector(".chord-panel-inline");
-  if(p){var owner=p.getAttribute("data-selected-chord")||window.SOSChordSelected;p.outerHTML=panel();p=document.querySelector(".chord-panel-inline");if(p)p.setAttribute("data-selected-chord",owner);}
- }
+ var select=ev.target;
+ if(!select||select.id!=="chord-instrument")return;
+ var panelEl=select.closest(".chord-panel-inline");
+ if(!panelEl)return;
+ var chord=panelEl.getAttribute("data-selected-chord")||window.SOSChordSelected||"";
+ var parsed=parse(chord);
+ var key=select.value;
+ window.SOSChordInstrument=key;
+ var host=panelEl.querySelector(".scale-neck-host");
+ if(!host||!parsed)return;
+ host.innerHTML=frettedNeck(parsed,key);
 });
 document.addEventListener("click",function(ev){
  var chord=ev.target.closest&&ev.target.closest("[data-chord]");
