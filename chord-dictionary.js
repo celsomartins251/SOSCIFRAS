@@ -60,7 +60,7 @@ function getShapes(x,key){
 }
 function diagram(shape,ins,x){
  if(ins.tuning.length===4&&ins.tuning[0]===28){
-  const left=28,top=25,cell=27,frets=17,w=533,h=top+ins.tuning.length*cell+12;let svg='<div class="dict-bass-scroll"><svg viewBox="0 0 '+w+' '+h+'" class="dict-bass-svg" role="img" aria-label="Posição '+x.symbol+' no contrabaixo">';
+  const left=28,top=25,cell=27,frets=12,w=left+frets*29+8,h=top+ins.tuning.length*cell+12;let svg='<div class="dict-bass-scroll"><svg viewBox="0 0 '+w+' '+h+'" class="dict-bass-svg" role="img" aria-label="Posição '+x.symbol+' no contrabaixo">';
   for(let f=0;f<=frets;f++){const xx=left+f*29;svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+ins.tuning.length*cell)+'" class="'+(f===0?"dict-nut":"dict-fret")+'"/><text x="'+xx+'" y="14" text-anchor="middle" class="dict-fret-no">'+f+'</text>'}
   ins.tuning.forEach((t,s)=>{const yy=top+s*cell;svg+='<text x="2" y="'+(yy+4)+'" class="dict-bass-name">'+ins.names[s]+'</text><line x1="'+left+'" y1="'+yy+'" x2="'+(left+frets*29)+'" y2="'+yy+'" class="dict-string"/>'});
   shape.notes.forEach(n=>{const xx=left+n.fret*29,yy=top+n.string*cell;svg+='<circle cx="'+xx+'" cy="'+yy+'" r="8.5" class="'+(n.pc===x.root?"dict-root":"dict-dot")+'"/><text x="'+xx+'" y="'+(yy+3)+'" text-anchor="middle" class="dict-dot-txt">'+pitch(n.pc)+'</text>'});
@@ -74,22 +74,48 @@ function diagram(shape,ins,x){
  shape.notes.forEach(n=>{if(n.fret===0)return;const cy=top+(n.fret-start+.5)*cell;if(cy<top||cy>top+count*cell)return;const cx=left+n.string*step;svg+='<circle cx="'+cx+'" cy="'+cy+'" r="8.2" class="dict-dot"/><text x="'+cx+'" y="'+(cy+3)+'" text-anchor="middle" class="dict-dot-txt">'+(n.finger||"")+'</text>'});
  svg+='</svg><div class="dict-strings">'+ins.names.join("　")+'</div>';return svg;
 }
+
+let audioContext=null;
 function playShape(shape,ins){
- const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC(),now=ctx.currentTime;
- shape.notes.forEach((n,i)=>{const midi=ins.tuning[n.string]+n.fret,o=ctx.createOscillator(),g=ctx.createGain();o.type="triangle";o.frequency.value=440*Math.pow(2,(midi-69)/12);g.gain.setValueAtTime(.0001,now+i*.045);g.gain.exponentialRampToValueAtTime(.13,now+i*.045+.015);g.gain.exponentialRampToValueAtTime(.0001,now+i*.045+.75);o.connect(g);g.connect(ctx.destination);o.start(now+i*.045);o.stop(now+i*.045+.78)});setTimeout(()=>ctx.close(),1300);
+ const AC=window.AudioContext||window.webkitAudioContext;if(!AC||!shape||!shape.notes||!shape.notes.length)return;
+ try{
+  audioContext=audioContext||new AC();const ctx=audioContext;if(ctx.state==="suspended")ctx.resume();
+  const master=ctx.createGain(),filter=ctx.createBiquadFilter(),now=ctx.currentTime;
+  filter.type="lowpass";filter.frequency.value=5200;filter.Q.value=.55;master.gain.setValueAtTime(.72,now);master.connect(filter);filter.connect(ctx.destination);
+  shape.notes.slice().sort((a,b)=>a.string-b.string).forEach((n,i)=>{
+   const midi=ins.tuning[n.string]+n.fret,f=440*Math.pow(2,(midi-69)/12),t=now+i*.035;
+   const voice=ctx.createGain(),body=ctx.createBiquadFilter(),fund=ctx.createOscillator(),harm=ctx.createOscillator(),blend=ctx.createGain();
+   fund.type="triangle";fund.frequency.setValueAtTime(f,t);harm.type="sine";harm.frequency.setValueAtTime(f*2.01,t);
+   body.type="lowpass";body.frequency.setValueAtTime(Math.min(6500,f*8),t);blend.gain.value=.2;
+   voice.gain.setValueAtTime(.0001,t);voice.gain.linearRampToValueAtTime(.105,t+.012);voice.gain.exponentialRampToValueAtTime(.0001,t+(ins.tuning[0]<35?1.15:.9));
+   fund.connect(body);harm.connect(blend);blend.connect(body);body.connect(voice);voice.connect(master);
+   fund.start(t);harm.start(t);fund.stop(t+1.2);harm.stop(t+1.2);
+  });
+  setTimeout(()=>{try{master.disconnect()}catch(_){}},1600);
+ }catch(err){console.warn("Áudio do acorde:",err)}
+}
+
+function shapeSlide(shape,i,ins,x){
+ return '<article class="dict-shape dict-slide"><div class="dict-shape-head"><b>Posição '+(i+1)+' de '+(window.__sosCurrentShapes||[]).length+'</b><button type="button" class="dict-play" data-play-shape="'+i+'" aria-label="Ouvir acorde '+x.symbol+'">▶ Ouvir</button></div>'+diagram(shape,ins,x)+'</article>';
 }
 function panel(symbol){
- const x=parseChord(symbol);if(!x)return"";const key=window.SOSChordInstrument||"guitar6",ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);
- let html='<div class="chord-panel-inline dict-panel" data-selected-chord="'+symbol.replace(/"/g,"&quot;")+'"><section class="chord-panel-card"><div class="dict-top"><span>DIAGRAMA DO ACORDE</span><button type="button" data-close-chord aria-label="Fechar">×</button></div><select id="chord-instrument" class="chord-instrument" aria-label="Instrumento">';
+ const x=parseChord(symbol);if(!x)return"";
+ const key=window.SOSChordInstrument||"guitar6",ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);
+ window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
+ let html='<div class="chord-panel-inline dict-panel" data-selected-chord="'+symbol.replace(/"/g,"&quot;")+'"><section class="chord-panel-card"><div class="dict-top"><span>ACORDE</span><button type="button" data-close-chord aria-label="Fechar">×</button></div><select id="chord-instrument" class="chord-instrument" aria-label="Instrumento">';
  Object.keys(INS).forEach(k=>html+='<option value="'+k+'" '+(k===key?"selected":"")+'>'+INS[k].label+'</option>');
- html+='</select><div class="chord-diagram-title">'+symbol+'</div><div class="dict-shapes">';
- if(!shapes.length)html+='<p class="chord-diagram-empty">Não foi possível gerar uma posição válida para este acorde.</p>';
- shapes.forEach((s,i)=>{html+='<article class="dict-shape"><div class="dict-shape-head"><b>Variação '+(i+1)+'</b><button type="button" class="dict-play" data-play-shape="'+i+'">▶ Ouvir</button></div>'+diagram(s,ins,x)+'<small>'+(s.source||"Posição calculada")+'</small></article>'});
- html+='</div><p class="dict-foot">Open Guitar Chords é a fonte primária para shapes de violão de seis cordas. As demais afinações são calculadas nota a nota.</p></section></div>';
- window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;return html;
+ html+='</select><div class="chord-diagram-title">'+symbol+'</div><div class="dict-carousel" aria-label="Deslize para ver outras posições">';
+ shapes.forEach((shape,i)=>{html+=shapeSlide(shape,i,ins,x)});
+ html+='</div><div class="dict-swipe-hint">'+(shapes.length>1?'Deslize para o lado para ver outras posições':'Posição disponível')+'</div></section></div>';
+ return html;
 }
-function refreshPanel(p,key){const symbol=p.getAttribute("data-selected-chord"),x=parseChord(symbol);if(!x)return;const ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
- p.querySelector(".dict-shapes").innerHTML=shapes.map((s,i)=>'<article class="dict-shape"><div class="dict-shape-head"><b>Variação '+(i+1)+'</b><button type="button" class="dict-play" data-play-shape="'+i+'">▶ Ouvir</button></div>'+diagram(s,ins,x)+'<small>'+(s.source||"Posição calculada")+'</small></article>').join("")||'<p class="chord-diagram-empty">Posição não encontrada.</p>'}
+
+function refreshPanel(p,key){
+ const symbol=p.getAttribute("data-selected-chord"),x=parseChord(symbol);if(!x)return;
+ const ins=INS[key]||INS.guitar6,shapes=getShapes(x,key);window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
+ p.querySelector(".dict-carousel").innerHTML=shapes.map((shape,i)=>shapeSlide(shape,i,ins,x)).join("")||'<p class="chord-diagram-empty">Posição não encontrada.</p>';
+ p.querySelector(".dict-swipe-hint").textContent=shapes.length>1?"Deslize para o lado para ver outras posições":"Posição disponível";
+}
 document.addEventListener("click",function(ev){
  const chord=ev.target.closest&&ev.target.closest("[data-chord]");
  if(chord){ev.preventDefault();ev.stopImmediatePropagation();const symbol=chord.getAttribute("data-chord"),current=document.querySelector(".dict-panel");if(current&&current.getAttribute("data-selected-chord")===symbol){current.remove();window.SOSChordSelected="";return}if(current)current.remove();document.querySelectorAll(".chord-panel-inline:not(.dict-panel)").forEach(el=>el.remove());window.SOSChordSelected=symbol;const row=chord.closest(".cs")||chord.parentElement;row.insertAdjacentHTML("afterend",panel(symbol));return}
@@ -98,7 +124,7 @@ document.addEventListener("click",function(ev){
 },true);
 document.addEventListener("change",function(ev){if(ev.target&&ev.target.id==="chord-instrument"){const p=ev.target.closest(".dict-panel");if(!p)return;window.SOSChordInstrument=ev.target.value;refreshPanel(p,ev.target.value);ev.stopImmediatePropagation()}},true);
 const style=document.createElement("style");style.textContent=`
-.dict-panel{max-width:540px;margin:10px auto 16px}.dict-panel .chord-panel-card{background:#17191c;border:1px solid #39342a;border-radius:15px;padding:12px}.dict-top,.dict-shape-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.dict-top{color:#d5aa42;font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:9px}.dict-top button{font-size:23px;color:#aaa;background:none;border:0}.dict-shapes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dict-shape{min-width:0;background:#101010;border:1px solid #39342a;border-radius:10px;padding:7px}.dict-shape-head b{font-size:11px;color:#f0c65b}.dict-play{border:1px solid #5a451b;border-radius:7px;background:#2b2415;color:#f0c65b;padding:5px 7px;font-size:10px}.dict-svg{display:block;width:100%;height:auto;max-height:170px}.dict-string{stroke:#8a8a8a;stroke-width:1.4}.dict-fret{stroke:#555;stroke-width:1.3}.dict-nut{stroke:#d5aa42;stroke-width:4}.dict-dot{fill:#f1f2f4;stroke:#f1f2f4}.dict-dot-txt{fill:#191919;font-size:7px;font-weight:800}.dict-open,.dict-fret-no,.dict-bass-name{fill:#aaa;font-size:10px}.dict-strings{text-align:center;color:#aaa;font:9px monospace;white-space:nowrap}.dict-shape>small{display:block;color:#8f8a80;font-size:9px;line-height:1.3;margin-top:5px}.dict-bass-scroll{overflow-x:auto}.dict-bass-svg{display:block;width:100%;min-width:290px;height:auto}.dict-root{fill:#d5aa42;stroke:#f0c65b}.dict-foot{font-size:10px;color:#aaa398;margin:10px 2px 0}.dict-panel .chord-instrument{margin:0 0 8px}@media(max-width:360px){.dict-shapes{grid-template-columns:1fr}.dict-shape{max-width:300px;width:100%;margin:auto}}`;
+.dict-panel{max-width:420px;margin:8px auto 12px}.dict-panel .chord-panel-card{background:#17191c;border:1px solid #39342a;border-radius:15px;padding:10px}.dict-top,.dict-shape-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.dict-top{color:#d5aa42;font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:9px}.dict-top button{font-size:23px;color:#aaa;background:none;border:0}.dict-carousel{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y pinch-zoom;scrollbar-width:none}.dict-carousel::-webkit-scrollbar{display:none}.dict-shape{flex:0 0 100%;min-width:0;scroll-snap-align:center;background:#101010;border:1px solid #39342a;border-radius:10px;padding:10px}.dict-shape-head b{font-size:11px;color:#f0c65b}.dict-play{border:1px solid #5a451b;border-radius:7px;background:#2b2415;color:#f0c65b;padding:5px 7px;font-size:10px}.dict-svg{display:block;width:100%;height:auto;max-height:190px}.dict-string{stroke:#8a8a8a;stroke-width:1.4}.dict-fret{stroke:#555;stroke-width:1.3}.dict-nut{stroke:#d5aa42;stroke-width:4}.dict-dot{fill:#f1f2f4;stroke:#f1f2f4}.dict-dot-txt{fill:#191919;font-size:7px;font-weight:800}.dict-open,.dict-fret-no,.dict-bass-name{fill:#aaa;font-size:10px}.dict-strings{text-align:center;color:#aaa;font:9px monospace;white-space:nowrap}.dict-shape>small{display:block;color:#8f8a80;font-size:9px;line-height:1.3;margin-top:5px}.dict-bass-scroll{width:100%;overflow:hidden}.dict-bass-svg{display:block;width:100%;min-width:0;height:auto}.dict-root{fill:#d5aa42;stroke:#f0c65b}.dict-swipe-hint{text-align:center;color:#aaa398;font-size:10px;margin:7px 0 0}.dict-panel .chord-instrument{margin:0 0 8px}@media(max-width:360px){.dict-shapes{grid-template-columns:1fr}.dict-shape{max-width:300px;width:100%;margin:auto}}`;
 document.head.appendChild(style);api().then(()=>{const p=document.querySelector(".dict-panel");if(p&&window.SOSChordInstrument==="guitar6")refreshPanel(p,"guitar6")});
 window.SOSChordDictionary={parseChord:parseChord,calculateShapes:calculateShapes,refresh:refreshPanel};
 })();
