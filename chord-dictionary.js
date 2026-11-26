@@ -40,7 +40,7 @@ function calculateShapes(x,key){
  if(x.intervals.includes(10))required.push(pc(x.root+10));else if(x.intervals.includes(11))required.push(pc(x.root+11));
  if(required.length===1)required.push(...x.tones.slice(1,Math.min(3,x.tones.length)));
  for(let base=0;base<=Math.min(12,maxF-4);base++){
-  const choices=ins.tuning.map((t,s)=>{const arr=[];for(let fret=0;fret<=maxF;fret++){if(base===0?(fret>4):(fret<base||fret>base+4))continue;const tone=pc(t+fret);if(x.tones.includes(tone))arr.push({string:s,fret,pc:tone})}arr.sort((u,v)=>Math.abs(u.fret-(base+2))-Math.abs(v.fret-(base+2)));return[null,...arr.slice(0,3)]});
+  const choices=ins.tuning.map((t,s)=>{const arr=[];for(let fret=0;fret<=maxF;fret++){if(base===0?(fret>4):(fret<base||fret>base+4))continue;const tone=pc(t+fret);if(x.tones.includes(tone)||(x.bass!==null&&tone===x.bass))arr.push({string:s,fret,pc:tone})}arr.sort((u,v)=>Math.abs(u.fret-(base+2))-Math.abs(v.fret-(base+2)));return[null,...arr.slice(0,3)]});
   const selected=Array(ins.tuning.length).fill(null);
   function evaluate(){
    const notes=selected.filter(Boolean);if(notes.length<(key==="bass4"?2:3))return;
