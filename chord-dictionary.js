@@ -58,6 +58,13 @@ function calculateShapes(x,key){
  }
  out.sort((u,v)=>u.score-v.score);return out.slice(0,4).map((s,i)=>({...s,name:"Posição "+(i+1)}));
 }
+function fromHausSlash(x,key){
+ const ins=INS[key],offset=key==='guitar7'?1:0;
+ return hausSlashDB.filter(v=>String(v.symbol).toLowerCase()===String(x.symbol).replace(/♯/g,'#').replace(/♭/g,'b').toLowerCase()).map(v=>({
+  name:'Posição publicada',base:Math.min(...v.frets.filter(n=>n!==null&&n>0),1),source:'Haus of Chords CC BY 4.0',
+  notes:v.frets.map((f,j)=>f===null?null:{string:j+offset,fret:Number(f),finger:0,pc:pc(ins.tuning[j+offset]+Number(f))}).filter(Boolean)
+ })).filter(v=>validVoicing(v.notes,x,ins));
+}
 function getShapes(x,key){return calculateShapes(x,key).filter(v=>v.notes&&v.notes.length).slice(0,4);}
 
 function diagram(shape,ins,x){
@@ -94,7 +101,7 @@ function playShape(shape,ins){
 }
 
 function shapeSlide(shape,i,ins,x){
- return '<article class="dict-shape dict-slide"><div class="dict-shape-head"><b>Posição '+(i+1)+' de '+(window.__sosCurrentShapes||[]).length+'</b><button type="button" class="dict-play" data-play-shape="'+i+'" aria-label="Ouvir acorde '+x.symbol+'">▶ Ouvir</button></div>'+diagram(shape,ins,x)+'</article>';
+ return '<article class="dict-shape dict-slide"><div class="dict-shape-head"><b>Posição '+(i+1)+' de '+(window.__sosCurrentShapes||[]).length+'</b><button type="button" class="dict-play" data-play-shape="'+i+'" aria-label="Ouvir acorde '+x.symbol+'">▶ Ouvir</button></div>'+diagram(shape,ins,x)+'<small>Fonte: '+(shape.source||'Posição calculada e validada')+'</small></article>';
 }
 function panel(symbol){
  const x=parseChord(symbol);if(!x)return"";
@@ -102,7 +109,7 @@ function panel(symbol){
  window.__sosCurrentShapes=shapes;window.__sosCurrentInstrument=key;
  let html='<div class="chord-panel-inline dict-panel" data-selected-chord="'+symbol.replace(/"/g,"&quot;")+'"><section class="chord-panel-card"><div class="dict-top"><span>ACORDE</span><button type="button" data-close-chord aria-label="Fechar">×</button></div><select id="chord-instrument" class="chord-instrument" aria-label="Instrumento">';
  Object.keys(INS).forEach(k=>html+='<option value="'+k+'" '+(k===key?"selected":"")+'>'+INS[k].label+'</option>');
- html+='</select><div class="chord-diagram-title">'+symbol+'</div><div class="dict-credit">'+((key==='guitar6'||key==='guitar7')?'Banco de posições: Fretwork · CC BY 4.0':'Posições calculadas para a afinação selecionada')+'</div><div class="dict-carousel" aria-label="Deslize para ver outras posições">';
+ html+='</select><div class="chord-diagram-title">'+symbol+'</div><div class="dict-credit">'+((key==='guitar6'||key==='guitar7')?'Dados: Fretwork + Haus of Chords (CC BY 4.0) · chords-db (MIT)':'Posições calculadas e validadas para a afinação selecionada')+'</div><div class="dict-carousel" aria-label="Deslize para ver outras posições">';
  shapes.forEach((shape,i)=>{html+=shapeSlide(shape,i,ins,x)});if(!shapes.length)html+='<p class="chord-diagram-empty">Carregando banco de acordes ou posição não cadastrada para este acorde.</p>';
  html+='</div><div class="dict-swipe-hint">'+(shapes.length>1?'Deslize para o lado para ver outras posições':'Posição disponível')+'</div></section></div>';
  return html;
@@ -126,7 +133,7 @@ const style=document.createElement("style");style.textContent=`
 document.head.appendChild(style);
 /* Bancos locais licenciados: Fretwork (CC BY 4.0) + chords-db (MIT).
    Os dados são empacotados no próprio SOS CIFRAS para uso offline. */
-let fretworkDB=[],chordsDb=null,hausDB=null;
+let fretworkDB=[],chordsDb=null,hausSlashDB=[];
 function fretworkKey(x){
  const q=(x.quality||'').trim(),r=x.rootName;
  if(x.bass!==null)return r+'/'+PC[x.bass];
@@ -211,7 +218,7 @@ function loadFretwork(){
   fretworkDB=d.fretwork;chordsDb=d.chordsdb;
   try{localStorage.setItem('sos_fretwork_chords_v1',JSON.stringify(fretworkDB))}catch(_){}
   const p=document.querySelector('.dict-panel');if(p)refreshPanel(p,window.SOSChordInstrument||'guitar6');
-  window.SOSChordDatabaseStatus={source:'Fretwork + chords-db',fretworkRecords:fretworkDB.length,loaded:true,offlineReady:true};
+  window.SOSChordDatabaseStatus={source:'Fretwork + Haus of Chords + chords-db',fretworkRecords:fretworkDB.length,hausSlashRecords:hausSlashDB.length,loaded:true,offlineReady:true};
   return d;
  }).catch(err=>{
   window.SOSChordDatabaseStatus={source:'database-bundle-unavailable',loaded:false};
