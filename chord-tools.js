@@ -80,7 +80,7 @@ function chordShapes(x,key){
    selected[i]=null;
   }
   walk(0);
-  if(best){best.name=cfg.name;best.low=Math.min.apply(null,best.notes.map(function(n){return n.fret;}));best.complete=!best.missing.length;out.push(best);}
+  if(best){best.name=cfg.name;best.low=Math.min.apply(null,best.notes.map(function(n){return n.fret;}));best.complete=!best.missing.length;best.barres=[];for(var bf=1;bf<=15;bf++){var ss=best.notes.filter(function(n){return n.fret===bf;}).map(function(n){return n.string;}).sort(function(a,b){return a-b;});if(ss.length>=3&&ss[ss.length-1]-ss[0]+1===ss.length)best.barres.push({fret:bf,from:ss[0],to:ss[ss.length-1]});}out.push(best);}
   else out.push({name:cfg.name,notes:[],reason:"Não foi encontrada uma posição confortável nesta região."});
  });
  return {instrument:ins,shapes:out};
@@ -93,7 +93,7 @@ function fretSvg(shape,ins){
  for(var fr=0;fr<=count;fr++){var yy=top+fr*cell;svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(left+w)+'" y2="'+yy+'" class="fret-line"/>';}
  if(start===0)svg+='<line x1="'+left+'" y1="'+top+'" x2="'+(left+w)+'" y2="'+top+'" class="fret-nut"/>';
  else svg+='<text x="5" y="'+(top+cell*2.8)+'" class="fret-number">'+(start+1)+'º</text>';
- for(var s2=0;s2<ins.strings;s2++){var n=shape.notes.find(function(v){return v.string===s2;});if(!n){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">×</text>';continue;}if(n.fret===0){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">○</text>';continue;}var yy2=top+(n.fret-start-.5)*cell;if(yy2<top-2||yy2>top+count*cell+2)continue;svg+='<circle cx="'+(left+s2*step)+'" cy="'+yy2+'" r="6.2" class="fret-dot"/><text x="'+(left+s2*step)+'" y="'+(yy2+2.5)+'" text-anchor="middle" class="fret-dot-text">'+(n.interval===0?"R":"")+'</text>';}
+ shape.barres.forEach(function(b){var yb=top+(b.fret-start+.5)*cell;svg+='<line x1="'+(left+b.from*step)+'" y1="'+yb+'" x2="'+(left+b.to*step)+'" y2="'+yb+'" class="fret-barre"/>';});\n for(var s2=0;s2<ins.strings;s2++){var n=shape.notes.find(function(v){return v.string===s2;});if(!n){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">×</text>';continue;}if(n.fret===0){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">○</text>';continue;}var yy2=top+(n.fret-start+.5)*cell;if(yy2<top-2||yy2>top+count*cell+2)continue;svg+='<circle cx="'+(left+s2*step)+'" cy="'+yy2+'" r="6.2" class="fret-dot"/><text x="'+(left+s2*step)+'" y="'+(yy2+2.5)+'" text-anchor="middle" class="fret-dot-text">'+(n.interval===0?"R":"")+'</text>';}
  svg+='</svg><div class="fret-string-names">'+ins.names.slice().reverse().map(esc).join("　")+'</div>';
  return svg;
 }
