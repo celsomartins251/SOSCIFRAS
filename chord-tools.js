@@ -17,7 +17,7 @@ function parse(token){
  var ints=dim?[0,3,6]:aug?[0,4,8]:sus4?[0,5,7]:sus2?[0,2,7]:minor?[0,3,7]:[0,4,7];
  var maj7=/maj7|Maj7|M7|7M|Δ7/.test(q),has7=/(^|[^0-9])7/.test(q)||maj7||/^(maj|Maj)(9|11|13)/.test(q);
  function add(v){if(ints.indexOf(v)<0)ints.push(v);}
- if(has7)add(maj7?11:10);
+ if(has7)add(/dim7|°7|º7/.test(q)?9:(maj7?11:10));
  if(/6/.test(q)&&!/(1[236])/.test(q))add(9);
  if(/b5/.test(q))add(6);if(/#5/.test(q))add(8);
  if(/b9/.test(q))add(1);else if(/#9/.test(q))add(3);else if(/(^|[^#b])9/.test(q))add(2);
@@ -27,9 +27,11 @@ function parse(token){
  ints=ints.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
  var tones=ints.map(function(v){return note(root+v);});
  var inversions=ints.map(function(v,i){var a=ints.slice(i).concat(ints.slice(0,i).map(function(x){return x+12;}));return a.map(function(x){return note(root+x);}).join(" – ");});
- while(inversions.length<4)inversions.push(inversions[inversions.length-1]||tones.join(" – "));
+ while(inversions.length<4)inversions.push(inversions.length===3?tones.concat([note(root+12)]).join(" – "):(inversions[inversions.length-1]||tones.join(" – ")));
  var scale="Maior (Jônio)",formula=[0,2,4,5,7,9,11];
- if((/b9|#9/.test(q))&&(/b13|#11/.test(q))){scale="Alterada (Superlócria)";formula=[0,1,3,4,6,8,10];}
+ if(/#9/.test(q)||((/b9/.test(q))&&(/b13|#11/.test(q)))){scale="Alterada (Superlócria)";formula=[0,1,3,4,6,8,10];}
+ else if(/b9/.test(q)){scale="Frígio dominante";formula=[0,1,4,5,7,8,10];}
+ else if(/b13/.test(q)){scale="Mixolídio b13";formula=[0,2,4,5,7,8,10];}
  else if(/#11/.test(q)){scale=maj7?"Lídio":"Lídio dominante";formula=maj7?[0,2,4,6,7,9,11]:[0,2,4,6,7,9,10];}
  else if(dim){scale="Lócrio";formula=[0,1,3,5,6,8,10];}
  else if(minor&&maj7){scale="Menor melódica";formula=[0,2,3,5,7,9,11];}
