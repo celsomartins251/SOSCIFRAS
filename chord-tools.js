@@ -58,6 +58,6 @@ document.addEventListener("click",function(ev){
  if(chord){ev.preventDefault();window.SOSChordSelected=chord.getAttribute("data-chord");var old=document.querySelector(".chord-panel");if(old)old.remove();document.body.insertAdjacentHTML("beforeend",panel());return;}
  if(ev.target.closest("[data-close-chord]")){var p=document.querySelector(".chord-panel");if(p)p.remove();window.SOSChordSelected="";return;}
  var mark=ev.target.closest("[data-mark]");
- if(mark){var area=document.getElementById("eb");if(!area)return;var start=area.selectionStart,end=area.selectionEnd,text=area.value,ins="\n"+mark.getAttribute("data-mark")+"\\n";area.value=text.slice(0,start)+ins+text.slice(end);area.focus();area.selectionStart=area.selectionEnd=start+ins.length;return;}
+ if(mark){var area=document.getElementById("eb");if(!area)return;var start=area.selectionStart,end=area.selectionEnd,text=area.value,ins="\n"+mark.getAttribute("data-mark")+"\n";area.value=text.slice(0,start)+ins+text.slice(end);area.focus();area.selectionStart=area.selectionEnd=start+ins.length;return;}
 });
 })();
