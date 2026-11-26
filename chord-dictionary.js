@@ -51,7 +51,7 @@ function calculateShapes(x,key){
    const k=notes.map(n=>n.string+":"+n.fret).join("|");if(seen.has(k))return;
    const avg=frets.length?frets.reduce((u,v)=>u+v,0)/frets.length:0,score=missing.length*100+span*7+Math.abs(avg-(base+2))*1.5-notes.length*2+base*.08;
    const ranks=[...new Set(frets)].sort((u,v)=>u-v);
-   out.push({name:"Posição",base:base===0?1:base,notes:notes.map(n=>({...n,finger:n.fret===0?0:ranks.indexOf(n.fret)+1})),barres:[],score,source:"Digitação calculada"});seen.add(k);
+   out.push({name:"Posição",base:base===0?1:base,open:notes.some(n=>n.fret===0),notes:notes.map(n=>({...n,finger:n.fret===0?0:ranks.indexOf(n.fret)+1})),barres:[],score,source:"Digitação calculada"});seen.add(k);
   }
   function walk(i){if(i===choices.length){evaluate();return}for(const n of choices[i]){selected[i]=n;walk(i+1)}selected[i]=null}
   walk(0);
@@ -61,7 +61,7 @@ function calculateShapes(x,key){
 function fromHausSlash(x,key){
  const ins=INS[key],offset=key==='guitar7'?1:0;
  return hausSlashDB.filter(v=>String(v.symbol).toLowerCase()===String(x.symbol).replace(/♯/g,'#').replace(/♭/g,'b').toLowerCase()).map(v=>({
-  name:'Posição publicada',base:(v.frets.filter(n=>n!==null&&n>0).length?Math.min(...v.frets.filter(n=>n!==null&&n>0)):1),source:'Haus of Chords CC BY 4.0',
+  name:'Posição publicada',base:(v.frets.filter(n=>n!==null&&n>0).length?Math.min(...v.frets.filter(n=>n!==null&&n>0)):1),open:v.frets.some(n=>n===0),source:'Haus of Chords CC BY 4.0',
   notes:v.frets.map((f,j)=>f===null?null:{string:j+offset,fret:Number(f),finger:0,pc:pc(ins.tuning[j+offset]+Number(f))}).filter(Boolean)
  })).filter(v=>validVoicing(v.notes,x,ins));
 }
@@ -161,7 +161,7 @@ function validVoicing(notes,x,ins){
  const third=x.intervals.includes(3)?3:x.intervals.includes(4)?4:x.intervals.includes(2)?2:x.intervals.includes(5)?5:null;
  const required=[x.root];if(third!==null)required.push(pc(x.root+third));
  if(x.intervals.includes(10))required.push(pc(x.root+10));else if(x.intervals.includes(11))required.push(pc(x.root+11));
- const ext=x.intervals.find(v=>[1,2,5,6,8,9].includes(v));if(ext!==undefined)required.push(pc(x.root+ext));
+ x.intervals.filter(v=>[1,2,5,6,8,9].includes(v)).forEach(v=>required.push(pc(x.root+v)));
  if(required.some(p=>!unique.includes(p)))return false;
  const lowest=notes.map(n=>({p:pc(ins.tuning[n.string]+n.fret),m:ins.tuning[n.string]+n.fret})).sort((a,b)=>a.m-b.m)[0];
  if(x.bass!==null&&lowest.p!==x.bass)return false;
@@ -187,7 +187,7 @@ function fromChordsDb(x,key){
  if(!entry)return[];
  const offset=key==='guitar7'?1:0;
  return (entry.positions||[]).map(p=>({
-  name:'Posição',base:Number(p.baseFret||1),barres:p.barres||[],source:'chords-db MIT',
+  name:'Posição',base:Number(p.baseFret||1),open:p.frets.some(f=>f===0),barres:p.barres||[],source:'chords-db MIT',
   notes:p.frets.map((f,j)=>f===-1||f===null?null:{string:j+offset,fret:Number(f),finger:Number((p.fingers||[])[j]||0),pc:pc(ins.tuning[j+offset]+Number(f))}).filter(Boolean)
  })).filter(s=>validVoicing(s.notes,x,ins));
 }
