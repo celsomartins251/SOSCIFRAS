@@ -55,7 +55,7 @@ function fretNote(midi){return note(midi%12);}
 function chordShapes(x,key){
  var ins=INSTRUMENTS[key]||INSTRUMENTS.guitar6, tones=x.intervals.map(function(v){return (x.tones.length?((N.indexOf(x.tones[0])+v)%12):0);});
  var roots=ins.tuning.map(function(t){return ((t%12)+12)%12;}),out=[];
- var configs=[{name:"A",anchor:1,shift:0},{name:"C",anchor:1,shift:2},{name:"E",anchor:0,shift:0},{name:"D",anchor:2,shift:0}];
+ var configs=[{name:"A",anchor:1,shift:0},{name:"C",anchor:1,shift:-2},{name:"E",anchor:0,shift:0},{name:"D",anchor:2,shift:0}];
  configs.forEach(function(cfg){
   var rootFret=-1;for(var f=0;f<=14;f++)if(((ins.tuning[cfg.anchor]+f)%12)===x.rootIndex){rootFret=f;break;}
   if(rootFret<0){out.push({name:cfg.name,notes:[],reason:"A tônica não está disponível nesta região."});return;}
@@ -67,7 +67,7 @@ function chordShapes(x,key){
   var best=null,selected=[];
   function evaluate(){
    var used=selected.filter(Boolean),present=used.map(function(n){return n.pc;}),missing=tones.filter(function(t){return present.indexOf(t)<0;});
-   if(used.length<4||used.filter(function(n){return n.pc===x.rootIndex;}).length===0)return;
+   if(used.length<4||used.filter(function(n){return n.string===cfg.anchor&&n.pc===x.rootIndex;}).length===0)return;
    var frets=used.map(function(n){return n.fret;}),span=Math.max.apply(null,frets)-Math.min.apply(null,frets);
    if(span>4)return;
    var score=missing.length*100+span*4+Math.abs((frets.reduce(function(a,b){return a+b;},0)/frets.length)-center)+used.length*-0.3;
@@ -95,7 +95,7 @@ function fretSvg(shape,ins){
  else svg+='<text x="5" y="'+(top+cell*2.8)+'" class="fret-number">'+start+'º</text>';
  shape.barres.forEach(function(b){var yb=top+(b.fret-start+.5)*cell;svg+='<line x1="'+(left+b.from*step)+'" y1="'+yb+'" x2="'+(left+b.to*step)+'" y2="'+yb+'" class="fret-barre"/>';});
  for(var s2=0;s2<ins.strings;s2++){var n=shape.notes.find(function(v){return v.string===s2;});if(!n){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">×</text>';continue;}if(n.fret===0){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">○</text>';continue;}var yy2=top+(n.fret-start+.5)*cell;if(yy2<top-2||yy2>top+count*cell+2)continue;svg+='<circle cx="'+(left+s2*step)+'" cy="'+yy2+'" r="6.2" class="fret-dot"/><text x="'+(left+s2*step)+'" y="'+(yy2+2.5)+'" text-anchor="middle" class="fret-dot-text">'+(n.interval===0?"R":"")+'</text>';}
- svg+='</svg><div class="fret-string-names">'+ins.names.slice().reverse().map(esc).join("　")+'</div>';
+ svg+='</svg><div class="fret-string-names">'+ins.names.map(esc).join("　")+'</div>';
  return svg;
 }
 function bassNeck(x){
