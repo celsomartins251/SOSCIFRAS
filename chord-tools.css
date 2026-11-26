@@ -58,3 +58,21 @@
 @media(hover:none){.chord-hover{display:none}}
 
 .fret-barre{stroke:var(--brand);stroke-width:8;stroke-linecap:round;opacity:.9}
+
+/* Escala no braço: visualização direta, sem nomes de notas. */
+.chord-panel-card{padding:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 18px #0005}
+.chord-panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.scale-panel-label{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--mute)}
+.chord-instrument{width:100%;min-height:38px;margin:0 0 10px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13px}
+.scale-neck-wrap{width:100%;overflow-x:auto;padding:3px 0 8px}
+.scale-neck{min-width:510px;padding:4px 3px}
+.scale-fret-head,.scale-string-row{display:grid;grid-template-columns:12px repeat(13,minmax(0,1fr));align-items:center}
+.scale-fret-head{height:20px;margin-bottom:3px;color:var(--mute);font:9px "JetBrains Mono",monospace;text-align:center}
+.scale-string-row{height:27px;position:relative}
+.scale-string-row:before{content:"";position:absolute;left:12px;right:0;top:50%;height:1px;background:var(--mute);opacity:.8}
+.scale-string-line{display:block}
+.scale-fret-cell{height:27px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--line);position:relative;z-index:1}
+.scale-fret-cell:last-child{border-right:1px solid var(--line)}
+.scale-dot{display:block;width:12px;height:12px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 1px var(--onbrand);border:1px solid var(--brand)}
+.scale-string-row:nth-child(2) .scale-fret-cell{border-top:2px solid var(--brand)}
+.chord-panel-inline{margin:7px 0 12px}
