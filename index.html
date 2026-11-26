@@ -93,7 +93,7 @@ details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 
 <div class="sig"><span>Celso Martins Dica de Música</span><button class="helpbtn" data-a="tab" data-v="ajuda" aria-label="Abrir Ajuda">? Ajuda</button></div>
 <div id="app"></div>
 <nav class="tabs" aria-label="Navegação"><div id="tabs"></div></nav>
-<script src="./chord-tools.js?v=1.0.2"></script>
+<script src="./chord-tools.js?v=1.0.3"></script>
 <script>
 const N=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],FL={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
 const CH=/^([A-G][#b]?)((?:m|M|maj|min|dim|aug|sus|add|dim|°|º|ø|\d+|[#b+\-]|\([^)]*\))*)(?:\/([A-G][#b]?|\d+))?$/;
@@ -556,7 +556,7 @@ function vConta(){return `<h1>Conta</h1><h2>Aparência</h2><div class="row"><but
 
 function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const body=s.body.split('\n').filter(l=>s.type!=='chords'||/^\s*\[.+\]\s*$/.test(l)||isChordLine(l)||window.SOSChord.isNotationLine(l.trim())||!l.trim()).map(l=>{const m=l.match(/^\s*\[(.+)\]\s*$/);if(m)return`<div class="sec">${e(m[1])}</div>`;
-  return isChordLine(l)?`<div class="cs c">${window.SOSChord.renderLine(l,cur)||' '}</div>`:window.SOSChord.isNotationLine(l.trim())?`<div class="music-markers">${l.trim().split(/\s+/).map(x=>`<span>${e(x)}</span>`).join('')}</div>`:`<div class="cs l">${e(l)||' '}</div>`}).join('');
+  return isChordLine(l)?`<div class="cs c">${window.SOSChord.renderLine(l,cur)||' '}</div>`:window.SOSChord.isNotationLine(l.trim())?`<div class="music-markers">${l.trim().split(/\s+/).map(x=>`<span class="${x==='|'?'barline':x==='‖'?'doublebar':''}">${e(x)}</span>`).join('')}</div>`:`<div class="cs l">${e(l)||' '}</div>`}).join('');
  const k=s.k?nn(s.k.replace(/m$/,''),cur)+(/m$/.test(s.k)?'m':''):'—';
  const pos=S.ctx?S.ctx.i+1+'/'+S.ctx.ids.length:'';
  return `<div class="top"><div class="row"><button class="btn ghost fit" data-a="back">‹ Voltar</button><div style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(s.t)}</b><small style="color:var(--mute)">${e(s.a||'')}</small></div></div>
