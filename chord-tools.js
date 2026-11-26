@@ -139,8 +139,8 @@ function frettedNeck(x,key){
  notes.forEach(function(n){used[n.string]=n;});
  var frets=notes.map(function(n){return n.fret;}),min=Math.min.apply(null,frets),max=Math.max.apply(null,frets);
  var base=min===0?0:Math.max(1,Math.min(best.base,min));
- var w=ins.strings===4?148:ins.strings===7?206:184,left=14,right=14,step=(w-left-right)/(ins.strings-1),top=24,cell=31;
- var width=w,height=top+cell*5+24,svg='<svg class="chord-diagram-svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Diagrama do acorde '+esc(x.name)+'">';
+ var w=ins.strings===4?116:ins.strings===7?158:140,left=12,right=12,step=(w-left-right)/(ins.strings-1),top=25,cell=34;
+ var width=w,height=top+cell*5+16,svg='<svg class="chord-diagram-svg" width="'+width+'" height="'+height+'" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Diagrama do acorde '+esc(x.name)+'">';
  for(var s2=0;s2<ins.strings;s2++){
   var xx=left+s2*step;
   svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+cell*5)+'" class="chord-string"/>';
