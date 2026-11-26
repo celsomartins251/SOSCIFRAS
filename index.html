@@ -566,7 +566,6 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  <button class="tb" data-a="edit" aria-label="Editar">✎</button><button class="tb ${S.pick?'on':''}" data-a="pick" aria-label="Adicionar à setlist">▤+</button><button class="tb" data-a="print" aria-label="Imprimir">⎙</button></div>
  ${S.pick?`<div class="tools">${D.sets.map(l=>`<button class="btn ghost" data-a="toset" data-v="${l.id}">${e(l.n)}</button>`).join('')||'<small>Crie uma setlist primeiro.</small>'}</div>`:''}</div>
  <div style="font-size:${S.fs}px">${body}</div>
- ${window.SOSChord.panel()}
  ${S.ctx?`<div class="seq"><button class="btn" data-a="prev" ${S.ctx.i<1?'disabled style="opacity:.4"':''}>‹ Anterior</button><span class="btn ghost" style="min-width:64px;text-align:center">${pos}</span><button class="btn" data-a="next" ${S.ctx.i>=S.ctx.ids.length-1?'disabled style="opacity:.4"':''}>Próxima ›</button></div>`:''}`}
 function vEdit(){const s=S.edit;return `<div class="top"><div class="row"><button class="btn ghost fit" data-a="cancel">Cancelar</button><button class="btn fit" data-a="save">Salvar</button></div></div><h1>${song(s.id)?'Editar cifra':'Nova cifra'}</h1>
  <label for="et">Título</label><input id="et" value="${e(s.t)}"><div class="row"><div><label for="ea">Artista</label><input id="ea" value="${e(s.a)}"></div><div><label for="ek">Tom</label><input id="ek" value="${e(s.k)}" placeholder="Ex.: G"></div></div>
