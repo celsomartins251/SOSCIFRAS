@@ -70,7 +70,7 @@ function diagram(shape,ins,x){
  const strings=ins.tuning.length,cell=30,top=42,left=28,step=36,w=left*2+(strings-1)*step,h=top+5*cell+18;
  const fs=shape.notes.map(n=>n.fret).filter(f=>f>0),min=fs.length?Math.min(...fs):0;
  const start=min===0?0:Math.max(1,Math.min(Number(shape.base)||min,min));
- let svg='<div class="dict-guitar-wrap"><svg viewBox="0 0 '+w+' '+h+'" class="dict-svg" role="img" aria-label="Diagrama do acorde '+x.symbol+'"><text x="'+(w/2)+'" y="17" text-anchor="middle" class="dict-svg-title">'+x.symbol+'</text>';
+ let svg='<div class="dict-guitar-wrap"><svg viewBox="0 0 '+w+' '+h+'" class="dict-svg" role="img" aria-label="Diagrama do acorde '+x.symbol+'">';
  for(let st=0;st<strings;st++){
   const xx=left+st*step,n=shape.notes.find(v=>v.string===st);
   svg+='<line x1="'+xx+'" y1="'+top+'" x2="'+xx+'" y2="'+(top+5*cell)+'" class="dict-string"/>';
