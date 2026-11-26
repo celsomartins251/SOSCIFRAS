@@ -100,32 +100,32 @@ function fretSvg(shape,ins){
  return svg;
 }
 function frettedNeck(x,key){
- var ins=INSTRUMENTS[key],html='<div class="bass-neck"><div class="bass-fret-head"><span>CORDAS</span>';
+ var ins=INSTRUMENTS[key]||INSTRUMENTS.guitar6;
+ var scalePC=x.scaleNotes.map(function(n){return N.indexOf(n);}).filter(function(n){return n>=0;});
+ var html='<div class="scale-neck-wrap"><div class="scale-neck"><div class="scale-fret-head"><span></span>';
  for(var f=0;f<=12;f++)html+='<span>'+f+'</span>';
- html+='</div><div class="bass-grid">';
+ html+='</div>';
  for(var s=ins.strings-1;s>=0;s--){
-  html+='<div class="bass-row"><b>'+ins.names[s]+'</b>';
+  html+='<div class="scale-string-row"><span class="scale-string-line"></span>';
   for(var fr=0;fr<=12;fr++){
-   var pc=(ins.tuning[s]+fr)%12,active=x.scaleNotes.some(function(n){return N.indexOf(n)===pc;});
-   html+='<span class="'+(active?'scale-note':'')+'">'+(active?fretNote(pc):"")+'</span>';
+   var active=scalePC.indexOf(((ins.tuning[s]+fr)%12))>=0;
+   html+='<span class="scale-fret-cell">'+(active?'<i class="scale-dot"></i>':'')+'</span>';
   }
   html+='</div>';
  }
- return html+'</div><p class="bass-legend"><i></i> Notas da escala sugerida · '+esc(x.scale)+' · Afinação '+esc(ins.names.join("–"))+'</p></div>';
+ html+='</div></div>';
+ return html;
 }
 function panel(){
  var x=parse(window.SOSChordSelected||"");if(!x)return "";
- x.rootIndex=N.indexOf(FL[x.root]||x.root);
- var key=window.SOSChordInstrument||"guitar6",data=chordShapes(x,key);
- var html='<div class="chord-panel-inline"><section class="chord-panel-card" role="region" aria-label="Diagramas do acorde"><div class="chord-panel-head"><div><small style="color:var(--mute)">ACORDE SELECIONADO</small><div class="chord-panel-title">'+esc(x.name)+'</div></div><button type="button" class="tb" data-close-chord="1" aria-label="Fechar">✕</button></div>';
- html+='<label class="instrument-label" for="chord-instrument">Instrumento</label><select id="chord-instrument" class="chord-instrument"><option value="guitar6" '+(key==="guitar6"?"selected":"")+'>Violão de 6 cordas · E A D G B E</option><option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão de 7 cordas · C E A D G B E</option><option value="bass4" '+(key==="bass4"?"selected":"")+'>Contrabaixo · E A D G</option><option value="cavaquinho4" '+(key==="cavaquinho4"?"selected":"")+'>Cavaquinho · D G B D</option></select>';
- if(key==="bass4"||key==="cavaquinho4"){var neckName=key==="bass4"?"contrabaixo":"cavaquinho";html+='<h3>Visualização do braço do '+neckName+'</h3>'+frettedNeck(x,key);}
- else{
-  html+='<h3>Formas de acorde no braço</h3><p class="chord-help">Quatro referências de posição: A, C, E e D. As formas mostram as notas do acorde, com indicação de pestana quando aplicável.</p><div class="chord-shapes">';
-  data.shapes.forEach(function(sh){html+='<article class="shape-card"><b>Forma '+sh.name+'</b><div class="shape-diagram">'+fretSvg(sh,data.instrument)+'</div><small>'+(sh.notes.length?(sh.complete?"Todas as notas do acorde incluídas.":"Voicing adaptado; notas omitidas: "+sh.missing.map(fretNote).join(", "))+(sh.barres.length?" · Com pestana.":" · Sem pestana."):"Posição indisponível")+'</small></article>';});
-  html+='</div>';
- }
- html+='<details class="chord-theory"><summary>Ver notas e estrutura do acorde</summary><p>Notas: <b>'+x.tones.join(" · ")+'</b></p><p>Intervalos: '+x.intervals.join(" – ")+' semitons a partir da tônica</p><p>Escala sugerida: <b>'+esc(x.scale)+'</b></p><p>'+x.scaleNotes.join(" – ")+'</p></details></section></div>';
+ var key=window.SOSChordInstrument||"guitar6";
+ var html='<div class="chord-panel-inline"><section class="chord-panel-card" role="region" aria-label="Escala no braço do instrumento">';
+ html+='<div class="chord-panel-head"><span class="scale-panel-label">ESCALA NO BRAÇO</span><button type="button" class="tb" data-close-chord="1" aria-label="Fechar">✕</button></div>';
+ html+='<select id="chord-instrument" class="chord-instrument" aria-label="Instrumento">';
+ html+='<option value="guitar6" '+(key==="guitar6"?"selected":"")+'>Violão · 6 cordas</option>';
+ html+='<option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão · 7 cordas</option>';
+ html+='<option value="bass4" '+(key==="bass4"?"selected":"")+'>Contrabaixo · 4 cordas</option>';
+ html+='</select>'+frettedNeck(x,key)+'</section></div>';
  return html;
 }
 window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\s𝄆𝄇𝄋𝄌①②1ª2ª.\-|‖]+|D\.S\. al Coda)$/.test(t)&&(/[|‖𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\.S\. al Coda/.test(t));}};
@@ -174,27 +174,5 @@ document.addEventListener("click",function(ev){
   window.SOSChordSelected="";
  }
 });
-document.addEventListener("pointerover",function(ev){
- if(!window.matchMedia||!window.matchMedia("(hover: hover) and (pointer: fine)").matches)return;
- var chord=ev.target.closest&&ev.target.closest("[data-chord]");if(!chord)return;
- if(document.querySelector(".chord-panel-inline"))return;
- var selected=chord.getAttribute("data-chord"),old=document.querySelector(".chord-hover");
- if(old&&old.getAttribute("data-preview-chord")===selected)return;
- if(old)old.remove();
- window.SOSChordSelected=selected;
- var x=parse(selected);if(!x)return;x.rootIndex=N.indexOf(FL[x.root]||x.root);
- var data=chordShapes(x,"guitar6"),html='<div class="chord-hover" data-preview-chord="'+esc(selected)+'"><b>'+esc(x.name)+' · violão 6 cordas</b><div class="hover-shapes">';
- data.shapes.forEach(function(sh){html+='<div><strong>'+sh.name+'</strong>'+fretSvg(sh,data.instrument)+'</div>';});
- html+='</div><small>Toque ou clique na cifra para escolher o instrumento e ampliar os diagramas</small></div>';
- var row=chord.closest(".cs")||chord.parentElement;
- row.insertAdjacentHTML("afterend",html);
- var preview=document.querySelector(".chord-hover");
- if(preview)preview.addEventListener("pointerleave",function(){preview.remove();});
-});
-document.addEventListener("pointerout",function(ev){
- var chord=ev.target.closest&&ev.target.closest("[data-chord]");if(!chord)return;
- var next=ev.relatedTarget;
- if(next&&(chord.contains(next)||(next.closest&&next.closest(".chord-hover"))))return;
- var hover=document.querySelector(".chord-hover");if(hover)hover.remove();
-});
+
 })();
