@@ -589,7 +589,7 @@ function openSong(id,ctx){S.song=id;S.ctx=ctx||null;S.pick=0;stopPlay();render()
 
 document.addEventListener('input',ev=>{if(ev.target.id==='q'){S.q=ev.target.value;render()}});
 document.addEventListener('change',ev=>{if(ev.target.id==='wfile'&&ev.target.files?.[0]){const inp=ev.target;loadChordFile(inp.files[0]).catch(err=>{console.error('Falha ao carregar arquivo:',err);toast(err?.message||'Não foi possível ler esse arquivo.');}).finally(()=>{inp.value='';});}});
-document.addEventListener('change',ev=>{if(ev.target.id==='etype'&&S.edit){const area=document.getElementById('eb');if(area)S.edit.body=area.value;S.edit.type=ev.target.value;render();}});
+document.addEventListener('change',ev=>{if(ev.target.id==='etype'&&S.edit){const area=document.getElementById('eb');if(area)S.edit.body=area.value;const meter=document.getElementById('emeter');if(meter)S.edit.meter=meter.value;S.edit.type=ev.target.value;render();}});
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
  const s=S.song&&song(S.song),l=S.sl&&D.sets.find(x=>x.id===S.sl);
  switch(a){
