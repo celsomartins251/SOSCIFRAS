@@ -14,11 +14,12 @@ function pc(n){return((n%12)+12)%12}function pitch(n){return PC[pc(n)]}function 
 function parseChord(symbol){
  const m=String(symbol||"").trim().match(/^([A-G])([#b]?)(.*?)(?:\/([A-G])([#b]?)|\/(\d+))?$/);if(!m)return null;
  const rootName=m[1]+m[2],root=rootIndex(rootName);if(root<0)return null;
- const q=m[3]||"",l=q.toLowerCase(),minor=/^m(?!aj)|^min/.test(l),dim=/dim|°|º|ø/.test(l),aug=/aug|\+/.test(l),sus2=/sus2/.test(l),sus4=/sus4|sus(?!2)/.test(l);
- let ints=dim?[0,3,6]:aug?[0,4,8]:sus2?[0,2,7]:sus4?[0,5,7]:minor?[0,3,7]:[0,4,7];
- const maj7=/maj7|Maj7|M7|7M|Δ7/.test(q),has7=/(^|[^0-9])7/.test(q)||maj7||/(^|[^0-9])(9|11|13)/.test(q),add=n=>{if(!ints.includes(n))ints.push(n)};
+ const q=m[3]||"",l=q.toLowerCase(),minor=/^m(?!aj)|^min/.test(l),halfDim=/ø|m7b5/.test(l),dim=/dim|°|º/.test(l),aug=/aug|\+/.test(l),sus2=/sus2/.test(l),sus4=/sus4|sus(?!2)/.test(l);
+ let ints=halfDim?[0,3,6]:dim?[0,3,6]:aug?[0,4,8]:sus2?[0,2,7]:sus4?[0,5,7]:minor?[0,3,7]:[0,4,7];
+ const maj7=/maj7|Maj7|M7|7M|Δ7|^maj(?:9|11|13)/.test(q),has7=/(^|[^0-9])7/.test(q)||maj7||(/(^|[^0-9])(9|11|13)/.test(q)&&!/add(?:2|9|4)/.test(q)),add=n=>{if(!ints.includes(n))ints.push(n)};
  if(has7)add(/dim7|°7|º7/.test(q)?9:maj7?11:10);
- if(/b5/.test(q))add(6);if(/#5/.test(q))add(8);if(/b9/.test(q))add(1);else if(/#9/.test(q))add(3);else if(/(^|[^#b])9/.test(q)&&!/add9/.test(q))add(2);
+ if(halfDim&&!ints.includes(10))add(10);
+ if(/b5/.test(q)){ints=ints.filter(v=>v!==7);add(6)}if(/#5/.test(q)){ints=ints.filter(v=>v!==7);add(8)}if(/b9/.test(q))add(1);else if(/#9/.test(q))add(3);else if(/(^|[^#b])9/.test(q)&&!/add9/.test(q))add(2);
  if(/#11/.test(q))add(6);else if(/(^|[^#b])11/.test(q))add(5);if(/b13/.test(q))add(8);else if(/(^|[^#b])13/.test(q))add(9);
  if(/add2/.test(q)||/add9/.test(q))add(2);if(/add4/.test(q))add(5);if(/6/.test(q)&&!/(1[236])/.test(q))add(9);
  ints=ints.filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b);
