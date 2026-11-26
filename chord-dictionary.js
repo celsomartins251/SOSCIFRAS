@@ -207,8 +207,9 @@ function getShapes(x,key){
  if(key==='guitar6'||key==='guitar7'){
   const entry=fretworkDB.find(c=>String(c.symbol).toLowerCase()===fretworkKey(x).toLowerCase());
   const primary=entry?fromFretwork(entry,x,key):[];
+  const curated=fromHausSlash(x,key);
   const secondary=fromChordsDb(x,key);
-  return uniqueAndOrder([...primary,...secondary]);
+  return uniqueAndOrder([...primary,...curated,...secondary]);
  }
  return uniqueAndOrder(calculateShapes(x,key).filter(v=>v.notes&&validVoicing(v.notes,x,ins)));
 }
