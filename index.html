@@ -174,7 +174,7 @@ const IC={web:"⌕",band:"♬",busca:"⌕",sets:"▤",pub:"◎",conta:"●"};
 function tabs(){const t=[['pub','Público'],['sets','Setlists'],['web','Web'],['busca','Busca'],['band','Banda'],['conta','Conta']];
  document.getElementById('tabs').innerHTML=t.map(([k,n])=>`<button class="tab ${k==='busca'?'mid':''} ${S.tab===k&&!S.song&&!S.edit?'on':''}" data-a="tab" data-v="${k}" aria-label="${n}"><span class="tabicon">${IC[k]}</span>${k==='busca'?'':n}</button>`).join('')}
 
-const item=(s,extra='')=>`<button class="item" data-a="open" data-v="${s.id}" data-hold-delete="${s.src==='mine'?'1':'0'}" title="${s.src==='mine'?'Toque e segure para excluir':''}"><span class="ico">♪</span><span style="flex:1"><b>${e(s.t)}</b><small>${e(s.a||'')}</small></span>${s.fav?'<span class="chip">★</span>':''}${extra}</button>`;
+const item=(s,extra='')=>`<button class="item" data-a="open" data-v="${s.id}" data-hold-delete="${s.src!=='com'?'1':'0'}" title="${s.src!=='com'?'Toque e segure para excluir':''}"><span class="ico">♪</span><span style="flex:1"><b>${e(s.t)}</b><small>${e(s.a||'')}</small></span>${s.fav?'<span class="chip">★</span>':''}${extra}</button>`;
 
 function vBusca(){const q=S.q.toLowerCase(),m=s=>!q||(s.t+' '+s.a).toLowerCase().includes(q);
  const mine=D.songs.filter(s=>s.src==='mine'&&m(s)),com=D.songs.filter(s=>s.src==='com'&&m(s)),any=mine.length+com.length;
@@ -590,7 +590,7 @@ function openSong(id,ctx){S.song=id;S.ctx=ctx||null;S.pick=0;stopPlay();render()
 let songHoldTimer=null,songHoldTarget=null,suppressSongOpen=false,songHoldX=0,songHoldY=0;
 function clearSongHold(){if(songHoldTimer)clearTimeout(songHoldTimer);songHoldTimer=null;songHoldTarget=null;}
 function showDeleteSongPrompt(id){
- const x=song(id);if(!x||x.src!=='mine')return;
+ const x=song(id);if(!x||x.src==='com')return;
  document.querySelector('.delete-song-overlay')?.remove();
  const layer=document.createElement('div');layer.className='delete-song-overlay';
  layer.innerHTML=`<section class="delete-song-card" role="dialog" aria-modal="true" aria-label="Excluir música"><h3>Excluir música?</h3><p>${e(x.t)}</p><div class="delete-song-actions"><button class="btn ghost" data-a="delete-cancel">Cancelar</button><button class="btn" data-a="delete-confirm" data-v="${e(x.id)}">Excluir</button></div></section>`;
@@ -627,7 +627,7 @@ document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(
  case'renameset':{const n=prompt('Novo nome da setlist:',l.n);if(n&&n.trim()){l.n=n.trim();save();render()}break}
  case'open':openSong(v);break;
  case'delete-cancel':document.querySelector('.delete-song-overlay')?.remove();break;
- case'delete-confirm':{const target=song(v);document.querySelector('.delete-song-overlay')?.remove();if(!target||target.src!=='mine'){toast('Esta música não pode ser excluída por aqui.');break;}D.songs=D.songs.filter(x=>x.id!==v);D.sets.forEach(set=>{set.items=set.items.filter(id=>id!==v)});if(S.song===v){S.song=null;S.ctx=null;stopPlay()}save();render();toast('Música excluída.');break}
+ case'delete-confirm':{const target=song(v);document.querySelector('.delete-song-overlay')?.remove();if(!target||target.src==='com'){toast('Esta música não pode ser excluída por aqui.');break;}D.songs=D.songs.filter(x=>x.id!==v);D.sets.forEach(set=>{set.items=set.items.filter(id=>id!==v)});if(S.song===v){S.song=null;S.ctx=null;stopPlay()}save();render();toast('Música excluída.');break}
  case'back':if(S.song){S.song=null;S.ctx=null;stopPlay()}else if(S.sl)S.sl=null;render();break;
  case'new':S.edit={id:uid(),t:'',a:'',k:'',body:'[Verso]\n',type:'lyrics'};render();break;
  case'edit':S.edit={...s};S.song=null;render();break;
@@ -713,17 +713,22 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('./sw.js?v=1.2.18', { scope: './', updateViaCache: 'none' })
       .then(function (reg) {
         console.info('SOS CIFRAS: PWA ativo', reg.scope);
-        reg.update().catch(function () {});
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        reg.addEventListener('updatefound', function () {
-          var worker = reg.installing;
+        function activateWhenReady(worker) {
           if (!worker) return;
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+            worker.postMessage({ type: 'SKIP_WAITING' });
+            return;
+          }
           worker.addEventListener('statechange', function () {
             if (worker.state === 'installed' && navigator.serviceWorker.controller) {
               worker.postMessage({ type: 'SKIP_WAITING' });
             }
           });
-        });
+        }
+        reg.addEventListener('updatefound', function () { activateWhenReady(reg.installing); });
+        if (reg.installing) activateWhenReady(reg.installing);
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        reg.update().catch(function (err) { console.warn('Verificação de atualização:', err); });
       })
       .catch(function (err) { console.error('Falha ao ativar o PWA:', err); });
   });
