@@ -11,3 +11,8 @@
 .delete-song-card p{margin:0 0 18px;overflow-wrap:anywhere}
 .delete-song-actions{display:flex;gap:10px;justify-content:flex-end}
 .delete-song-actions button{min-width:108px}
+
+/* Coda centralizada acima da barra de compasso */
+.music-markers .coda-bar{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:16px;padding:0;border:0;border-radius:0;line-height:1;vertical-align:middle}
+.music-markers .coda-symbol{display:inline-flex;align-items:center;justify-content:center;min-width:0;padding:0;border:0;border-radius:0;font-size:1.75em;line-height:.82;color:var(--brand);font-weight:900}
+.music-markers .coda-bar .barline,.music-markers .coda-bar .doublebar{display:inline-flex;align-items:center;justify-content:center;min-width:12px;padding:0 3px;border:0;border-radius:0;font-size:1.35em;line-height:1.1}
