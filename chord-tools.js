@@ -55,7 +55,7 @@ function panel(){
  html+='</div><h3>Contrabaixo · escala sugerida</h3><p><b>'+esc(x.scale)+'</b></p><div class="chord-notes">'+x.scaleNotes.join(" – ")+'</div><p>Escala calculada a partir da cifra. Outras escolhas podem funcionar conforme a função harmônica e o contexto.</p></section></div>';
  return html;
 }
-window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\s𝄆𝄇𝄋𝄌①②1ª2ª.\-]+|D\.S\. al Coda)$/.test(t)&&(/[𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\.S\. al Coda/.test(t));}};
+window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\s𝄆𝄇𝄋𝄌①②1ª2ª.\-|‖]+|D\.S\. al Coda)$/.test(t)&&(/[|‖𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\.S\. al Coda/.test(t));}};
 document.addEventListener("click",function(ev){
  var chord=ev.target.closest("[data-chord]");
  if(chord){ev.preventDefault();window.SOSChordSelected=chord.getAttribute("data-chord");var old=document.querySelector(".chord-panel");if(old)old.remove();document.body.insertAdjacentHTML("beforeend",panel());return;}
