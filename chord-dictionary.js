@@ -39,12 +39,12 @@ function calculateShapes(x,key){
   const selected=Array(ins.tuning.length).fill(null);
   function evaluate(){
    const notes=selected.filter(Boolean);if(notes.length<minNotes)return;
-   const pcs=[...new Set(notes.map(n=>n.pc))];if(!pcs.includes(x.root))return;if(x.bass!==null){const lowest=notes.slice().sort((a,b)=>a.string-b.string)[0];if(lowest.pc!==x.bass)return;}
+   const pcs=[...new Set(notes.map(n=>n.pc))];if(!pcs.includes(x.root));const required=[x.root];if(x.intervals.includes(3))required.push(pc(x.root+3));else if(x.intervals.includes(4))required.push(pc(x.root+4));else if(x.intervals.includes(2))required.push(pc(x.root+2));else if(x.intervals.includes(5))required.push(pc(x.root+5));if(x.intervals.includes(10))required.push(pc(x.root+10));else if(x.intervals.includes(11))required.push(pc(x.root+11));else if(x.intervals.includes(9)&&x.tones.length>3)required.push(pc(x.root+9));if(required.some(p=>!pcs.includes(p)))return;if(x.bass!==null){const lowest=notes.slice().sort((a,b)=>a.string-b.string)[0];if(lowest.pc!==x.bass)return;}
    const missing=x.tones.filter(p=>!pcs.includes(p));if(missing.length>x.tones.length-2)return;
-   const fs=notes.filter(n=>n.fret>0).map(n=>n.fret),span=fs.length?Math.max(...fs)-Math.min(...fs):0;if(span>4)return;
+   const fs=notes.filter(n=>n.fret>0).map(n=>n.fret),span=fs.length?Math.max(...fs)-Math.min(...fs):0;if(span>4||new Set(fs).size>4)return;
    const k=notes.map(n=>n.string+":"+n.fret).join(",");if(seen.has(k))return;
    const score=missing.length*100+span*5+Math.abs((fs.reduce((a,b)=>a+b,0)/(fs.length||1))-(base+1))*1.2+(key==="bass4"?Math.max(0,notes.length-3)*2:0)-notes.length*1.4;
-   out.push({name:"Região "+(base+1),base:base+1,notes:notes.map(n=>({...n})),barres:[],score,source:"Calculado pela afinação"});seen.add(k);
+   out.push({name:"Região "+(base+1),base:base+1,notes:notes.map(n=>({...n,finger:n.fret===0?0:[...new Set(fs)].sort((a,b)=>a-b).indexOf(n.fret)+1})),barres:[],score,source:"Calculado pela afinação"});seen.add(k);
   }
   function walk(i){if(i===options.length){evaluate();return}for(const v of options[i]){selected[i]=v;walk(i+1)}selected[i]=null}
   walk(0);
