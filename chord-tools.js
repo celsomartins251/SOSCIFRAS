@@ -62,7 +62,7 @@ function chordShapes(x,key){
   var center=Math.max(0,rootFret+cfg.shift),low=Math.max(0,center-1),high=Math.min(15,center+4),choices=[];
   for(var s=0;s<ins.strings;s++){
    var arr=[];for(var fr=0;fr<=15;fr++){var pc=((ins.tuning[s]+fr)%12);if(tones.indexOf(pc)>=0&&fr>=low&&fr<=high)arr.push({string:s,fret:fr,pc:pc,interval:x.intervals.find(function(v){return ((x.rootIndex+v)%12)===pc;})});}
-   choices.push(arr);
+   arr.sort(function(a,b){return Math.abs(a.fret-center)-Math.abs(b.fret-center);});if(s===cfg.anchor)arr=arr.filter(function(v){return v.pc===x.rootIndex;});choices.push(arr.slice(0,3));
   }
   var best=null,selected=[];
   function evaluate(){
@@ -126,7 +126,7 @@ document.addEventListener("click",function(ev){
  if(chord){ev.preventDefault();window.SOSChordSelected=chord.getAttribute("data-chord");var old=document.querySelector(".chord-panel");if(old)old.remove();document.body.insertAdjacentHTML("beforeend",panel());return;}
  if(ev.target.closest("[data-close-chord]")){var p=document.querySelector(".chord-panel");if(p)p.remove();window.SOSChordSelected="";return;}
  var mark=ev.target.closest("[data-mark]");
- if(!mark){var active=document.querySelector(".chord-panel");if(active)active.remove();window.SOSChordSelected="";}
+ if(!mark&&!ev.target.closest(".chord-panel-card")){var active=document.querySelector(".chord-panel");if(active)active.remove();window.SOSChordSelected="";}
  if(mark){
   var area=document.getElementById("eb");if(!area)return;
   var start=area.selectionStart,end=area.selectionEnd,text=area.value,symbol=mark.getAttribute("data-mark"),ins;
