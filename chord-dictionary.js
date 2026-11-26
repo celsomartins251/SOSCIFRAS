@@ -124,5 +124,36 @@ document.addEventListener("change",function(ev){if(ev.target&&ev.target.id==="ch
 const style=document.createElement("style");style.textContent=`
 .dict-panel{max-width:420px;margin:8px auto 12px}.dict-panel .chord-panel-card{background:#17191c;border:1px solid #39342a;border-radius:15px;padding:10px}.dict-top,.dict-shape-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.dict-top{color:#d5aa42;font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:9px}.dict-top button{font-size:23px;color:#aaa;background:none;border:0}.dict-carousel{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom;scrollbar-width:none}.dict-carousel::-webkit-scrollbar{display:none}.dict-shape{flex:0 0 100%;min-width:0;scroll-snap-align:center;background:#101010;border:1px solid #39342a;border-radius:10px;padding:10px}.dict-shape-head b{font-size:11px;color:#f0c65b}.chord-diagram-title{font-size:25px;font-weight:800;color:#f0c65b;text-align:center;margin:4px 0 10px}.dict-play{border:1px solid #5a451b;border-radius:7px;background:#2b2415;color:#f0c65b;padding:5px 7px;font-size:10px}.dict-guitar-wrap{width:100%;display:flex;justify-content:center;background:#f6f4ee;border-radius:8px;padding:8px 3px}.dict-svg{display:block;width:auto;max-width:100%;height:auto;max-height:360px}.dict-string{stroke:#222;stroke-width:2}.dict-fret{stroke:#222;stroke-width:2}.dict-nut{stroke:#080808;stroke-width:8}.dict-open{fill:#222;font-size:15px;font-weight:800}.dict-dot{fill:#080808;stroke:#080808;stroke-width:1}.dict-root{fill:#080808;stroke:#080808;stroke-width:1}.dict-barre{stroke:#080808;stroke-width:17;stroke-linecap:round}.dict-position-bg{fill:#080808}.dict-position-label{fill:#fff;font-size:15px;font-weight:800}.dict-fret-no,.dict-bass-name{fill:#222;font-size:11px}.dict-strings{text-align:center;color:#aaa;font:9px monospace;white-space:nowrap}.dict-shape>small{display:block;color:#8f8a80;font-size:9px;line-height:1.3;margin-top:5px}.dict-bass-scroll{width:100%;overflow:hidden}.dict-bass-svg{display:block;width:100%;min-width:0;height:auto;background:#f6f4ee;border-radius:8px;padding:5px 2px;box-sizing:border-box}.dict-root{fill:#d5aa42;stroke:#f0c65b}.dict-swipe-hint{text-align:center;color:#aaa398;font-size:10px;margin:7px 0 0}.dict-panel .chord-instrument{margin:0 0 8px}`;
 document.head.appendChild(style);
-window.SOSChordDictionary={parseChord:parseChord,calculateShapes:calculateShapes,refresh:refreshPanel};
+/* Banco Fretwork: posições publicadas e verificadas para violão em afinação padrão. */
+let fretworkDB=null;
+function fretworkKey(x){
+ const q=(x.quality||'').trim(),r=x.rootName;
+ if(x.bass!==null)return r+'/'+PC[x.bass];
+ if(!q)return r;
+ if(/^(7M|M7|maj7|maj9|maj11|maj13)$/i.test(q))return r+'maj7';
+ if(/^(m7b5|m7\\(b5\\)|ø)$/i.test(q))return r+'m7b5';
+ if(/^(m|min)$/i.test(q))return r+'m';
+ if(/^(dim|°|º)$/i.test(q))return r+'dim';
+ if(/^(dim7|°7|º7)$/i.test(q))return r+'dim7';
+ return r+q;
+}
+const getShapesFallback=getShapes;
+getShapes=function(x,key){
+ if(fretworkDB&&(key==='guitar6'||key==='guitar7')){
+  const entry=fretworkDB.find(c=>c.symbol.toLowerCase()===fretworkKey(x).toLowerCase());
+  if(entry&&Array.isArray(entry.shapes)){
+   const offset=key==='guitar7'?1:0;
+   return entry.shapes.map((v,i)=>({name:v.position||('Posição '+(i+1)),base:(v.frets.filter(n=>n!==null&&n>0).sort((a,b)=>a-b)[0]||1),notes:v.frets.map((f,j)=>f===null?null:{string:j+offset,fret:Number(f),finger:0}).filter(Boolean),barres:[],source:'Fretwork CC BY 4.0',fretString:v.fret_string})).filter(v=>v.notes.length).slice(0,4);
+  }
+ }
+ const shapes=getShapesFallback(x,key),seen=new Set();
+ return shapes.filter(v=>{const sig=v.notes.map(n=>n.string+':'+n.fret).sort().join('|');if(seen.has(sig))return false;seen.add(sig);return true});
+};
+function loadFretwork(){
+ let cached=null;try{cached=JSON.parse(localStorage.getItem('sos_fretwork_chords_v1')||'null')}catch(_){}
+ if(Array.isArray(cached)&&cached.length)fretworkDB=cached;
+ return fetch('https://guitarfretwork.com/data/chords.json',{mode:'cors',cache:'no-cache'}).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(d=>{if(!Array.isArray(d))throw Error('Formato Fretwork inválido');fretworkDB=d;try{localStorage.setItem('sos_fretwork_chords_v1',JSON.stringify(d))}catch(_){};const p=document.querySelector('.dict-panel');if(p)refreshPanel(p,window.SOSChordInstrument||'guitar6');window.SOSChordDatabaseStatus={source:'Fretwork',records:d.length,loaded:true};return d}).catch(err=>{window.SOSChordDatabaseStatus={source:fretworkDB?'Fretwork cache':'fallback',loaded:!!fretworkDB};console.warn('Fretwork:',err);return fretworkDB});
+}
+loadFretwork();
+window.SOSChordDictionary={parseChord:parseChord,calculateShapes:calculateShapes,refresh:refreshPanel ,loadDatabase:loadFretwork};
 })()
