@@ -80,7 +80,7 @@ function chordShapes(x,key){
    selected[i]=null;
   }
   walk(0);
-  if(best){best.name=cfg.name;best.low=Math.min.apply(null,best.notes.map(function(n){return n.fret;}));best.complete=!best.missing.length;best.barres=[];for(var bf=1;bf<=15;bf++){var ss=best.notes.filter(function(n){return n.fret===bf;}).map(function(n){return n.string;}).sort(function(a,b){return a-b;});if(ss.length>=3&&ss[ss.length-1]-ss[0]+1===ss.length)best.barres.push({fret:bf,from:ss[0],to:ss[ss.length-1]});}out.push(best);}
+  if(best){best.name=cfg.name;best.low=Math.min.apply(null,best.notes.map(function(n){return n.fret;}));best.complete=!best.missing.length;best.barres=[];for(var bf=1;bf<=15;bf++){var ss=best.notes.filter(function(n){return n.fret===bf;}).map(function(n){return n.string;}).sort(function(a,b){return a-b;});if(ss.length>=3&&ss[ss.length-1]-ss[0]+1===ss.length)best.barres.push({fret:bf,from:ss[0],to:ss[ss.length-1]});}var finger=1,barreFrets=best.barres.map(function(b){return b.fret;});best.notes.forEach(function(n){if(n.fret===0){n.finger="";return;}if(barreFrets.indexOf(n.fret)>=0){n.finger="1";return;}var lower=best.notes.filter(function(v){return v.fret>0&&v.fret<n.fret&&!barreFrets.includes(v.fret);}).map(function(v){return v.fret;}).filter(function(v,i,a){return a.indexOf(v)===i;}).length;n.finger=String(Math.min(4,1+barreFrets.length+lower));});out.push(best);}
   else out.push({name:cfg.name,notes:[],reason:"Não foi encontrada uma posição confortável nesta região."});
  });
  return {instrument:ins,shapes:out};
@@ -94,7 +94,7 @@ function fretSvg(shape,ins){
  if(start===0)svg+='<line x1="'+left+'" y1="'+top+'" x2="'+(left+w)+'" y2="'+top+'" class="fret-nut"/>';
  else svg+='<text x="5" y="'+(top+cell*2.8)+'" class="fret-number">'+start+'º</text>';
  shape.barres.forEach(function(b){var yb=top+(b.fret-start+.5)*cell;svg+='<line x1="'+(left+b.from*step)+'" y1="'+yb+'" x2="'+(left+b.to*step)+'" y2="'+yb+'" class="fret-barre"/>';});
- for(var s2=0;s2<ins.strings;s2++){var n=shape.notes.find(function(v){return v.string===s2;});if(!n){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">×</text>';continue;}if(n.fret===0){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">○</text>';continue;}var yy2=top+(n.fret-start+.5)*cell;if(yy2<top-2||yy2>top+count*cell+2)continue;svg+='<circle cx="'+(left+s2*step)+'" cy="'+yy2+'" r="6.2" class="fret-dot"/><text x="'+(left+s2*step)+'" y="'+(yy2+2.5)+'" text-anchor="middle" class="fret-dot-text">'+(n.interval===0?"R":"")+'</text>';}
+ for(var s2=0;s2<ins.strings;s2++){var n=shape.notes.find(function(v){return v.string===s2;});if(!n){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">×</text>';continue;}if(n.fret===0){svg+='<text x="'+(left+s2*step)+'" y="15" text-anchor="middle" class="fret-open">○</text>';continue;}var yy2=top+(n.fret-start+.5)*cell;if(yy2<top-2||yy2>top+count*cell+2)continue;svg+='<circle cx="'+(left+s2*step)+'" cy="'+yy2+'" r="6.2" class="fret-dot"/><text x="'+(left+s2*step)+'" y="'+(yy2+2.5)+'" text-anchor="middle" class="fret-dot-text">'+(n.finger||"")+'</text>';}
  svg+='</svg><div class="fret-string-names">'+ins.names.map(esc).join("　")+'</div>';
  return svg;
 }
@@ -112,7 +112,7 @@ function panel(){
  if(key==="bass4"){html+='<h3>Escala no braço do contrabaixo</h3>'+bassNeck(x);}
  else{
   html+='<h3>Formas de acorde no braço</h3><p class="chord-help">Quatro referências de posição: A, C, E e D. A digitação é calculada para as notas deste acorde e para a afinação selecionada.</p><div class="chord-shapes">';
-  data.shapes.forEach(function(sh){html+='<article class="shape-card"><b>Forma '+sh.name+'</b><div class="shape-diagram">'+fretSvg(sh,data.instrument)+'</div><small>'+(sh.notes.length?(sh.complete?"Todas as notas do acorde incluídas.":"Voicing adaptado; notas omitidas: "+sh.missing.map(fretNote).join(", ")):"Posição indisponível")+'</small></article>';});
+  data.shapes.forEach(function(sh){html+='<article class="shape-card"><b>Forma '+sh.name+'</b><div class="shape-diagram">'+fretSvg(sh,data.instrument)+'</div><small>'+(sh.notes.length?(sh.complete?"Todas as notas do acorde incluídas.":"Voicing adaptado; notas omitidas: "+sh.missing.map(fretNote).join(", "))+(sh.barres.length?" Pestana indicada.":""):"Posição indisponível")+'</small></article>';});
   html+='</div>';
  }
  html+='<details class="chord-theory"><summary>Ver notas e estrutura do acorde</summary><p>Notas: <b>'+x.tones.join(" · ")+'</b></p><p>Intervalos: '+x.intervals.join(" – ")+' semitons a partir da tônica</p><p>Escala sugerida: <b>'+esc(x.scale)+'</b></p><p>'+x.scaleNotes.join(" – ")+'</p></details></section></div>';
