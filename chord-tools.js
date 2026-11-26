@@ -49,6 +49,7 @@ function renderLine(line,shift){
 var INSTRUMENTS={
  guitar6:{label:"Violão · 6 cordas",tuning:[40,45,50,55,59,64],names:["E","A","D","G","B","E"],strings:6},
  guitar7:{label:"Violão · 7 cordas (Dó)",tuning:[36,40,45,50,55,59,64],names:["C","E","A","D","G","B","E"],strings:7},
+ cavaquinho4:{label:"Cavaquinho · 4 cordas",tuning:[50,55,59,62],names:["D","G","B","D"],strings:4},
  bass4:{label:"Contrabaixo · 4 cordas",tuning:[28,33,38,43],names:["E","A","D","G"],strings:4}
 };
 function fretNote(midi){return note(midi%12);}
@@ -98,18 +99,27 @@ function fretSvg(shape,ins){
  svg+='</svg><div class="fret-string-names">'+ins.names.map(esc).join("　")+'</div>';
  return svg;
 }
-function bassNeck(x){
- var ins=INSTRUMENTS.bass4,html='<div class="bass-neck"><div class="bass-fret-head"><span>CORDAS</span><span>CASAS</span></div><div class="bass-grid">';
- for(var s=ins.strings-1;s>=0;s--){html+='<div class="bass-row"><b>'+ins.names[s]+'</b>';for(var f=0;f<=12;f++){var pc=(ins.tuning[s]+f)%12,active=x.scaleNotes.some(function(n){return N.indexOf(n)===pc;});html+='<span class="'+(active?'scale-note':'')+'">'+(active?fretNote(pc):"")+'</span>';}html+='</div>';}
- return html+'</div><p class="bass-legend"><i></i> Notas da escala sugerida · '+esc(x.scale)+'</p></div>';
+function frettedNeck(x,key){
+ var ins=INSTRUMENTS[key],html='<div class="bass-neck"><div class="bass-fret-head"><span>CORDAS</span>';
+ for(var f=0;f<=12;f++)html+='<span>'+f+'</span>';
+ html+='</div><div class="bass-grid">';
+ for(var s=ins.strings-1;s>=0;s--){
+  html+='<div class="bass-row"><b>'+ins.names[s]+'</b>';
+  for(var fr=0;fr<=12;fr++){
+   var pc=(ins.tuning[s]+fr)%12,active=x.scaleNotes.some(function(n){return N.indexOf(n)===pc;});
+   html+='<span class="'+(active?'scale-note':'')+'">'+(active?fretNote(pc):"")+'</span>';
+  }
+  html+='</div>';
+ }
+ return html+'</div><p class="bass-legend"><i></i> Notas da escala sugerida · '+esc(x.scale)+' · Afinação '+esc(ins.names.join("–"))+'</p></div>';
 }
 function panel(){
  var x=parse(window.SOSChordSelected||"");if(!x)return "";
  x.rootIndex=N.indexOf(FL[x.root]||x.root);
  var key=window.SOSChordInstrument||"guitar6",data=chordShapes(x,key);
  var html='<div class="chord-panel-inline"><section class="chord-panel-card" role="region" aria-label="Diagramas do acorde"><div class="chord-panel-head"><div><small style="color:var(--mute)">ACORDE SELECIONADO</small><div class="chord-panel-title">'+esc(x.name)+'</div></div><button type="button" class="tb" data-close-chord="1" aria-label="Fechar">✕</button></div>';
- html+='<label class="instrument-label" for="chord-instrument">Instrumento</label><select id="chord-instrument" class="chord-instrument"><option value="guitar6" '+(key==="guitar6"?"selected":"")+'>Violão de 6 cordas · E A D G B E</option><option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão de 7 cordas · C E A D G B E</option><option value="bass4" '+(key==="bass4"?"selected":"")+'>Contrabaixo · E A D G</option></select>';
- if(key==="bass4"){html+='<h3>Escala no braço do contrabaixo</h3>'+bassNeck(x);}
+ html+='<label class="instrument-label" for="chord-instrument">Instrumento</label><select id="chord-instrument" class="chord-instrument"><option value="guitar6" '+(key==="guitar6"?"selected":"")+'>Violão de 6 cordas · E A D G B E</option><option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão de 7 cordas · C E A D G B E</option><option value="bass4" '+(key==="bass4"?"selected":"")+'>Contrabaixo · E A D G</option><option value="cavaquinho4" '+(key==="cavaquinho4"?"selected":"")+'>Cavaquinho · D G B D</option></select>';
+ if(key==="bass4"||key==="cavaquinho4"){var neckName=key==="bass4"?"contrabaixo":"cavaquinho";html+='<h3>Visualização do braço do '+neckName+'</h3>'+frettedNeck(x,key);}
  else{
   html+='<h3>Formas de acorde no braço</h3><p class="chord-help">Quatro referências de posição: A, C, E e D. As formas mostram as notas do acorde, com indicação de pestana quando aplicável.</p><div class="chord-shapes">';
   data.shapes.forEach(function(sh){html+='<article class="shape-card"><b>Forma '+sh.name+'</b><div class="shape-diagram">'+fretSvg(sh,data.instrument)+'</div><small>'+(sh.notes.length?(sh.complete?"Todas as notas do acorde incluídas.":"Voicing adaptado; notas omitidas: "+sh.missing.map(fretNote).join(", "))+(sh.barres.length?" · Com pestana.":" · Sem pestana."):"Posição indisponível")+'</small></article>';});
