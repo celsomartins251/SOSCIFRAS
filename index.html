@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.19">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.20">
 <link rel="icon" type="image/jpeg" sizes="512x512" href="./%C3%8Dcone_app.jpg?v=1.3.0">
 <link rel="apple-touch-icon" type="image/jpeg" sizes="512x512" href="./%C3%8Dcone_app.jpg?v=1.3.0">
 <meta name="theme-color" content="#101010">
@@ -86,7 +86,7 @@ details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 
 @media (prefers-reduced-motion:reduce){#splash .glow,#splash img,#splash .bar{opacity:1}#splash .bar i{transform:scaleX(1)}}
 
 </style>
-<link rel="stylesheet" href="./chord-tools.css?v=1.0.2">
+<link rel="stylesheet" href="./chord-tools.css?v=1.0.3">
 </head>
 <body>
 <div id="splash" role="img" aria-label="Logo de abertura SOS CIFRAS"><div class="glow"></div><img src="./Logo_de_abertura.jpg?v=1.3.0" alt="Logo oficial SOS CIFRAS"><div class="bar"><i></i></div></div>
@@ -556,7 +556,7 @@ function vConta(){return `<h1>Conta</h1><h2>Aparência</h2><div class="row"><but
 
 function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const body=s.body.split('\n').filter(l=>s.type!=='chords'||/^\s*\[.+\]\s*$/.test(l)||isChordLine(l)||window.SOSChord.isNotationLine(l.trim())||!l.trim()).map(l=>{const m=l.match(/^\s*\[(.+)\]\s*$/);if(m)return`<div class="sec">${e(m[1])}</div>`;
-  return isChordLine(l)?`<div class="cs c">${window.SOSChord.renderLine(l,cur)||' '}</div>`:window.SOSChord.isNotationLine(l.trim())?`<div class="music-markers">${l.trim().split(/\s+/).map(x=>`<span class="${x==='|'?'barline':x==='‖'?'doublebar':''}">${e(x)}</span>`).join('')}</div>`:`<div class="cs l">${e(l)||' '}</div>`}).join('');
+  return isChordLine(l)?`<div class="cs c">${window.SOSChord.renderLine(l,cur)||' '}</div>`:window.SOSChord.isNotationLine(l.trim())?`<div class="music-markers">${(()=>{const marks=l.trim().split(/\s+/),out=[];for(let i=0;i<marks.length;i++){const x=marks[i],next=marks[i+1];if(x==='𝄌'&&(next==='|'||next==='‖')){out.push(`<span class="coda-bar"><span class="coda-symbol">𝄌</span><span class="${next==='‖'?'doublebar':'barline'}">${e(next)}</span></span>`);i++;continue;}if((x==='|'||x==='‖')&&next==='𝄌'){out.push(`<span class="coda-bar"><span class="coda-symbol">𝄌</span><span class="${x==='‖'?'doublebar':'barline'}">${e(x)}</span></span>`);i++;continue;}out.push(`<span class="${x==='|'?'barline':x==='‖'?'doublebar':x==='𝄌'?'coda-symbol':''}">${e(x)}</span>`);}return out.join('')})()}</div>`:`<div class="cs l">${e(l)||' '}</div>`}).join('');
  const k=s.k?nn(s.k.replace(/m$/,''),cur)+(/m$/.test(s.k)?'m':''):'—';
  const pos=S.ctx?S.ctx.i+1+'/'+S.ctx.ids.length:'';
  return `<div class="top"><div class="row"><button class="btn ghost fit" data-a="back">‹ Voltar</button><div style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(s.t)}</b><small style="color:var(--mute)">${e(s.a||'')}</small></div></div>
@@ -712,7 +712,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
       refreshing = true;
       window.location.reload();
     });
-    navigator.serviceWorker.register('./sw.js?v=1.2.19', { scope: './', updateViaCache: 'none' })
+    navigator.serviceWorker.register('./sw.js?v=1.2.20', { scope: './', updateViaCache: 'none' })
       .then(function (reg) {
         console.info('SOS CIFRAS: PWA ativo', reg.scope);
         function activateWhenReady(worker) {
