@@ -56,3 +56,5 @@
 .chord-hover>small{color:var(--mute);font-size:10px}
 @media(max-width:380px){.chord-shapes{gap:6px}.shape-card{padding:5px}.fret-string-names{font-size:8px}}
 @media(hover:none){.chord-hover{display:none}}
+
+.fret-barre{stroke:var(--brand);stroke-width:8;stroke-linecap:round;opacity:.9}
