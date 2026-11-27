@@ -4,7 +4,7 @@
   "short_name": "SOS CIFRAS",
   "description": "Cifras, transposição e organização de repertórios musicais.",
   "lang": "pt-BR",
-  "start_url": "./?launch=1.2.30",
+  "start_url": "./?launch=1.2.31",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
