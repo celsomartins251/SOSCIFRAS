@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.49">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.50">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -315,9 +315,7 @@ details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 
  width:20px!important;min-width:20px!important;height:1.45em!important;
  margin:0 5px!important;padding:0!important;border:0!important;
  font-size:0!important;line-height:0!important;color:#ff3030!important;
- background:
- radial-gradient(circle at 2px 34%,#ff3030 1.5px,transparent 1.9px),
- radial-gradient(circle at 2px 68%,#ff3030 1.5px,transparent 1.9px)!important;
+ background:none!important;
 }
 .music-markers .repeat-final-bar:before,
 .music-markers .repeat-final-bar:after{
@@ -1931,7 +1929,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
  window.addEventListener('load',function(){
   var reloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloading)return;reloading=true;location.reload();});
-  navigator.serviceWorker.register('./sw.js?v=1.2.49',{scope:'./',updateViaCache:'none'})
+  navigator.serviceWorker.register('./sw.js?v=1.2.50',{scope:'./',updateViaCache:'none'})
    .then(function(reg){reg.update().catch(function(){});})
    .catch(function(err){console.error('Falha ao ativar PWA SOS CIFRAS:',err);});
  });
