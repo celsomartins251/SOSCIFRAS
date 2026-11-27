@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.61">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.62">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -102,6 +102,7 @@ html.reading-mode .top,html.reading-mode .tools,html.reading-mode .tabs,html.rea
 html.reading-mode #app{padding-top:8px;padding-bottom:24px}
 html.reading-mode .score-row{scroll-margin-top:8px}
 html.reading-mode #exitReadMode{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:99999;padding:10px 14px;border:1px solid var(--brand);border-radius:999px;background:#171717;color:var(--brand);font-weight:700;box-shadow:0 3px 14px #0008}
+.music-inline-marker.segno,.music-inline-marker.coda-symbol{display:inline-block!important;vertical-align:super!important;position:relative!important;top:-.12em!important;margin:0 2px!important;line-height:1!important;font-size:1.05em!important}
 </style>
 <style>.chordTap{display:inline;cursor:pointer;color:inherit;font:inherit;font-weight:800;padding:0 1px;border-radius:4px;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--brand);text-underline-offset:3px}.chordTap:active{background:var(--brand);color:var(--onbrand)}.music-markers{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--brand);font-size:1.35em;font-weight:800;padding:5px 0}.music-markers span{display:inline-flex;align-items:center;justify-content:center;min-width:30px;padding:2px 7px;border:1px solid var(--line);border-radius:7px}.mark-tools{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}.mark-tools button{min-height:40px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--brand);font-weight:700}.chord-panel-inline{display:block;position:relative;z-index:30;width:100%;margin:8px 0 14px}.chord-panel-card{width:min(100%,720px);max-height:none;overflow:visible;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 26px #0007}.chord-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.chord-panel-inline h3{margin:12px 0 6px;color:var(--brand);font-size:14px}.chord-panel-inline p{margin:5px 0;color:var(--mute);font-size:13px}.chord-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.chord-option{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px}.chord-option b{display:block;color:var(--brand);margin-bottom:4px}.chord-notes{font:13px/1.6 "JetBrains Mono",monospace;overflow-wrap:anywhere}.score-opening{display:flex;align-items:flex-end;gap:5px;min-height:2.5em;margin:6px 0 2px}.time-signature-inline{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;flex:none;width:max-content;min-width:25px;padding:0 4px;color:var(--brand);font-size:.95em;font-weight:800;line-height:.9}.time-signature-inline span:first-child{border-bottom:1px solid currentColor;padding:0 4px 3px}.time-signature-inline span:last-child{padding-top:3px}.score-opening>.cs{margin:0}.score-opening>.music-markers{margin:0;padding:0}.music-markers span.barline,.music-markers span.doublebar{border:0;border-radius:0;min-width:12px;padding:0 3px;font-size:1.35em;line-height:1.1}.music-markers span.doublebar{letter-spacing:-.22em;padding-right:7px}
 .music-markers span.repeat-start,.music-markers span.repeat-end,.music-markers span.segno,.music-markers span.coda-symbol,.music-markers span.ds-coda{border:0;border-radius:0;min-width:0;padding:1px 4px;color:#ff3030;font-size:1.08em;font-weight:900}
@@ -1031,7 +1032,7 @@ document.addEventListener("click",function(ev){
  if(mark){
   var area=document.getElementById("eb");if(!area)return;
   var start=area.selectionStart,end=area.selectionEnd,text=area.value,symbol=mark.getAttribute("data-mark"),ins;
-  if(["|","‖","||","𝄂","|:",":|","𝄆","𝄇","D.S. al Coda"].includes(symbol)){
+  if(["|","‖","||","𝄂","|:",":|","𝄆","𝄇","𝄋","𝄌","D.S. al Coda"].includes(symbol)){
    var lineStart=text.lastIndexOf("\n",Math.max(0,start-1))+1;
    var left=text.slice(lineStart,start),right=text.slice(end);
    var before=left&&!/\s$/.test(left)?" ":"";
