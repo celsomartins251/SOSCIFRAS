@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.50">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.51">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -315,7 +315,9 @@ details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 
  width:20px!important;min-width:20px!important;height:1.45em!important;
  margin:0 5px!important;padding:0!important;border:0!important;
  font-size:0!important;line-height:0!important;color:#ff3030!important;
- background:none!important;
+ background:
+ radial-gradient(circle at 2px 34%,#ff3030 1.5px,transparent 1.9px),
+ radial-gradient(circle at 2px 68%,#ff3030 1.5px,transparent 1.9px)!important;
 }
 .music-markers .repeat-final-bar:before,
 .music-markers .repeat-final-bar:after{
@@ -323,6 +325,18 @@ details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 
 }
 .music-markers .repeat-final-bar:before{left:9px;width:1.5px}
 .music-markers .repeat-final-bar:after{left:14px;width:3.5px}
+/* Barra final de partitura: duas linhas, sem pontos de ritornelo */
+.music-markers .final-bar{
+ display:inline-block!important;position:relative!important;vertical-align:middle!important;
+ width:13px!important;min-width:13px!important;height:1.45em!important;
+ margin:0 5px!important;padding:0!important;border:0!important;
+ font-size:0!important;line-height:0!important;background:none!important;
+}
+.music-markers .final-bar:before,.music-markers .final-bar:after{
+ content:"";position:absolute;top:0;height:100%;background:var(--brand);border:0;
+}
+.music-markers .final-bar:before{left:2px;width:1.5px}
+.music-markers .final-bar:after{left:7px;width:3.5px}
 @media print{.volta-endpoint{display:none!important}}
 </style>
 </head>
@@ -950,7 +964,7 @@ document.addEventListener("click",function(ev){
  if(mark){
   var area=document.getElementById("eb");if(!area)return;
   var start=area.selectionStart,end=area.selectionEnd,text=area.value,symbol=mark.getAttribute("data-mark"),ins;
-  if(["|","‖","||","|:",":|","𝄆","𝄇","D.S. al Coda"].includes(symbol)){
+  if(["|","‖","||","𝄂","|:",":|","𝄆","𝄇","D.S. al Coda"].includes(symbol)){
    var lineStart=text.lastIndexOf("\n",Math.max(0,start-1))+1;
    var left=text.slice(lineStart,start),right=text.slice(end);
    var before=left&&!/\s$/.test(left)?" ":"";
@@ -1757,7 +1771,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  });
  const body=lines.map((l,i)=>{const m=l.match(/^\s*\[(.+)\]\s*$/);let row;
   if(m)row=`<div class="sec">${e(m[1])}</div>`;
-  else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';return marks.split(/\s+/).map(x=>{if(x==="1ª"||x==="2ª"){return '';}const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="|:"?"repeat-start":x===":|"?"repeat-end repeat-final-bar":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";if(x===":|")return '<span class="repeat-end repeat-final-bar" aria-label="Ritornelo final"></span>';return '<span class="'+cls+'"'+(['repeat-start','repeat-end','segno','coda-symbol'].includes(cls)?' style="color:#ff3030!important;-webkit-text-fill-color:#ff3030!important"':'')+'>'+e(x)+'</span>';}).join('')})()}</div>`;else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
+  else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';return marks.split(/\s+/).map(x=>{if(x==="1ª"||x==="2ª"){return '';}const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="𝄂"?"final-bar":x==="|:"?"repeat-start":x===":|"?"repeat-end repeat-final-bar":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";if(x===":|")return '<span class="repeat-end repeat-final-bar" aria-label="Ritornelo final"></span>';if(x==="𝄂")return '<span class="final-bar" aria-label="Barra final"></span>';return '<span class="'+cls+'"'+(['repeat-start','repeat-end','segno','coda-symbol'].includes(cls)?' style="color:#ff3030!important;-webkit-text-fill-color:#ff3030!important"':'')+'>'+e(x)+'</span>';}).join('')})()}</div>`;else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
   else row=`<div class="cs ${s.type==='chords'?'c':'l'}">${e(l)||' '}</div>`;
   const segments=(voltaSegments[i]||[]).map(r=>'<span class="volta-fragment '+(r.first?'is-first ':'')+(r.last?'is-last':'')+'" style="left:'+r.left+'%;width:'+Math.max(0,r.right-r.left)+'%">'+(r.first?'<span class="volta-label-inline">'+e(r.label)+'</span><span class="volta-endpoint start" data-volta-key="'+r.key+'" data-volta-endpoint="start" role="slider" aria-label="Mover início da chave" tabindex="0"></span>':'')+(r.last?'<span class="volta-endpoint end" data-volta-key="'+r.key+'" data-volta-endpoint="end" role="slider" aria-label="Mover fim da chave" tabindex="0"></span>':'')+'</span>').join('');
   return '<div class="score-row" data-score-line="'+i+'">'+(i===openingIndex?'<div class="score-opening">'+meterHtml+row+'</div>':row)+segments+'</div>';
@@ -1776,7 +1790,7 @@ function vEdit(){const s=S.edit;return `<div class="top"><div class="row"><butto
  <label for="et">Título</label><input id="et" value="${e(s.t)}"><div class="row"><div><label for="ea">Artista</label><input id="ea" value="${e(s.a)}"></div><div><label for="ek">Tom</label><input id="ek" value="${e(s.k)}" placeholder="Ex.: G"></div></div>
  <div class="row"><div><label for="emeter">Fórmula de compasso</label><input id="emeter" type="text" inputmode="text" value="${e(s.meter||'4/4')}" placeholder="Ex.: 4/4, 3/4, 7/8"></div></div>
  <label for="etype">Formato da cifra</label><select id="etype"><option value="lyrics" ${(s.type||'lyrics')==='lyrics'?'selected':''}>Acordes com letra</option><option value="chords" ${s.type==='chords'?'selected':''}>Somente acordes, sem letra</option></select>
- <label for="eb">Conteúdo (use [Intro], [Verso], [Refrão], [Ponte] e [Final] para separar as partes)</label><div class="mark-tools" aria-label="Símbolos musicais"><button type="button" data-mark="|">| Barra de compasso</button><button type="button" data-mark="‖">‖ Barra dupla</button><button type="button" data-mark="|:">|: Início do ritornelo</button><button type="button" data-mark=":|">:| Fim do ritornelo</button><button type="button" data-mark="𝄆">𝄆 Ritornelo início</button><button type="button" data-mark="𝄇">𝄇 Ritornelo fim</button><button type="button" data-mark="1ª">1ª chave</button><button type="button" data-mark="2ª">2ª chave</button><button type="button" data-mark="𝄋">𝄋 Segno (S)</button><button type="button" data-mark="𝄌">𝄌 Coda</button><button type="button" data-mark="D.S. al Coda">D.S. al Coda</button></div><textarea id="eb" spellcheck="false">${e(s.body)}</textarea>`}
+ <label for="eb">Conteúdo (use [Intro], [Verso], [Refrão], [Ponte] e [Final] para separar as partes)</label><div class="mark-tools" aria-label="Símbolos musicais"><button type="button" data-mark="|">| Barra de compasso</button><button type="button" data-mark="‖">‖ Barra dupla</button><button type="button" data-mark="𝄂">Barra final</button><button type="button" data-mark="|:">|: Início do ritornelo</button><button type="button" data-mark=":|">:| Fim do ritornelo</button><button type="button" data-mark="𝄆">𝄆 Ritornelo início</button><button type="button" data-mark="𝄇">𝄇 Ritornelo fim</button><button type="button" data-mark="1ª">1ª chave</button><button type="button" data-mark="2ª">2ª chave</button><button type="button" data-mark="𝄋">𝄋 Segno (S)</button><button type="button" data-mark="𝄌">𝄌 Coda</button><button type="button" data-mark="D.S. al Coda">D.S. al Coda</button></div><textarea id="eb" spellcheck="false">${e(s.body)}</textarea>`}
 
 function render(){stopIfLeft();applyTheme();let h;
  if(S.edit)h=vEdit();else if(S.song)h=vSong();else h={busca:vBusca,pub:vPub,sets:vSets,web:vWeb,band:vBand,conta:vConta,ajuda:vAjuda}[S.tab]();
@@ -1929,7 +1943,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
  window.addEventListener('load',function(){
   var reloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloading)return;reloading=true;location.reload();});
-  navigator.serviceWorker.register('./sw.js?v=1.2.50',{scope:'./',updateViaCache:'none'})
+  navigator.serviceWorker.register('./sw.js?v=1.2.51',{scope:'./',updateViaCache:'none'})
    .then(function(reg){reg.update().catch(function(){});})
    .catch(function(err){console.error('Falha ao ativar PWA SOS CIFRAS:',err);});
  });
