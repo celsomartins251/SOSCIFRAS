@@ -1804,12 +1804,12 @@ function vConta(){return `<h1>Conta</h1><h2>Aparência</h2><div class="row"><but
 function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const lines=s.body.split('\n');
  const isSectionLine=l=>/^\s*\[.+\]\s*$/.test(l);
- const isMeterLine=l=>/^\s*⟦\d+\/\d+⟧\s*$/.test(l);
+ const isMeterLine=l=>/^\s*(?:⟦\d+\/\d+⟧|\[\d+\/\d+\])\s*$/.test(l);
  const isNotationLine=l=>!!l.trim()&&window.SOSChord.isNotationLine(l.trim());
  const isContentLine=l=>l.trim()!==''&&!isSectionLine(l)&&!isMeterLine(l)&&!isNotationLine(l);
  const openingIndex=lines.findIndex(isContentLine);
  const meterAtLine={},openingBarlineAt={},mergedOpeningLines=new Set();
- lines.forEach((line,i)=>{const tm=line.match(/^\s*⟦(\d+\/\d+)⟧\s*$/);if(!tm)return;for(let n=i+1;n<lines.length;n++){if(isContentLine(lines[n])){meterAtLine[n]=tm[1];break;}}});
+ lines.forEach((line,i)=>{const tm=line.match(/^\s*(?:⟦(\d+\/\d+)⟧|\[(\d+\/\d+)\])\s*$/);if(!tm)return;for(let n=i+1;n<lines.length;n++){if(isContentLine(lines[n])){meterAtLine[n]=tm[1]||tm[2];break;}}});
  if(openingIndex>0){const prev=lines[openingIndex-1].trim();if(/^(?:\|+|‖|\|\|)(?:\s+(?:\|+|‖|\|\|))*$/.test(prev)){openingBarlineAt[openingIndex]=prev;mergedOpeningLines.add(openingIndex-1);}}
  const meterHtml=(value)=>{const meter=String(value||'4/4').split('/');return `<span class="time-signature-inline" aria-label="Fórmula de compasso ${e(value||'4/4')}"><span>${e(meter[0])}</span><span>${e(meter[1]||'4')}</span></span>`;};
  const voltaSegments={};
@@ -1827,7 +1827,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
    }
   });
  });
- const body=lines.map((l,i)=>{const m=l.match(/^\s*\[(.+)\]\s*$/),tm=l.match(/^\s*⟦(\d+\/\d+)⟧\s*$/);let row;
+ const body=lines.map((l,i)=>{const tm=l.match(/^\s*(?:⟦(\d+\/\d+)⟧|\[(\d+\/\d+)\])\s*$/),m=tm?null:l.match(/^\s*\[(.+)\]\s*$/);let row;
   if(tm)return '';
   else if(mergedOpeningLines.has(i))return '';
   else if(m)row=`<div class="sec">${e(m[1])}</div>`;
