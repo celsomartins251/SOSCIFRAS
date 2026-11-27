@@ -19,11 +19,11 @@
 <script>
 (async function(){
  const status=document.getElementById('status'),detail=document.getElementById('detail');
- const home='./?atualizacao=1.2.44';
+ const home='./?atualizacao=1.2.45';
  function finish(message){status.textContent=message;detail.textContent='Abrindo o SOS CIFRAS atualizado…';setTimeout(()=>location.replace(home),900)}
  if(!('serviceWorker' in navigator)){status.textContent='Este navegador não oferece atualização automática.';detail.innerHTML='<a href="./">Abrir SOS CIFRAS</a>';return}
  try{
-  const reg=await navigator.serviceWorker.register('./sw.js?v=1.2.44',{scope:'./',updateViaCache:'none'});
+  const reg=await navigator.serviceWorker.register('./sw.js?v=1.2.45',{scope:'./',updateViaCache:'none'});
   let changed=false;
   const activate=worker=>{if(worker&&worker.state!=='activated'){changed=true;worker.postMessage({type:'SKIP_WAITING'});}};
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(changed)finish('Atualização instalada com sucesso.');},{once:true});
