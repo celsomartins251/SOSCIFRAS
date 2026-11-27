@@ -1819,24 +1819,15 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
     voltaSegments[n].push({key,label:token,left:n===first?Number(r.startPct||0):0,right:n===last?Number(r.endPct||30):100,first:n===first,last:n===last});
    }
   });
-  // Fórmulas ficam ancoradas à primeira barra de compasso da linha musical,
-  // nunca ao título de seção ou a uma observação.
-  const meterByLine={};
-  const isBarToken=x=>['|','‖','||','𝄂','𝄆','𝄇','|:',':|'].includes(x);
-  const hasBar=l=>window.SOSChord.isNotationLine(l.trim())&&l.trim().split(/\s+/).some(isBarToken);
-  for(let n=0;n<lines.length;n++){if(hasBar(lines[n])){meterByLine[n]=s.meter||'4/4';break;}}
-  lines.forEach((line,i)=>{const tm=line.match(/^\s*⟦(\d+\/\d+)⟧\s*$/);if(!tm)return;
-   for(let n=i+1;n<lines.length;n++){if(hasBar(lines[n])){meterByLine[n]=tm[1];break;}}
-  });
-  const body=lines.map((l,i)=>{const m=l.match(/^\s*\[(.+)\]\s*$/),tm=l.match(/^\s*⟦(\d+\/\d+)⟧\s*$/);let row;
-   if(tm)row='';
-   else if(m)row=`<div class="sec">${e(m[1])}</div>`;
-   else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';let placed=false;return marks.split(/\s+/).map(x=>{if(x==="1ª"||x==="2ª")return '';const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="𝄂"?"final-bar":(x==="|:"||x===":|")?"legacy-repeat-hidden":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";if(x==="|:"||x===":|")return '';let html=x==="𝄂"?'<span class="final-bar" aria-label="Barra final"></span>':'<span class="'+cls+'"'+(['repeat-start','repeat-end','segno','coda-symbol'].includes(cls)?' style="color:#ff3030!important;-webkit-text-fill-color:#ff3030!important"':'')+'>'+e(x)+'</span>';if(!placed&&isBarToken(x)&&meterByLine[i]){html=meterHtml(meterByLine[i])+html;placed=true;}return html;}).join('')})()}</div>`;
-   else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
-   else row=`<div class="cs ${s.type==='chords'?'c':'l'}">${e(l)||' '}</div>`;
-   const segments=(voltaSegments[i]||[]).map(r=>'<span class="volta-fragment '+(r.first?'is-first ':'')+(r.last?'is-last':'')+'" data-volta-left="'+r.left+'" data-volta-right="'+r.right+'" style="left:'+r.left+'%;width:'+Math.max(0,r.right-r.left)+'%">'+(r.first?'<span class="volta-label-inline">'+e(r.label)+'</span><span class="volta-endpoint start" data-volta-key="'+r.key+'" data-volta-endpoint="start" role="slider" aria-label="Mover início da chave" tabindex="0"></span>':'')+(r.last?'<span class="volta-endpoint end" data-volta-key="'+r.key+'" data-volta-endpoint="end" role="slider" aria-label="Mover fim da chave" tabindex="0"></span>':'')+'</span>').join('');
-   return '<div class="score-row" data-score-line="'+i+'">'+row+segments+'</div>';
-  }).join('');
+ });
+ const body=lines.map((l,i)=>{const m=l.match(/^\s*\[(.+)\]\s*$/),tm=l.match(/^\s*⟦(\d+\/\d+)⟧\s*$/);let row;
+  if(tm)row=`<div class="time-signature-row">${meterHtml(tm[1])}</div>`;
+  else if(m)row=`<div class="sec">${e(m[1])}</div>`;
+  else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';return marks.split(/\s+/).map(x=>{if(x==="1ª"||x==="2ª"){return '';}const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="𝄂"?"final-bar":(x==="|:"||x===":|")?"legacy-repeat-hidden":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";if(x==="|:"||x===":|")return '';if(x==="𝄂")return '<span class="final-bar" aria-label="Barra final"></span>';return '<span class="'+cls+'"'+(['repeat-start','repeat-end','segno','coda-symbol'].includes(cls)?' style="color:#ff3030!important;-webkit-text-fill-color:#ff3030!important"':'')+'>'+e(x)+'</span>';}).join('')})()}</div>`;else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
+  else row=`<div class="cs ${s.type==='chords'?'c':'l'}">${e(l)||' '}</div>`;
+  const segments=(voltaSegments[i]||[]).map(r=>'<span class="volta-fragment '+(r.first?'is-first ':'')+(r.last?'is-last':'')+'" data-volta-left="'+r.left+'" data-volta-right="'+r.right+'" style="left:'+r.left+'%;width:'+Math.max(0,r.right-r.left)+'%">'+(r.first?'<span class="volta-label-inline">'+e(r.label)+'</span><span class="volta-endpoint start" data-volta-key="'+r.key+'" data-volta-endpoint="start" role="slider" aria-label="Mover início da chave" tabindex="0"></span>':'')+(r.last?'<span class="volta-endpoint end" data-volta-key="'+r.key+'" data-volta-endpoint="end" role="slider" aria-label="Mover fim da chave" tabindex="0"></span>':'')+'</span>').join('');
+  return '<div class="score-row" data-score-line="'+i+'">'+(i===openingIndex?'<div class="score-opening">'+meterHtml(s.meter||'4/4')+row+'</div>':row)+segments+'</div>';
+ }).join('');
  const k=s.k?nn(s.k.replace(/m$/,''),cur)+(/m$/.test(s.k)?'m':''):'—';
  const pos=S.ctx?S.ctx.i+1+'/'+S.ctx.ids.length:'';
  return `<div class="print-header"><div class="print-brand">Celso Martins · Dicas de Música</div><h1>${e(s.t)}</h1></div><div class="top"><div class="row"><button class="btn ghost fit" data-a="back">‹ Voltar</button><div style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(s.t)}</b><small style="color:var(--mute)">${e(s.a||'')}</small></div></div>
