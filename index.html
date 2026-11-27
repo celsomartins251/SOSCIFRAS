@@ -854,8 +854,8 @@ document.addEventListener("click",function(ev){
   if(symbol==="|"||symbol==="‖"||symbol==="D.S. al Coda"){
    var lineStart=text.lastIndexOf("\n",Math.max(0,start-1))+1;
    var left=text.slice(lineStart,start),right=text.slice(end);
-   var before=left&&!/\\s$/.test(left)?" ":"";
-   var after=right&&!/^\\s/.test(right)?" ":"";
+   var before=left&&!/\s$/.test(left)?" ":"";
+   var after=right&&!/^\s/.test(right)?" ":"";
    ins=before+symbol+after;
   }else{ins="\n"+symbol+"\n";}
   area.value=text.slice(0,start)+ins+text.slice(end);
