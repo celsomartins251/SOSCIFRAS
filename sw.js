@@ -1,5 +1,5 @@
-const CACHE_NAME = 'sos-cifras-shell-v1.2.40';
-const APP_SHELL = ['./','./index.html','./manifest.webmanifest?v=1.2.28','./atualizar.html','./chord-tools.js?v=1.3.0','./chord-tools.css?v=1.2.0','./chord-dictionary.js?v=1.6.2','./chord-data.json','./Logo_de_abertura.jpg?v=1.3.0','./%C3%8Dcone_app.jpg?v=1.3.0'];
+const CACHE_NAME = 'sos-cifras-shell-v1.2.41';
+const APP_SHELL = ['./','./index.html','./manifest.webmanifest?v=1.2.29','./atualizar.html','./%C3%8Dcone_app.jpg?v=1.3.0'];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
