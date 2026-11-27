@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.59">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.60">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -86,6 +86,14 @@ details ul,details ol{padding-left:20px;margin:2px 0 12px}details li{margin:6px 
 @keyframes sosLoad{to{transform:scaleX(1)}}}
 @media (prefers-reduced-motion:reduce){#splash .glow,#splash img,#splash .bar{opacity:1}#splash .bar i{transform:scaleX(1)}}
 
+
+/* Cabeçalho editorial da cifra: marca discreta e título centralizado */
+.song-heading{position:relative;min-height:86px;padding:35px 4px 13px;margin:0 0 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.song-brand{position:absolute;right:2px;top:0;display:flex;flex-direction:column;align-items:flex-end;line-height:1.12;color:var(--brand);letter-spacing:.025em;text-align:right}
+.song-brand strong{font-size:12px;font-weight:800}
+.song-brand span{font-size:10px;font-weight:600;opacity:.88}
+.song-title{width:100%;margin:0!important;text-align:center;font-family:Georgia,"Times New Roman",serif;font-size:clamp(25px,5.5vw,34px)!important;line-height:1.12;font-weight:700;letter-spacing:.005em;color:var(--ink);overflow-wrap:anywhere}
+@media print{.song-heading{display:none}}
 
 /* Modo leitura: oculta comandos e mantém cifra/indicações musicais */
 html.reading-mode .top,html.reading-mode .tools,html.reading-mode .tabs,html.reading-mode .seq,html.reading-mode .print-header,html.reading-mode .sig{display:none!important}
@@ -1850,7 +1858,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  }).join('');
  const k=s.k?nn(s.k.replace(/m$/,''),cur)+(/m$/.test(s.k)?'m':''):'—';
  const pos=S.ctx?S.ctx.i+1+'/'+S.ctx.ids.length:'';
- return `<div class="print-header"><div class="print-brand">Celso Martins · Dicas de Música</div><h1>${e(s.t)}</h1></div><div class="top"><div class="row"><button class="btn ghost fit" data-a="back">‹ Voltar</button><div style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(s.t)}</b><small style="color:var(--mute)">${e(s.a||'')}</small></div></div>
+ return `<header class="song-heading"><div class="song-brand" aria-label="Celso Martins, Dicas de Música"><strong>Celso Martins</strong><span>Dicas de Música</span></div><h1 class="song-title">${e(s.t)}</h1></header><div class="print-header"><div class="print-brand">Celso Martins · Dicas de Música</div><h1>${e(s.t)}</h1></div><div class="top"><div class="row"><button class="btn ghost fit" data-a="back">‹ Voltar</button><div style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(s.t)}</b><small style="color:var(--mute)">${e(s.a||'')}</small></div></div>
  <div class="tools"><button class="tb" data-a="tr" data-v="-1" aria-label="Baixar tom">−</button><span class="chip" style="padding:8px 12px">Tom ${e(k)}${cur?' ('+(cur>0?'+':'')+cur+')':''}</span><span class="chip meter-readout">Compasso ${e(s.meter||'4/4')}</span><button class="tb" data-a="tr" data-v="1" aria-label="Subir tom">+</button>
  <button class="tb" data-a="fs" data-v="-1" aria-label="Diminuir fonte">A−</button><button class="tb" data-a="fs" data-v="1" aria-label="Aumentar fonte">A+</button>
  <button class="tb ${S.play?'on':''}" data-a="play" aria-label="Rolagem automática">${S.play?'❚❚':'▶'}</button><button class="tb" data-a="scroll-speed" data-v="1" aria-label="Aumentar velocidade da rolagem" title="Aumentar velocidade">+</button><button class="tb" data-a="scroll-speed" data-v="-1" aria-label="Diminuir velocidade da rolagem" title="Diminuir velocidade">−</button><button class="tb ${s.fav?'on':''}" data-a="fav" aria-label="Favoritar">★</button>
