@@ -856,7 +856,7 @@ function renderLine(line,shift){
  }
  out.push(esc(line.slice(last)));
  var rendered=out.join("");
- rendered=rendered.replace(/(<span class="music-inline-marker segno"[^>]*>𝄋<\\/span>)(\\s*)(<span class="music-inline-marker (?:barline|doublebar)"[^>]*>[^<]*<\\/span>)/,'<span class="segno-over-bar">$1$3</span>');
+ rendered=rendered.replace(/(<span class="music-inline-marker segno"[^>]*>𝄋<\/span>)(\s*)(<span class="music-inline-marker (?:barline|doublebar)"[^>]*>[^<]*<\/span>)/,'<span class="segno-over-bar">$1$3</span>');
  return rendered;
 }
 var INSTRUMENTS={
@@ -1036,13 +1036,13 @@ document.addEventListener("click",function(ev){
   var area=document.getElementById("eb");if(!area)return;
   var start=area.selectionStart,end=area.selectionEnd,text=area.value,symbol=mark.getAttribute("data-mark"),ins;
   if(symbol==="𝄋"){
-   var lineStart=text.lastIndexOf("\\n",Math.max(0,start-1))+1;
-   var lineEnd=text.indexOf("\\n",start);if(lineEnd<0)lineEnd=text.length;
-   var lineText=text.slice(lineStart,lineEnd),bars=/\\|\\||\\|:|:\\||‖|\\|/g,bm,nearest=-1,distance=Infinity;
+   var lineStart=text.lastIndexOf("\n",Math.max(0,start-1))+1;
+   var lineEnd=text.indexOf("\n",start);if(lineEnd<0)lineEnd=text.length;
+   var lineText=text.slice(lineStart,lineEnd),bars=/\|\||\|:|:\||‖|\|/g,bm,nearest=-1,distance=Infinity;
    while((bm=bars.exec(lineText))!==null){var candidate=lineStart+bm.index;if(Math.abs(candidate-start)<distance){nearest=candidate;distance=Math.abs(candidate-start);}}
    var at=nearest>=0?nearest:start;
    var prefixChar=at>lineStart?text[at-1]:"";
-   ins=(prefixChar&&!/\\s/.test(prefixChar)?" ":"")+"𝄋";
+   ins=(prefixChar&&!/\s/.test(prefixChar)?" ":"")+"𝄋";
    area.value=text.slice(0,at)+ins+text.slice(at);
    area.focus();area.selectionStart=area.selectionEnd=at+ins.length;return;
   }
