@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.58">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.59">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1358,7 +1358,7 @@ let D;try{D=JSON.parse(localStorage.getItem('soscifras_v1'))}catch(_){}
 if(!D){try{D=JSON.parse(localStorage.getItem('acordes_v1'))}catch(_){}}
 D=D||JSON.parse(JSON.stringify(SEED));
 const save=()=>{try{localStorage.setItem('soscifras_v1',JSON.stringify(D))}catch(_){}};
-const S={tab:'busca',q:'',song:null,ctx:null,edit:null,sl:null,fs:16,play:0,scrollSpeed:1,pick:0,msg:'',band:null};
+const S={tab:'busca',q:'',setQ:'',song:null,ctx:null,edit:null,sl:null,fs:16,play:0,scrollSpeed:1,pick:0,msg:'',band:null};
 let FB=null,fbUnsub=null;
 const song=id=>D.songs.find(x=>x.id===id);
 let timer=null;const stopPlay=()=>{clearInterval(timer);S.play=0};
@@ -1370,10 +1370,11 @@ function tabs(){const t=[['pub','Público'],['sets','Setlists'],['web','Web'],['
 
 const item=(s,extra='')=>`<button class="item" data-a="open" data-v="${s.id}" data-hold-delete="${s.src!=='com'?'1':'0'}" title="${s.src!=='com'?'Toque e segure para excluir':''}"><span class="ico">♪</span><span style="flex:1"><b>${e(s.t)}</b><small>${e(s.a||'')}</small></span>${s.fav?'<span class="chip">★</span>':''}${extra}</button>`;
 
-function vBusca(){const q=S.q.toLowerCase(),m=s=>!q||(s.t+' '+s.a).toLowerCase().includes(q);
+function searchField(id,value,placeholder,label){return `<div style="position:relative;margin:10px 0 14px"><span aria-hidden="true" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:21px;color:var(--brand);pointer-events:none">⌕</span><input id="${id}" type="search" style="padding-left:42px" placeholder="${placeholder}" value="${e(value)}" aria-label="${label}" autocomplete="off"></div>`}
+function vBusca(){const q=S.q.toLowerCase().trim(),m=s=>!q||(s.t+' '+s.a).toLowerCase().includes(q);
  const mine=D.songs.filter(s=>s.src==='mine'&&m(s)),com=D.songs.filter(s=>s.src==='com'&&m(s)),any=mine.length+com.length;
  return `<p class="sub">Qual música você quer tocar?</p>
- <input id="q" type="search" placeholder="Título ou artista" value="${e(S.q)}" aria-label="Buscar música" autocomplete="off">
+ ${searchField('q',S.q,'Pesquisar música ou artista…','Pesquisar músicas fora das playlists')}
  ${mine.length?'<h2>Suas cifras</h2>'+mine.map(s=>item(s)).join(''):''}
  ${com.length?'<h2>Comunidade</h2>'+com.map(s=>item(s)).join(''):''}
  ${!any?'<div class="empty">Nada encontrado para essa busca.</div>':''}
@@ -1714,15 +1715,18 @@ function vPub(){const l=D.songs.filter(s=>s.src==='com');return `<h1>Público</h
 
 function vSets(){
  if(S.sl){const l=D.sets.find(x=>x.id===S.sl);if(!l){S.sl=null;return vSets()}
-  const opts=D.songs.filter(s=>!l.items.includes(s.id));
+  const opts=D.songs.filter(s=>!l.items.includes(s.id)),q=(S.setQ||'').toLowerCase().trim();
+  const matches=l.items.map((id,i)=>({id,i,s:song(id)})).filter(x=>x.s&&(!q||(x.s.t+' '+x.s.a).toLowerCase().includes(q)));
   return `<div class="top"><button class="btn ghost" data-a="back">‹ Voltar</button></div><h1>${e(l.n)}</h1><p class="sub" style="text-align:left">${l.items.length} música(s) ${l.shared?'· compartilhada':''}</p><div class="row"><button class="btn ghost" data-a="renameset">Renomear setlist</button><button class="btn ghost" data-a="share">${l.shared?'Parar de compartilhar':'Marcar como compartilhada'}</button></div>
-  ${l.items.map((id,i)=>{const s=song(id);return s?`<div class="row" style="margin-bottom:8px"><button class="item" style="margin:0" data-a="openset" data-v="${i}"><span class="ico">${i+1}</span><span><b>${e(s.t)}</b><small>${e(s.a||'')}</small></span></button><button class="tb fit" data-a="up" data-v="${i}" aria-label="Subir">↑</button><button class="tb fit" data-a="down" data-v="${i}" aria-label="Descer">↓</button><button class="tb fit" data-a="rm" data-v="${i}" aria-label="Remover">✕</button></div>`:''}).join('')||'<div class="empty">Setlist vazia. Adicione músicas abaixo.</div>'}
+  ${searchField('setq',S.setQ||'','Pesquisar nesta playlist…','Pesquisar músicas nesta playlist')}
+  ${matches.map(({i,s})=>`<div class="row" style="margin-bottom:8px"><button class="item" style="margin:0" data-a="openset" data-v="${i}"><span class="ico">${i+1}</span><span><b>${e(s.t)}</b><small>${e(s.a||'')}</small></span></button><button class="tb fit" data-a="up" data-v="${i}" aria-label="Subir">↑</button><button class="tb fit" data-a="down" data-v="${i}" aria-label="Descer">↓</button><button class="tb fit" data-a="rm" data-v="${i}" aria-label="Remover">✕</button></div>`).join('')||(q?'<div class="empty">Nenhuma música encontrada nesta playlist.</div>':'<div class="empty">Setlist vazia. Adicione músicas abaixo.</div>')}
   ${opts.length?`<h2>Adicionar música</h2><div class="row"><select id="addsel" aria-label="Música">${opts.map(s=>`<option value="${s.id}">${e(s.t)}</option>`).join('')}</select><button class="btn fit" data-a="addto">Adicionar</button></div>`:''}
   <h2>Opções</h2><div class="row"><button class="btn ghost" data-a="delset">Excluir setlist</button></div>`}
  return `<h1>Minhas setlists</h1>
  <div class="row" style="margin:10px 0 14px"><input id="nl" placeholder="Nome da nova setlist" aria-label="Nome da setlist"><button class="btn fit" data-a="mkset">Criar</button></div>
  <button class="item" data-a="favs"><span class="ico">★</span><span><b>Minhas cifras</b><small>${D.songs.filter(s=>s.src==='mine').length} música(s)</small></span></button>
  ${D.sets.map(l=>`<button class="item" data-a="oset" data-v="${l.id}"><span class="ico">▤</span><span style="flex:1"><b>${e(l.n)}</b><small>${l.items.length} música(s)</small></span>${l.shared?'<span class="chip">compartilhada</span>':''}</button>`).join('')}`}
+
 const RULES=`rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -1862,9 +1866,9 @@ function vEdit(){const s=S.edit;return `<div class="top"><div class="row"><butto
 
 function render(){stopIfLeft();applyTheme();let h;
  if(S.edit)h=vEdit();else if(S.song)h=vSong();else h={busca:vBusca,pub:vPub,sets:vSets,web:vWeb,band:vBand,conta:vConta,ajuda:vAjuda}[S.tab]();
- const q=document.getElementById('q'),f=q&&document.activeElement===q,pos=q&&q.selectionStart;
+ const q=document.getElementById('q'),sq=document.getElementById('setq'),active=q&&document.activeElement===q?'q':sq&&document.activeElement===sq?'setq':null,pos=active?document.getElementById(active).selectionStart:0;
  document.getElementById('app').innerHTML=h;
- tabs();requestAnimationFrame(fitVoltaFragments);if(f){const n=document.getElementById('q');n.focus();n.setSelectionRange(pos,pos)}}
+ tabs();requestAnimationFrame(fitVoltaFragments);if(active){const n=document.getElementById(active);n.focus();n.setSelectionRange(pos,pos)}}
 function stopIfLeft(){if(!S.song&&S.play)stopPlay()}
 let toastTimer=null;
 function toast(m){
@@ -1898,7 +1902,7 @@ document.addEventListener('pointermove',ev=>{
  if(Math.abs(ev.clientX-songHoldX)>14||Math.abs(ev.clientY-songHoldY)>14)clearSongHold();
 });
 
-document.addEventListener('input',ev=>{if(ev.target.id==='q'){S.q=ev.target.value;render()}});
+document.addEventListener('input',ev=>{if(ev.target.id==='q'){S.q=ev.target.value;render()}else if(ev.target.id==='setq'){S.setQ=ev.target.value;render()}});
 document.addEventListener('change',ev=>{if(ev.target.id==='wimg'&&ev.target.files?.[0]){const inp=ev.target;loadChordImage(inp.files[0]).catch(err=>{console.error('Falha ao ler imagem:',err);toast(err?.message||'Não foi possível ler esta imagem.');}).finally(()=>{inp.value='';});}});
 document.addEventListener('change',ev=>{if(ev.target.id==='wfile'&&ev.target.files?.[0]){const inp=ev.target;loadChordFile(inp.files[0]).catch(err=>{console.error('Falha ao carregar arquivo:',err);toast(err?.message||'Não foi possível ler esse arquivo.');}).finally(()=>{inp.value='';});}});
 document.addEventListener('change',ev=>{if(ev.target.id==='etype'&&S.edit){const area=document.getElementById('eb');if(area)S.edit.body=area.value;const meter=document.getElementById('emeter');if(meter)S.edit.meter=meter.value;S.edit.type=ev.target.value;render();}});
@@ -1953,7 +1957,7 @@ document.addEventListener('click',ev=>{if(document.documentElement.classList.con
  case'open':openSong(v);break;
  case'delete-cancel':document.querySelector('.delete-song-overlay')?.remove();break;
  case'delete-confirm':{const target=song(v);document.querySelector('.delete-song-overlay')?.remove();if(!target||target.src==='com'){toast('Esta música não pode ser excluída por aqui.');break;}D.songs=D.songs.filter(x=>x.id!==v);D.sets.forEach(set=>{set.items=set.items.filter(id=>id!==v)});if(S.song===v){S.song=null;S.ctx=null;stopPlay()}save();render();toast('Música excluída.');break}
- case'back':if(S.song){S.song=null;S.ctx=null;stopPlay()}else if(S.sl)S.sl=null;render();break;
+ case'back':if(S.song){S.song=null;S.ctx=null;stopPlay()}else if(S.sl){S.sl=null;S.setQ=''}render();break;
  case'new':S.edit={id:uid(),t:'',a:'',k:'',body:'[Verso]\n',type:'lyrics'};render();break;
  case'edit':S.edit={...s};S.song=null;render();break;
  case'cancel':S.edit=null;render();break;
@@ -1968,7 +1972,7 @@ document.addEventListener('click',ev=>{if(document.documentElement.classList.con
  case'toset':{const t=D.sets.find(x=>x.id===v);if(!t.items.includes(s.id))t.items.push(s.id);save();S.pick=0;toast('Adicionada a “'+t.n+'”');break}
  case'print':document.documentElement.classList.toggle('print-dark',!!D.printDark);window.print();break;
  case'prev':case'next':{const i=S.ctx.i+(a==='next'?1:-1);S.ctx.i=i;S.song=S.ctx.ids[i];stopPlay();render();window.scrollTo(0,0);break}
- case'oset':S.sl=v;render();break;
+ case'oset':S.sl=v;S.setQ='';render();break;
  case'favs':S.tab='busca';S.q='';render();break;
  case'openset':{const ids=l.items.filter(song);openSong(ids[+v],{ids,i:+v});break}
  case'mkset':{const n=document.getElementById('nl').value.trim();if(n){D.sets.unshift({id:uid(),n,items:[],shared:false});save();render()}break}
