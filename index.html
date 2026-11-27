@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.31">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.46">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -754,8 +754,8 @@ function renderLine(line,shift){
   var t=match[0],html="";
   if(/^D\.S\.\s+al\s+Coda$/i.test(t))html='<span class="music-inline-marker ds-coda">D.S. al Coda</span>';
   else if(t==="1ª"||t==="2ª")html='<span class="music-inline-marker volta-marker"><span>'+t+'</span></span>';
-  else if(t==="|"||t==="‖"||t==="||"||t==="|:"||t===":|")html='<span class="music-inline-marker '+((t==="‖"||t==="||")?"doublebar":(t==="|:"?"repeat-start":(t===":|"?"repeat-end":"barline")))+'">'+(t==="||"?"‖":esc(t))+'</span>';
-  else if(t==="𝄆"||t==="𝄇"||t==="𝄋"||t==="𝄌")html='<span class="music-inline-marker '+(t==="𝄆"?"repeat-start":t==="𝄇"?"repeat-end":t==="𝄋"?"segno":"coda-symbol")+'">'+t+'</span>';
+  else if(t==="|"||t==="‖"||t==="||"||t==="|:"||t===":|"){var mc=(t==="‖"||t==="||")?"doublebar":(t==="|:"?"repeat-start":(t===":|"?"repeat-end":"barline"));var red=mc==="repeat-start"||mc==="repeat-end";html='<span class="music-inline-marker '+mc+'"'+(red?' style="color:#ff3030!important;-webkit-text-fill-color:#ff3030!important"':'')+'>'+(t==="||"?"‖":esc(t))+'</span>';}
+  else if(t==="𝄆"||t==="𝄇"||t==="𝄋"||t==="𝄌"){var mc=t==="𝄆"?"repeat-start":t==="𝄇"?"repeat-end":t==="𝄋"?"segno":"coda-symbol";html='<span class="music-inline-marker '+mc+'" style="color:#ff3030!important;-webkit-text-fill-color:#ff3030!important">'+t+'</span>';}
   else{var pre=(t.match(/^\(+/)||[""])[0],core=t.slice(pre.length),suf="";while(core.endsWith(")")&&(core.match(/\)/g)||[]).length>(core.match(/\(/g)||[]).length){core=core.slice(0,-1);suf+=")";}if(!parse(core))html=esc(t);else{var tr=transpose(core);html=esc(pre)+'<button type="button" class="chordTap" data-chord="'+esc(tr)+'" aria-label="Ver opções do acorde '+esc(tr)+'">'+esc(tr)+'</button>'+esc(suf);}}
   out.push(html);last=re.lastIndex;
  }
@@ -928,7 +928,7 @@ document.addEventListener("click",function(ev){
  if(mark){
   var area=document.getElementById("eb");if(!area)return;
   var start=area.selectionStart,end=area.selectionEnd,text=area.value,symbol=mark.getAttribute("data-mark"),ins;
-  if(symbol==="|"||symbol==="‖"||symbol==="D.S. al Coda"){
+  if(["|","‖","||","|:",":|","𝄆","𝄇","D.S. al Coda"].includes(symbol)){
    var lineStart=text.lastIndexOf("\n",Math.max(0,start-1))+1;
    var left=text.slice(lineStart,start),right=text.slice(end);
    var before=left&&!/\s$/.test(left)?" ":"";
@@ -1720,7 +1720,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const meterHtml=`<span class="time-signature-inline" aria-label="Fórmula de compasso ${e(s.meter||'4/4')}"><span>${e(meter[0])}</span><span>${e(meter[1]||'4')}</span></span>`;
  const body=lines.map((l,i)=>{const m=l.match(/^\s*\[(.+)\]\s*$/);let row;
   if(m)row=`<div class="sec">${e(m[1])}</div>`;
-  else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';return marks.split(/\s+/).map(x=>{if(x==="1ª"||x==="2ª"){const w=Math.max(8,Math.min(100,Number(s.voltaRanges&&s.voltaRanges[i]||30)));return '<span class="volta-marker" data-volta-line="'+i+'" style="--volta-width:'+w+'%"><span class="volta-label">'+e(x)+'</span><span class="volta-drag-handle" role="slider" aria-label="Arrastar o fim da chave '+e(x)+'" tabindex="0"></span></span>';}const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="|:"?"repeat-start":x===":|"?"repeat-end":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";return '<span class="'+cls+'">'+e(x)+'</span>';}).join('')})()}</div>`;else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
+  else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';return marks.split(/\s+/).map(x=>{if(x==="1ª"||x==="2ª"){const w=Math.max(8,Math.min(100,Number(s.voltaRanges&&s.voltaRanges[i]||30)));return '<span class="volta-marker" data-volta-line="'+i+'" style="--volta-width:'+w+'%"><span class="volta-label">'+e(x)+'</span><span class="volta-drag-handle" role="slider" aria-label="Arrastar o fim da chave '+e(x)+'" tabindex="0"></span></span>';}const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="|:"?"repeat-start":x===":|"?"repeat-end":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";return '<span class="'+cls+'"'+(['repeat-start','repeat-end','segno','coda-symbol'].includes(cls)?' style="color:#ff3030!important;-webkit-text-fill-color:#ff3030!important"':'')+'>'+e(x)+'</span>';}).join('')})()}</div>`;else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
   else row=`<div class="cs ${s.type==='chords'?'c':'l'}">${e(l)||' '}</div>`;
   return i===openingIndex?`<div class="score-opening">${meterHtml}${row}</div>`:row;
  }).join('');
@@ -1913,7 +1913,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
  window.addEventListener('load',function(){
   var reloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloading)return;reloading=true;location.reload();});
-  navigator.serviceWorker.register('./sw.js?v=1.2.45',{scope:'./',updateViaCache:'none'})
+  navigator.serviceWorker.register('./sw.js?v=1.2.46',{scope:'./',updateViaCache:'none'})
    .then(function(reg){reg.update().catch(function(){});})
    .catch(function(err){console.error('Falha ao ativar PWA SOS CIFRAS:',err);});
  });
