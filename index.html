@@ -1805,10 +1805,12 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const lines=s.body.split('\n');
  const isSectionLine=l=>/^\s*\[.+\]\s*$/.test(l);
  const isMeterLine=l=>/^\s*⟦\d+\/\d+⟧\s*$/.test(l);
- const isContentLine=l=>l.trim()!==''&&!isSectionLine(l)&&!isMeterLine(l);
+ const isNotationLine=l=>!!l.trim()&&window.SOSChord.isNotationLine(l.trim());
+ const isContentLine=l=>l.trim()!==''&&!isSectionLine(l)&&!isMeterLine(l)&&!isNotationLine(l);
  const openingIndex=lines.findIndex(isContentLine);
- const meterAtLine={};
+ const meterAtLine={},openingBarlineAt={},mergedOpeningLines=new Set();
  lines.forEach((line,i)=>{const tm=line.match(/^\s*⟦(\d+\/\d+)⟧\s*$/);if(!tm)return;for(let n=i+1;n<lines.length;n++){if(isContentLine(lines[n])){meterAtLine[n]=tm[1];break;}}});
+ if(openingIndex>0){const prev=lines[openingIndex-1].trim();if(/^(?:\|+|‖|\|\|)(?:\s+(?:\|+|‖|\|\|))*$/.test(prev)){openingBarlineAt[openingIndex]=prev;mergedOpeningLines.add(openingIndex-1);}}
  const meterHtml=(value)=>{const meter=String(value||'4/4').split('/');return `<span class="time-signature-inline" aria-label="Fórmula de compasso ${e(value||'4/4')}"><span>${e(meter[0])}</span><span>${e(meter[1]||'4')}</span></span>`;};
  const voltaSegments={};
  lines.forEach((line,i)=>{
@@ -1827,12 +1829,14 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  });
  const body=lines.map((l,i)=>{const m=l.match(/^\s*\[(.+)\]\s*$/),tm=l.match(/^\s*⟦(\d+\/\d+)⟧\s*$/);let row;
   if(tm)return '';
+  else if(mergedOpeningLines.has(i))return '';
   else if(m)row=`<div class="sec">${e(m[1])}</div>`;
   else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';return marks.split(/\s+/).map(x=>{if(x==="1ª"||x==="2ª"){return '';}const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="𝄂"?"final-bar":(x==="|:"||x===":|")?"legacy-repeat-hidden":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";if(x==="|:"||x===":|")return '';if(x==="𝄂")return '<span class="final-bar" aria-label="Barra final"></span>';return '<span class="'+cls+'"'+(['repeat-start','repeat-end','segno','coda-symbol'].includes(cls)?' style="color:#ff3030!important;-webkit-text-fill-color:#ff3030!important"':'')+'>'+e(x)+'</span>';}).join('')})()}</div>`;else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
   else row=`<div class="cs ${s.type==='chords'?'c':'l'}">${e(l)||' '}</div>`;
   const segments=(voltaSegments[i]||[]).map(r=>'<span class="volta-fragment '+(r.first?'is-first ':'')+(r.last?'is-last':'')+'" data-volta-left="'+r.left+'" data-volta-right="'+r.right+'" style="left:'+r.left+'%;width:'+Math.max(0,r.right-r.left)+'%">'+(r.first?'<span class="volta-label-inline">'+e(r.label)+'</span><span class="volta-endpoint start" data-volta-key="'+r.key+'" data-volta-endpoint="start" role="slider" aria-label="Mover início da chave" tabindex="0"></span>':'')+(r.last?'<span class="volta-endpoint end" data-volta-key="'+r.key+'" data-volta-endpoint="end" role="slider" aria-label="Mover fim da chave" tabindex="0"></span>':'')+'</span>').join('');
   const meterValue=meterAtLine[i]||(i===openingIndex?(s.meter||'4/4'):null);
-  return '<div class="score-row" data-score-line="'+i+'">'+(meterValue?'<div class="score-opening">'+meterHtml(meterValue)+row+'</div>':row)+segments+'</div>';
+  const openingBarline=openingBarlineAt[i]?'<div class="music-markers">'+openingBarlineAt[i].split(/\s+/).map(x=>'<span class="'+(x==='‖'||x==='||'?'doublebar':'barline')+'">'+e(x)+'</span>').join('')+'</div>':'';
+  return '<div class="score-row" data-score-line="'+i+'">'+(meterValue?'<div class="score-opening">'+openingBarline+meterHtml(meterValue)+row+'</div>':row)+segments+'</div>';
  }).join('');
  const k=s.k?nn(s.k.replace(/m$/,''),cur)+(/m$/.test(s.k)?'m':''):'—';
  const pos=S.ctx?S.ctx.i+1+'/'+S.ctx.ids.length:'';
