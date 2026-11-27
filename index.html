@@ -1431,6 +1431,7 @@ function organizeImportedText(raw,chordOnly){
    inBank=false;
   }
   if(!t){if(out.length&&out[out.length-1]!=='')out.push('');continue;}
+  if(/^\s*⟦\d+\/\d+⟧\s*$/.test(t)){out.push(t);continue;}
   if(window.SOSChord.isNotationLine(t)){out.push(t);continue;}
   if(/^https?:\/\//i.test(t)||/^(Title|URL Source|Markdown Content):/i.test(t))continue;
   if(/^Essa cifra te ajudou\?/i.test(t))continue;
