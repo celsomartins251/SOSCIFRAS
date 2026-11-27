@@ -1803,12 +1803,12 @@ function vConta(){return `<h1>Conta</h1><h2>Aparência</h2><div class="row"><but
 
 function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const lines=s.body.split('\n');
- const isSectionLine=l=>/^\\s*\\[.+\\]\\s*$/.test(l);
- const isMeterLine=l=>/^\\s*⟦\\d+\\/\\d+⟧\\s*$/.test(l);
+ const isSectionLine=l=>/^\s*\[.+\]\s*$/.test(l);
+ const isMeterLine=l=>/^\s*⟦\d+\/\d+⟧\s*$/.test(l);
  const isContentLine=l=>l.trim()!==''&&!isSectionLine(l)&&!isMeterLine(l);
  const openingIndex=lines.findIndex(isContentLine);
  const meterAtLine={};
- lines.forEach((line,i)=>{const tm=line.match(/^\\s*⟦(\\d+\\/\\d+)⟧\\s*$/);if(!tm)return;for(let n=i+1;n<lines.length;n++){if(isContentLine(lines[n])){meterAtLine[n]=tm[1];break;}}});
+ lines.forEach((line,i)=>{const tm=line.match(/^\s*⟦(\d+\/\d+)⟧\s*$/);if(!tm)return;for(let n=i+1;n<lines.length;n++){if(isContentLine(lines[n])){meterAtLine[n]=tm[1];break;}}});
  const meterHtml=(value)=>{const meter=String(value||'4/4').split('/');return `<span class="time-signature-inline" aria-label="Fórmula de compasso ${e(value||'4/4')}"><span>${e(meter[0])}</span><span>${e(meter[1]||'4')}</span></span>`;};
  const voltaSegments={};
  lines.forEach((line,i)=>{
