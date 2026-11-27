@@ -811,7 +811,7 @@ function panel(){
  html+='</select><div class="chord-diagram-title">'+esc(x.name)+'</div><div class="scale-neck-host">'+frettedNeck(x,key)+'</div></section></div>';
  return html;
 }
-window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\\s𝄆𝄇𝄋𝄌①②1ª2ª.\\-|‖:]+|D\\.S\\. al Coda)$/.test(t)&&(/[|‖:𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\\.S\\. al Coda/.test(t))}}};
+window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\s𝄆𝄇𝄋𝄌①②1ª2ª.\-|‖:]+|D\.S\. al Coda)$/.test(t)&&(/[|‖:𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\.S\. al Coda/.test(t))}};
 document.addEventListener("change",function(ev){
  var select=ev.target;
  if(!select||select.id!=="chord-instrument")return;
@@ -1640,7 +1640,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const meterHtml=`<span class="time-signature-inline" aria-label="Fórmula de compasso ${e(s.meter||'4/4')}"><span>${e(meter[0])}</span><span>${e(meter[1]||'4')}</span></span>`;
  const body=lines.map((l,i)=>{const m=l.match(/^\s*\[(.+)\]\s*$/);let row;
   if(m)row=`<div class="sec">${e(m[1])}</div>`;
-  else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';return marks.split(/\\s+/).map(x=>{if(x==="1ª"||x==="2ª")return '<span class="volta-marker"><span>'+e(x)+'</span></span>';const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="|:"?"repeat-start":x===":|"?"repeat-end":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";return '<span class="'+cls+'">'+e(x)+'</span>';}).join('')})()}</div>`;else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
+  else if(window.SOSChord.isNotationLine(l.trim()))row=\`<div class="music-markers">\${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';return marks.split(/\s+/).map(x=>{if(x==="1ª"||x==="2ª")return '<span class="volta-marker"><span>'+e(x)+'</span></span>';const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="|:"?"repeat-start":x===":|"?"repeat-end":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";return '<span class="'+cls+'">'+e(x)+'</span>';}).join('')})()}</div>\`else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
   else row=`<div class="cs ${s.type==='chords'?'c':'l'}">${e(l)||' '}</div>`;
   return i===openingIndex?`<div class="score-opening">${meterHtml}${row}</div>`:row;
  }).join('');
