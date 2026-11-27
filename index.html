@@ -811,7 +811,7 @@ function panel(){
  html+='</select><div class="chord-diagram-title">'+esc(x.name)+'</div><div class="scale-neck-host">'+frettedNeck(x,key)+'</div></section></div>';
  return html;
 }
-window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\s𝄆𝄇𝄋𝄌①②1ª2ª.\-|‖]+|D\.S\. al Coda)$/.test(t)&&(/[|‖𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\.S\. al Coda/.test(t));}};
+window.SOSChord={renderLine:renderLine,panel:panel,isNotationLine:function(t){return /^(?:[\\s𝄆𝄇𝄋𝄌①②1ª2ª.\\-|‖:]+|D\\.S\\. al Coda)$/.test(t)&&(/[|‖:𝄆𝄇𝄋𝄌①②]|1ª|2ª|D\\.S\\. al Coda/.test(t))}}};
 document.addEventListener("change",function(ev){
  var select=ev.target;
  if(!select||select.id!=="chord-instrument")return;
@@ -849,12 +849,12 @@ document.addEventListener("click",function(ev){
   var area=document.getElementById("eb");if(!area)return;
   var start=area.selectionStart,end=area.selectionEnd,text=area.value,symbol=mark.getAttribute("data-mark"),ins;
   if(symbol==="|"||symbol==="‖"||symbol==="D.S. al Coda"){
-   var lineStart=text.lastIndexOf("\\n",Math.max(0,start-1))+1;
+   var lineStart=text.lastIndexOf("\n",Math.max(0,start-1))+1;
    var left=text.slice(lineStart,start),right=text.slice(end);
    var before=left&&!/\\s$/.test(left)?" ":"";
    var after=right&&!/^\\s/.test(right)?" ":"";
    ins=before+symbol+after;
-  }else{ins="\\n"+symbol+"\\n";}
+  }else{ins="\n"+symbol+"\n";}
   area.value=text.slice(0,start)+ins+text.slice(end);
   area.focus();area.selectionStart=area.selectionEnd=start+ins.length;return;
  }
@@ -1640,8 +1640,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const meterHtml=`<span class="time-signature-inline" aria-label="Fórmula de compasso ${e(s.meter||'4/4')}"><span>${e(meter[0])}</span><span>${e(meter[1]||'4')}</span></span>`;
  const body=lines.map((l,i)=>{const m=l.match(/^\s*\[(.+)\]\s*$/);let row;
   if(m)row=`<div class="sec">${e(m[1])}</div>`;
-  else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim().split(/\s+/),out=[];for(let j=0;j<marks.length;j++){const x=marks[j],next=marks[j+1];if(x==='𝄌'&&(next==='|'||next==='‖')){out.push(x==='1ª'||x==='2ª'?'<span class="volta-marker"><span>'+e(x)+'</span></span>':'<span class="'+(x==='|'?'barline':x==='‖'?'doublebar':x==='𝄌'?'coda-symbol':x==='𝄆'?'repeat-start':x==='𝄇'?'repeat-end':x==='𝄋'?'segno':'')+'">'+e(x)+'</span>');j++;continue;}if((x==='|'||x==='‖')&&next==='𝄌'){out.push(`<span class="coda-bar"><span class="coda-symbol">𝄌</span><span class="${x==='‖'?'doublebar':'barline'}">${e(x)}</span></span>`);j++;continue;}out.push(`<span class="${x==='|'?'barline':x==='‖'?'doublebar':x==='𝄌'?'coda-symbol':''}">${e(x)}</span>`);}return out.join('')})()}</div>`;
-  else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
+  else if(window.SOSChord.isNotationLine(l.trim()))row=`<div class="music-markers">${(()=>{const marks=l.trim();if(marks==="D.S. al Coda")return '<span class="ds-coda">D.S. al Coda</span>';return marks.split(/\\s+/).map(x=>{if(x==="1ª"||x==="2ª")return '<span class="volta-marker"><span>'+e(x)+'</span></span>';const cls=x==="|"?"barline":(x==="‖"||x==="||")?"doublebar":x==="|:"?"repeat-start":x===":|"?"repeat-end":x==="𝄆"?"repeat-start":x==="𝄇"?"repeat-end":x==="𝄋"?"segno":x==="𝄌"?"coda-symbol":"";return '<span class="'+cls+'">'+e(x)+'</span>';}).join('')})()}</div>`;else if(isChordLine(l)){const normalized=normalizeChordBarSpacing(l);row=`<div class="cs c">${window.SOSChord.renderLine(normalized,cur)||' '}</div>`;}
   else row=`<div class="cs ${s.type==='chords'?'c':'l'}">${e(l)||' '}</div>`;
   return i===openingIndex?`<div class="score-opening">${meterHtml}${row}</div>`:row;
  }).join('');
@@ -1659,7 +1658,7 @@ function vEdit(){const s=S.edit;return `<div class="top"><div class="row"><butto
  <label for="et">Título</label><input id="et" value="${e(s.t)}"><div class="row"><div><label for="ea">Artista</label><input id="ea" value="${e(s.a)}"></div><div><label for="ek">Tom</label><input id="ek" value="${e(s.k)}" placeholder="Ex.: G"></div></div>
  <div class="row"><div><label for="emeter">Fórmula de compasso</label><input id="emeter" type="text" inputmode="text" value="${e(s.meter||'4/4')}" placeholder="Ex.: 4/4, 3/4, 7/8"></div></div>
  <label for="etype">Formato da cifra</label><select id="etype"><option value="lyrics" ${(s.type||'lyrics')==='lyrics'?'selected':''}>Acordes com letra</option><option value="chords" ${s.type==='chords'?'selected':''}>Somente acordes, sem letra</option></select>
- <label for="eb">Conteúdo (use [Intro], [Verso], [Refrão], [Ponte] e [Final] para separar as partes)</label>${s.type==='chords'?`<div class="mark-tools" aria-label="Símbolos musicais"><button type="button" data-mark="𝄆">𝄆 Ritornelo início</button><button type="button" data-mark="𝄇">𝄇 Ritornelo fim</button><button type="button" data-mark="1ª">1ª chave</button><button type="button" data-mark="2ª">2ª chave</button><button type="button" data-mark="𝄋">𝄋 Segno</button><button type="button" data-mark="𝄌">𝄌 Coda</button><button type="button" data-mark="D.S. al Coda">D.S. al Coda</button><button type="button" data-mark="|">| Barra de compasso</button><button type="button" data-mark="‖">‖ Barra dupla</button></div>`:''}<textarea id="eb" spellcheck="false">${e(s.body)}</textarea>`}
+ <label for="eb">Conteúdo (use [Intro], [Verso], [Refrão], [Ponte] e [Final] para separar as partes)</label><div class="mark-tools" aria-label="Símbolos musicais"><button type="button" data-mark="|">| Barra de compasso</button><button type="button" data-mark="‖">‖ Barra dupla</button><button type="button" data-mark="|:">|: Início do ritornelo</button><button type="button" data-mark=":|">:| Fim do ritornelo</button><button type="button" data-mark="𝄆">𝄆 Ritornelo início</button><button type="button" data-mark="𝄇">𝄇 Ritornelo fim</button><button type="button" data-mark="1ª">1ª chave</button><button type="button" data-mark="2ª">2ª chave</button><button type="button" data-mark="𝄋">𝄋 Segno (S)</button><button type="button" data-mark="𝄌">𝄌 Coda</button><button type="button" data-mark="D.S. al Coda">D.S. al Coda</button></div><textarea id="eb" spellcheck="false">${e(s.body)}</textarea>`}
 
 function render(){stopIfLeft();applyTheme();let h;
  if(S.edit)h=vEdit();else if(S.song)h=vSong();else h={busca:vBusca,pub:vPub,sets:vSets,web:vWeb,band:vBand,conta:vConta,ajuda:vAjuda}[S.tab]();
