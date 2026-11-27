@@ -1964,7 +1964,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
  window.addEventListener('load',function(){
   var reloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloading)return;reloading=true;location.reload();});
-  navigator.serviceWorker.register('./sw.js?v=1.2.51',{scope:'./',updateViaCache:'none'})
+  navigator.serviceWorker.register('./sw.js?v=1.2.52',{scope:'./',updateViaCache:'none'})
    .then(function(reg){reg.update().catch(function(){});})
    .catch(function(err){console.error('Falha ao ativar PWA SOS CIFRAS:',err);});
  });
