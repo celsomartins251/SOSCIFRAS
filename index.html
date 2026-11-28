@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.71">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.72">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1750,7 +1750,7 @@ async function pasteFromClipboard(){
  }catch(_){toast('O aparelho não permitiu ler a área de transferência. Cole manualmente no campo de conteúdo.')}
 }
 function vWeb(){return `<h1>Buscar e importar cifras</h1><p class="sub" style="text-align:left">Pesquise a música ou cole o link direto da página. O aplicativo tenta ler o conteúdo e organizar as seções automaticamente. Se o site bloquear a leitura, use copiar e colar.</p><label for="webq">Música ou artista</label><input id="webq" placeholder="Ex.: nome da música — artista"><div class="row" style="margin:8px 0"><button class="btn" data-a="webgoogle">Google</button><button class="btn ghost" data-a="webbing">Bing</button></div><label for="wurl">Link da cifra</label><input id="wurl" type="url" placeholder="https://site.com/cifra-da-musica"><button class="btn" style="width:100%;margin-top:8px" data-a="webfetch">Buscar cifra pelo link</button><h2>Dados da música</h2><label for="wtitle">Título</label><input id="wtitle" placeholder="Título da música"><label for="wartist">Artista</label><input id="wartist" placeholder="Artista"><label for="wkey">Tom original (opcional)</label><input id="wkey" placeholder="Ex.: G, F#m, Bb"><button type="button" id="wonly" class="btn ghost" style="width:100%;margin-top:12px;text-align:left" data-a="only" aria-pressed="false">☐ Importar somente os acordes, sem a letra</button><label for="wimg">Imagem da cifra (foto ou print)</label><div class="row"><button class="btn ghost" type="button" data-a="imgpick">Ler cifra de uma imagem</button><button class="btn ghost" type="button" data-a="paste">Colar da área de transferência</button></div><input id="wimg" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true"><label for="wfile">Arquivo de cifra</label><div class="row"><button class="btn ghost" type="button" data-a="filepick">Carregar arquivo do dispositivo</button><span class="sub" style="text-align:left;margin:0">TXT, DOCX (Word), PDF, imagem, ChordPro, CRD e HTML</span></div><input id="wfile" class="vh" type="file" tabindex="-1" aria-hidden="true"><label for="wbody">Conteúdo importado, arquivo ou cifra copiada</label><textarea id="wbody" placeholder="[Intro]\nG  D  Em  C\n\n[Verso]\nG..." spellcheck="false"></textarea><button class="btn" style="width:100%;margin-top:10px" data-a="webimport">Importar para minhas cifras</button>`}
-function vBand(){return `<h1>Banda sincronizada</h1><p class="sub" style="text-align:left">O líder cria o grupo e compartilha um código. Os músicos entram somente com esse código, sem criar conta ou informar e-mail e senha.</p><h2>Configuração Firebase</h2><label for="fbapi">API Key</label><input id="fbapi" placeholder="Firebase apiKey" value="${e((D.firebase||{}).apiKey||'')}"><label for="fbdom">Auth Domain</label><input id="fbdom" placeholder="projeto.firebaseapp.com" value="${e((D.firebase||{}).authDomain||'')}"><label for="fbpid">Project ID</label><input id="fbpid" placeholder="Firebase Project ID" value="${e((D.firebase||{}).projectId||'')}"><label for="fbapp">App ID</label><input id="fbapp" placeholder="Firebase App ID" value="${e((D.firebase||{}).appId||'')}"><button class="btn" style="width:100%;margin-top:8px" data-a="fbconfig">Salvar configuração</button><h2>Acesso do líder</h2><p class="sub" style="text-align:left">O líder continua usando sua conta de e-mail e senha.</p><label for="fbemail">E-mail do líder</label><input id="fbemail" type="email" autocomplete="username" placeholder="seu@email.com"><label for="fbpass">Senha</label><input id="fbpass" type="password" autocomplete="current-password" placeholder="Senha"><div class="row" style="margin-top:8px"><button class="btn" data-a="fblogin">Entrar</button><button class="btn ghost" data-a="fbcreate">Criar conta</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbgroup">Criar grupo e ser líder</button><h2>Acesso dos músicos</h2><p class="sub" style="text-align:left">Digite o código fornecido pelo líder. O acesso será criado automaticamente neste aparelho.</p><div class="row"><input id="fbcode" placeholder="Código do grupo" value="${e(S.band?.code||'')}"><button class="btn" data-a="fbjoin">Entrar como músico</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbsync">Enviar repertório e setlists aos membros</button><p id="fbstatus" class="sub" style="text-align:left">${S.band?.code?'Código salvo: '+e(S.band.code)+'. Toque em Entrar como músico para reconectar.':'Ainda não conectado.'}</p><p class="sub" style="text-align:left">Todos os aparelhos precisam usar a mesma configuração Firebase. No Firebase, ative E-mail/senha e Anônimo em Authentication e configure o Firestore.</p>`}
+function vBand(){return `<h1>Banda sincronizada</h1><p class="sub" style="text-align:left">O líder cria o grupo e compartilha um código. Os músicos entram somente com esse código, sem criar conta ou informar e-mail e senha.</p><h2>Configuração Firebase</h2><label for="fbapi">API Key</label><input id="fbapi" placeholder="Firebase apiKey" value="${e((D.firebase||{}).apiKey||'')}"><label for="fbdom">Auth Domain</label><input id="fbdom" placeholder="projeto.firebaseapp.com" value="${e((D.firebase||{}).authDomain||'')}"><label for="fbpid">Project ID</label><input id="fbpid" placeholder="Firebase Project ID" value="${e((D.firebase||{}).projectId||'')}"><label for="fbapp">App ID</label><input id="fbapp" placeholder="Firebase App ID" value="${e((D.firebase||{}).appId||'')}"><button class="btn" style="width:100%;margin-top:8px" data-a="fbconfig">Salvar configuração</button><h2>Acesso do líder</h2><p class="sub" style="text-align:left">O líder continua usando sua conta de e-mail e senha.</p><label for="fbemail">E-mail do líder</label><input id="fbemail" type="email" autocomplete="username" placeholder="seu@email.com"><label for="fbpass">Senha</label><input id="fbpass" type="password" autocomplete="current-password" placeholder="Senha"><div class="row" style="margin-top:8px"><button class="btn" data-a="fblogin">Entrar</button><button class="btn ghost" data-a="fbcreate">Criar conta</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbgroup">Criar grupo e ser líder</button><h2>Acesso dos músicos</h2><p class="sub" style="text-align:left">Digite o código fornecido pelo líder. O acesso será criado automaticamente neste aparelho.</p><div class="row"><input id="fbcode" placeholder="Código do grupo" value="${e(S.band?.code||'')}"><button class="btn" data-a="fbjoin">Entrar como músico</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbsync">Enviar repertório e setlists aos membros</button><p id="fbstatus" class="sub" style="text-align:left">${e(S.bandSyncStatus||(S.band?.code?'Código salvo: '+S.band.code+'. Toque em Entrar como músico para reconectar.':'Ainda não conectado.'))}</p><p class="sub" style="text-align:left">Todos os aparelhos precisam usar a mesma configuração Firebase. No Firebase, ative E-mail/senha e Anônimo em Authentication e configure o Firestore.</p>`}
 function vPub(){const l=D.songs.filter(s=>s.src==='com');return `<h1>Público</h1><p class="sub" style="text-align:left">Cifras compartilhadas pela comunidade.</p>${l.map(s=>item(s)).join('')||'<div class="empty">Nenhuma cifra pública ainda.</div>'}`}
 
 function vSets(){
@@ -2032,35 +2032,70 @@ document.addEventListener('click',ev=>{if(document.documentElement.classList.con
  case'reset':D=JSON.parse(JSON.stringify(SEED));save();toast('Exemplos restaurados');break;
  }});
 
+async function fbWaitAuth(auth){
+ if(auth.currentUser)return auth.currentUser;
+ if(typeof auth.authStateReady==='function'){await auth.authStateReady();return auth.currentUser;}
+ return await new Promise((resolve,reject)=>{let unsub=()=>{};unsub=FB.onAuthStateChanged(auth,user=>{unsub();resolve(user)},err=>{unsub();reject(err)});});
+}
+function fbPayloadCheck(songs,sets){
+ const songList=Array.isArray(songs)?songs:[],setList=Array.isArray(sets)?sets:[],ids=new Set(songList.map(x=>String(x?.id??''))),broken=[];
+ setList.forEach(set=>(Array.isArray(set?.items)?set.items:[]).forEach(id=>{if(!ids.has(String(id)))broken.push({set:set?.n||set?.id||'Setlist',id:String(id)});}));
+ return {songs:songList.length,sets:setList.length,broken};
+}
+function fbPayloadBytes(value){try{return new TextEncoder().encode(JSON.stringify(value)).length}catch(_){return JSON.stringify(value).length}}
 async function fbDo(action){
- const status=m=>{const x=document.getElementById('fbstatus');if(x)x.textContent=m;};
+ const status=m=>{S.bandSyncStatus=m;const x=document.getElementById('fbstatus');if(x)x.textContent=m;};
  try{
   const cfg=D.firebase||{};if(!cfg.apiKey||!cfg.projectId||!cfg.appId||!cfg.authDomain){status('Preencha e salve os quatro campos de configuração Firebase.');return}
-  if(!FB){const [appM,authM,dbM]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js')]);const app=appM.initializeApp(cfg,'soscifras');const auth=authM.getAuth(app);const db=dbM.getFirestore(app);FB={...appM,...authM,...dbM,app,auth,db};}
+  if(!FB){const [appM,authM,dbM]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js')]);const app=appM.initializeApp(cfg,'soscifras');const auth=authM.getAuth(app),db=dbM.getFirestore(app);FB={...appM,...authM,...dbM,app,auth,db};}
   const {auth,db,createUserWithEmailAndPassword,signInWithEmailAndPassword,signInAnonymously,doc,setDoc,getDoc,onSnapshot,updateDoc,arrayUnion}=FB;
   const email=document.getElementById('fbemail')?.value.trim(),pass=document.getElementById('fbpass')?.value;
   if(action==='fbcreate'){if(!email||!pass){status('Informe o e-mail e a senha do líder.');return}await createUserWithEmailAndPassword(auth,email,pass);status('Conta do líder criada e conectada: '+auth.currentUser.email);return}
-  if(action==='fblogin'){if(!email||!pass){status('Informe o e-mail e a senha do líder.');return}await signInWithEmailAndPassword(auth,email,pass);status('Líder conectado: '+auth.currentUser.email);if(S.band?.code)await fbReconnectSavedGroup(status);return}
-  if(action==='fbjoin'&&!auth.currentUser){status('Conectando como músico…');await signInAnonymously(auth);}
+  if(action==='fblogin'){if(!email||!pass){status('Informe o e-mail e a senha do líder.');return}await signInWithEmailAndPassword(auth,email,pass);await fbWaitAuth(auth);status('Líder conectado: '+auth.currentUser.email);if(S.band?.code)await fbReconnectSavedGroup(status);return}
+  await fbWaitAuth(auth);
+  if(action==='fbjoin'&&!auth.currentUser){status('Conectando como músico…');await signInAnonymously(auth);await fbWaitAuth(auth)}
   if(!auth.currentUser){status('Entre na conta do líder ou use Entrar como músico.');return}
   if(action==='fbgroup'){
    if(auth.currentUser.isAnonymous){status('Para criar um grupo, entre primeiro com a conta de e-mail do líder.');return}
-   const payloadSize=JSON.stringify({songs:D.songs,sets:D.sets}).length;if(payloadSize>850000){status('Repertório muito grande para um único documento do Firestore. Reduza o conteúdo antes de criar o grupo.');return}const code=Math.random().toString(36).slice(2,10).toUpperCase();const ref=doc(db,'sos_cifras_groups',code);
+   const payload={songs:D.songs,sets:D.sets},bytes=fbPayloadBytes(payload);if(bytes>850000){status('Repertório muito grande ('+Math.round(bytes/1024)+' KB) para um único documento Firestore.');return}
+   const code=Math.random().toString(36).slice(2,10).toUpperCase(),ref=doc(db,'sos_cifras_groups',code);
    await setDoc(ref,{code,owner:auth.currentUser.uid,leader:auth.currentUser.uid,members:[auth.currentUser.uid],currentSong:null,songs:D.songs,sets:D.sets,updatedAt:Date.now()});
-   S.band={code,role:'leader'};saveBandSession();document.getElementById('fbcode').value=code;status('Grupo criado. Compartilhe este código com os músicos: '+code);fbListen(ref);return;
+   S.band={code,role:'leader'};saveBandSession();const field=document.getElementById('fbcode');if(field)field.value=code;fbListen(ref);status('Grupo criado: '+code+'. Repertório inicial: '+D.songs.length+' músicas e '+D.sets.length+' setlists.');return;
   }
   if(action==='fbjoin'){
-   const code=document.getElementById('fbcode').value.trim().toUpperCase();if(!code){status('Digite o código que o líder compartilhou.');return}const ref=doc(db,'sos_cifras_groups',code);const snap=await getDoc(ref);if(!snap.exists()){status('Código não encontrado. Confira o código com o líder.');return}await updateDoc(ref,{members:arrayUnion(auth.currentUser.uid)});S.band={code,role:snap.data().leader===auth.currentUser.uid?'leader':'member'};saveBandSession();status('Conectado ao grupo '+code+'. Sincronizando repertório…');fbListen(ref);return;
+   const code=document.getElementById('fbcode')?.value.trim().toUpperCase();if(!code){status('Digite o código que o líder compartilhou.');return}
+   const ref=doc(db,'sos_cifras_groups',code),snap=await getDoc(ref);if(!snap.exists()){status('Código não encontrado. Confira o código com o líder.');return}
+   const data=snap.data();if(!Array.isArray(data.members)||!data.members.includes(auth.currentUser.uid))await updateDoc(ref,{members:arrayUnion(auth.currentUser.uid)});
+   S.band={code,role:data.leader===auth.currentUser.uid?'leader':'member'};saveBandSession();fbListen(ref);status('Código aceito. Lendo o repertório enviado pelo líder…');return;
   }
   if(action==='fbsync'){
-   if(S.band?.role!=='leader'){status('Somente o líder pode enviar o repertório.');return}const payloadSize=JSON.stringify({songs:D.songs,sets:D.sets}).length;if(payloadSize>850000){status('Repertório muito grande para sincronizar em um único documento Firestore.');return}await updateDoc(doc(db,'sos_cifras_groups',S.band.code),{songs:D.songs,sets:D.sets,updatedAt:Date.now()});status('Repertório e setlists enviados ao grupo.');return;
+   if(S.band?.role!=='leader'||!S.band?.code){status('Entre no grupo como líder antes de enviar.');return}
+   const ref=doc(db,'sos_cifras_groups',S.band.code),before=await getDoc(ref);if(!before.exists()){status('O grupo não existe mais no Firestore.');return}
+   if(before.data().leader!==auth.currentUser.uid){status('A conta conectada não é a líder registrada deste grupo.');return}
+   const payload={songs:D.songs,sets:D.sets},bytes=fbPayloadBytes(payload),check=fbPayloadCheck(payload.songs,payload.sets);
+   if(bytes>850000){status('Repertório muito grande ('+Math.round(bytes/1024)+' KB) para um único documento Firestore.');return}
+   if(check.broken.length){status('Envio bloqueado: '+check.broken.length+' referência(s) de música não encontrada(s) nas setlists. Corrija as listas antes de enviar.');return}
+   await updateDoc(ref,{songs:payload.songs,sets:payload.sets,updatedAt:Date.now()});const verify=await getDoc(ref);if(!verify.exists()){status('O envio foi feito, mas não consegui confirmar a leitura do documento.');return}
+   const received=verify.data(),result=fbPayloadCheck(received.songs,received.sets),same=Array.isArray(received.songs)&&Array.isArray(received.sets)&&received.songs.length===check.songs&&received.sets.length===check.sets&&JSON.stringify(received.songs.map(x=>String(x?.id??'')))===JSON.stringify(payload.songs.map(x=>String(x?.id??'')));
+   if(!same||result.broken.length){status('O Firestore recebeu dados diferentes do esperado. Músicas: '+result.songs+'; setlists: '+result.sets+'; referências quebradas: '+result.broken.length+'.');return}
+   status('Envio confirmado no Firestore: '+result.songs+' músicas e '+result.sets+' setlists. Os músicos conectados receberão a atualização.');return;
   }
- }catch(err){console.error(err);status('Falha Firebase: '+(err.code||err.message||'erro desconhecido'));}
+ }catch(err){console.error('SOS Cifras / Banda:',err);status('Falha Firebase: '+(err.code||err.message||'erro desconhecido')+'. Verifique a conexão e as regras do Firestore.')}
 }
-function fbListen(ref){if(fbUnsub)fbUnsub();fbUnsub=FB.onSnapshot(ref,snap=>{if(!snap.exists())return;const d=snap.data();if(S.band?.role!=='leader'){if(Array.isArray(d.songs))D.songs=d.songs;if(Array.isArray(d.sets))D.sets=d.sets;if(d.currentSong&&song(d.currentSong)){S.song=d.currentSong;S.tab='busca'}save();render()}const status=document.getElementById('fbstatus');if(status)status.textContent='Grupo '+d.code+' conectado · '+(d.leader===FB.auth.currentUser?.uid?'Você é líder':'sincronizado com o líder');},err=>{const status=document.getElementById('fbstatus');if(status)status.textContent='Erro na sincronização: '+err.message;});}
-async function fbReconnectSavedGroup(status){try{if(!S.band?.code||!FB?.auth.currentUser)return;const ref=FB.doc(FB.db,'sos_cifras_groups',S.band.code);const snap=await FB.getDoc(ref);if(!snap.exists()){status('O grupo salvo não foi encontrado. Confira o código e entre novamente.');return}const data=snap.data();if(!Array.isArray(data.members)||!data.members.includes(FB.auth.currentUser.uid)){status('Esta conta não pertence mais ao grupo. Digite o código para entrar novamente.');return}S.band.role=data.leader===FB.auth.currentUser.uid?'leader':'member';saveBandSession();fbListen(ref);status('Reconectado ao grupo '+S.band.code+'.');}catch(err){status('Não foi possível reconectar: '+(err.code||err.message));}}
-async function fbSyncCurrent(id){try{if(FB&&S.band?.role==='leader')await FB.updateDoc(FB.doc(FB.db,'sos_cifras_groups',S.band.code),{currentSong:id,updatedAt:Date.now()})}catch(e){console.error(e)}}
-
+function fbListen(ref){
+ if(fbUnsub)fbUnsub();
+ fbUnsub=FB.onSnapshot(ref,snap=>{
+  if(!snap.exists()){S.bandSyncStatus='O grupo não foi encontrado no Firestore.';return}
+  const data=snap.data();
+  if(S.band?.role!=='leader'){
+   if(!Array.isArray(data.songs)||!Array.isArray(data.sets)){S.bandSyncStatus='Conectado, mas o líder ainda não enviou um repertório válido. Peça que ele toque em Enviar repertório e setlists.'}
+   else{const check=fbPayloadCheck(data.songs,data.sets);D.songs=data.songs;D.sets=data.sets;save();S.bandSyncStatus='Recebido do líder: '+check.songs+' músicas e '+check.sets+' setlists.'+(check.broken.length?' Atenção: '+check.broken.length+' referência(s) de música não encontradas.':' Todas as músicas das setlists foram localizadas.');if(data.currentSong&&song(data.currentSong)){S.song=data.currentSong;S.tab='busca'}render()}
+  }else{S.bandSyncStatus='Grupo '+data.code+' ativo como líder. Membros: '+(Array.isArray(data.members)?data.members.length:0)+'.'}
+  const node=document.getElementById('fbstatus');if(node)node.textContent=S.bandSyncStatus;
+ },err=>{S.bandSyncStatus='Erro na sincronização: '+(err.code||err.message);const node=document.getElementById('fbstatus');if(node)node.textContent=S.bandSyncStatus});
+}
+async function fbReconnectSavedGroup(status){try{if(!S.band?.code||!FB?.auth.currentUser)return;const ref=FB.doc(FB.db,'sos_cifras_groups',S.band.code),snap=await FB.getDoc(ref);if(!snap.exists()){status('O grupo salvo não foi encontrado. Confira o código e entre novamente.');return}const data=snap.data();if(!Array.isArray(data.members)||!data.members.includes(FB.auth.currentUser.uid)){status('Esta conta não pertence mais ao grupo. Digite o código e entre novamente.');return}S.band.role=data.leader===FB.auth.currentUser.uid?'leader':'member';saveBandSession();fbListen(ref);status('Reconectando ao grupo '+S.band.code+'…')}catch(err){status('Não foi possível reconectar: '+(err.code||err.message))}}
+async function fbSyncCurrent(id){try{if(FB&&S.band?.role==='leader')await FB.updateDoc(FB.doc(FB.db,'sos_cifras_groups',S.band.code),{currentSong:id,updatedAt:Date.now()})}catch(e){console.error('Falha ao sincronizar música atual:',e)}}
 render();
 </script>
 
@@ -2087,7 +2122,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
  window.addEventListener('load',function(){
   var reloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloading)return;reloading=true;location.reload();});
-  navigator.serviceWorker.register('./sw.js?v=1.2.71',{scope:'./',updateViaCache:'none'})
+  navigator.serviceWorker.register('./sw.js?v=1.2.72',{scope:'./',updateViaCache:'none'})
    .then(function(reg){reg.update().catch(function(){});})
    .catch(function(err){console.error('Falha ao ativar PWA SOS CIFRAS:',err);});
  });
