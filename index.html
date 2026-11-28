@@ -404,10 +404,11 @@ html .segno-over-bar>.music-inline-marker.barline,html .segno-over-bar>.music-in
 html .segno-over-bar>.music-inline-marker.segno,html .coda-bar>.music-inline-marker.coda-symbol,html .music-markers .segno-over-bar>.music-inline-marker.segno,html .music-markers .coda-bar>.music-inline-marker.coda-symbol{display:block!important;position:absolute!important;left:50%!important;bottom:100%!important;top:auto!important;transform:translateX(-50%)!important;vertical-align:baseline!important;margin:0 0 -.15em 0!important;padding:0!important;font-size:1.15em!important;line-height:1!important;color:#ff3030!important;-webkit-text-fill-color:#ff3030!important;font-weight:900!important;pointer-events:none}
 html .score-row:has(.segno-over-bar,.coda-bar){padding-top:1.05em}
 /* cabecalho musical (barra+compasso) flutua; linha de cifra nunca vira item flex encolhido */
-html #app .score-opening{display:block!important;width:100%!important;max-width:100%!important;overflow:visible}
-html #app .score-opening::after{content:"";display:block;clear:both}
-html #app .score-opening>.music-markers,html #app .score-opening>.time-signature-inline{float:left;flex:none!important;margin:0 8px 0 0}
-html #app .score-opening>.cs,html #app .score-opening>.sec{display:block!important;width:auto!important;max-width:none!important;min-width:0!important;flex:none!important;margin:0!important;white-space:pre-wrap!important;overflow-wrap:normal!important}
+html #app .score-opening{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:2px!important;width:100%!important;max-width:100%!important;overflow:visible}
+html #app .score-opening::after{content:none!important}
+html #app .score-opening>.time-signature-inline{flex:0 0 auto!important;float:none!important;margin:0 4px 0 0!important;order:0}
+html #app .score-opening>.music-markers{flex:0 0 auto!important;float:none!important;width:auto!important;display:inline-flex!important;align-items:center;margin:0!important;padding:0!important;order:1}
+html #app .score-opening>.cs,html #app .score-opening>.sec{flex:1 1 0%!important;min-width:0!important;width:auto!important;max-width:none!important;margin:0!important;order:2;white-space:pre-wrap!important}
 </style>
 </head>
 <body>
@@ -1883,7 +1884,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
   const segments=(voltaSegments[i]||[]).map(r=>'<span class="volta-fragment '+(r.first?'is-first ':'')+(r.last?'is-last':'')+'" data-volta-left="'+r.left+'" data-volta-right="'+r.right+'" style="left:'+r.left+'%;width:'+Math.max(0,r.right-r.left)+'%">'+(r.first?'<span class="volta-label-inline">'+e(r.label)+'</span><span class="volta-endpoint start" data-volta-key="'+r.key+'" data-volta-endpoint="start" role="slider" aria-label="Mover início da chave" tabindex="0"></span>':'')+(r.last?'<span class="volta-endpoint end" data-volta-key="'+r.key+'" data-volta-endpoint="end" role="slider" aria-label="Mover fim da chave" tabindex="0"></span>':'')+'</span>').join('');
   const meterValue=meterAtLine[i]||(i===openingIndex?(s.meter||'4/4'):null);
   const openingBarline=openingBarlineAt[i]?'<div class="music-markers">'+(()=>{const t=openingBarlineAt[i].split(/\s+/),o=[];if(t.some(x=>x==='𝄋'||x==='𝄌')&&!t.some(x=>x==='|'||x==='‖'||x==='||'))t.push('|');for(let j=0;j<t.length;j++){const x=t[j];if((x==='𝄋'||x==='𝄌')&&['|','‖','||'].includes(t[j+1])){const b=t[++j],bc=b==='|'?'barline':'doublebar',wc=x==='𝄋'?'segno-over-bar':'coda-bar',sc=x==='𝄋'?'segno':'coda-symbol';o.push('<span class="'+wc+'"><span class="music-inline-marker '+sc+'">'+e(x)+'</span><span class="music-inline-marker '+bc+'">'+e(b==='||'?'‖':b)+'</span></span>');}else if(x==='|'||x==='‖'||x==='||')o.push('<span class="'+(x==='|'?'barline':'doublebar')+'">'+e(x==='||'?'‖':x)+'</span>');}return o.join('')})()+'</div>':'';
-  return '<div class="score-row" data-score-line="'+i+'">'+(meterValue?'<div class="score-opening">'+openingBarline+meterHtml(meterValue)+row+'</div>':row)+segments+'</div>';
+  return '<div class="score-row" data-score-line="'+i+'">'+(meterValue?'<div class="score-opening">'+meterHtml(meterValue)+openingBarline+row+'</div>':row)+segments+'</div>';
  }).join('');
  const k=s.k?nn(s.k.replace(/m$/,''),cur)+(/m$/.test(s.k)?'m':''):'—';
  const pos=S.ctx?S.ctx.i+1+'/'+S.ctx.ids.length:'';
