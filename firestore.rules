@@ -20,6 +20,26 @@ service cloud.firestore {
         )
       );
       allow delete: if request.auth != null && request.auth.uid == resource.data.owner;
+
+      match /activity/{itemId} {
+        function isMember() {
+          return request.auth != null
+            && request.auth.uid in get(/databases/$(database)/documents/sos_cifras_groups/$(groupCode)).data.members;
+        }
+        function isLeader() {
+          return request.auth != null
+            && request.auth.uid == get(/databases/$(database)/documents/sos_cifras_groups/$(groupCode)).data.leader;
+        }
+        allow read: if isMember();
+        allow create: if isMember()
+          && request.resource.data.createdBy == request.auth.uid
+          && (request.resource.data.type != 'event' || isLeader());
+        allow update, delete: if isMember() && (
+          (resource.data.type == 'event' && isLeader())
+          || (resource.data.type != 'event'
+              && (resource.data.createdBy == request.auth.uid || isLeader()))
+        );
+      }
     }
   }
 }
