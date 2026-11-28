@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.73">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.74">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1799,7 +1799,7 @@ function vAjuda(){return `<h1>Ajuda</h1><p class="sub" style="text-align:left">T
 <li>Digite o título ou o artista. Suas cifras aparecem em "Suas cifras" e as da comunidade em "Comunidade". Toque em uma música para abrir.</li>
 <li><b>− e +</b>: baixam ou sobem o tom, meio tom por toque. Os acordes são recalculados, inclusive baixos como D/F# e extensões como Em7/9.</li>
 <li><b>A− e A+</b>: diminuem ou aumentam o tamanho da letra.</li>
-<li><b>▶ / ❚❚</b>: ligam e pausam a rolagem automática.</li>
+<li><b>▶ / ❚❚</b>: ligam e pausam a rolagem automática. Os botões <b>− e +</b> ao lado ajustam a velocidade em etapas de 0,25; o mínimo é 0,25×, para acompanhar letras mais lentamente.</li>
 <li><b>★</b>: marca ou desmarca como favorita.</li>
 <li><b>✎</b>: edita a cifra.</li>
 <li><b>▤+</b>: adiciona a música a uma setlist.</li>
@@ -1900,7 +1900,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  return `<header class="song-heading"><div class="song-brand" aria-label="Celso Martins, Dicas de Música"><strong>Celso Martins</strong><span>Dicas de Música</span></div><h1 class="song-title">${e(s.t)}</h1></header><div class="print-header"><div class="print-brand">Celso Martins · Dicas de Música</div><h1>${e(s.t)}</h1></div><div class="top"><div class="row"><button class="btn ghost fit" data-a="back">‹ Voltar</button><div style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e(s.t)}</b><small style="color:var(--mute)">${e(s.a||'')}</small></div></div>
  <div class="tools"><button class="tb" data-a="tr" data-v="-1" aria-label="Baixar tom">−</button><span class="chip" style="padding:8px 12px">Tom ${e(k)}${cur?' ('+(cur>0?'+':'')+cur+')':''}</span><span class="chip meter-readout">Compasso ${e(s.meter||'4/4')}</span><button class="tb" data-a="tr" data-v="1" aria-label="Subir tom">+</button>
  <button class="tb" data-a="fs" data-v="-1" aria-label="Diminuir fonte">A−</button><button class="tb" data-a="fs" data-v="1" aria-label="Aumentar fonte">A+</button>
- <button class="tb ${S.play?'on':''}" data-a="play" aria-label="Rolagem automática">${S.play?'❚❚':'▶'}</button><button class="tb" data-a="scroll-speed" data-v="1" aria-label="Aumentar velocidade da rolagem" title="Aumentar velocidade">+</button><button class="tb" data-a="scroll-speed" data-v="-1" aria-label="Diminuir velocidade da rolagem" title="Diminuir velocidade">−</button><button class="tb ${s.fav?'on':''}" data-a="fav" aria-label="Favoritar">★</button>
+ <button class="tb ${S.play?'on':''}" data-a="play" aria-label="Rolagem automática">${S.play?'❚❚':'▶'}</button><button class="tb" data-a="scroll-speed" data-v="0.25" aria-label="Aumentar velocidade da rolagem" title="Aumentar velocidade em 0,25">+</button><button class="tb" data-a="scroll-speed" data-v="-0.25" aria-label="Diminuir velocidade da rolagem" title="Diminuir velocidade em 0,25">−</button><span class="chip" aria-live="polite">Velocidade ${S.scrollSpeed.toFixed(2).replace('.',',')}×</span><button class="tb ${s.fav?'on':''}" data-a="fav" aria-label="Favoritar">★</button>
  <button class="tb" data-a="readmode" aria-label="Modo leitura" title="Modo leitura">☷</button><button class="tb" data-a="edit" aria-label="Editar">✎</button><button class="tb ${S.pick?'on':''}" data-a="pick" aria-label="Adicionar à setlist">▤+</button><label class="print-bg-option"><input type="checkbox" id="printDark" ${D.printDark?'checked':''}> Fundo escuro no PDF</label><button class="tb" data-a="print" aria-label="Imprimir">⎙</button></div>
  ${S.pick?`<div class="tools">${D.sets.map(l=>`<button class="btn ghost" data-a="toset" data-v="${l.id}">${e(l.n)}</button>`).join('')||'<small>Crie uma setlist primeiro.</small>'}</div>`:''}</div>
  <div style="font-size:${S.fs}px">${body}</div>
@@ -2014,7 +2014,7 @@ document.addEventListener('click',ev=>{if(document.documentElement.classList.con
  case'fs':S.fs=Math.min(30,Math.max(11,S.fs+ +v*2));render();break;
  case'fav':s.fav=s.fav?0:1;save();render();break;
  case'play':if(S.play)stopPlay();else{S.play=1;timer=setInterval(()=>window.scrollBy(0,S.scrollSpeed),50)}render();break;
-  case'scroll-speed':S.scrollSpeed=Math.max(1,Math.min(10,S.scrollSpeed+(+v)));if(S.play){clearInterval(timer);timer=setInterval(()=>window.scrollBy(0,S.scrollSpeed),50)}render();break;
+  case'scroll-speed':S.scrollSpeed=Math.round(Math.max(0.25,Math.min(10,S.scrollSpeed+(+v)))*100)/100;if(S.play){clearInterval(timer);timer=setInterval(()=>window.scrollBy(0,S.scrollSpeed),50)}render();break;
  case'pick':S.pick=S.pick?0:1;render();break;
  case'toset':{const t=D.sets.find(x=>x.id===v);if(!t.items.includes(s.id))t.items.push(s.id);save();S.pick=0;toast('Adicionada a “'+t.n+'”');break}
  case'print':document.documentElement.classList.toggle('print-dark',!!D.printDark);window.print();break;
@@ -2122,7 +2122,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
  window.addEventListener('load',function(){
   var reloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloading)return;reloading=true;location.reload();});
-  navigator.serviceWorker.register('./sw.js?v=1.2.73',{scope:'./',updateViaCache:'none'})
+  navigator.serviceWorker.register('./sw.js?v=1.2.74',{scope:'./',updateViaCache:'none'})
    .then(function(reg){reg.update().catch(function(){});})
    .catch(function(err){console.error('Falha ao ativar PWA SOS CIFRAS:',err);});
  });
