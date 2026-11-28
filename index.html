@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.78">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.79">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1401,7 +1401,7 @@ const S={tab:'busca',q:'',setQ:'',song:null,ctx:null,edit:null,sl:null,fs:16,pla
 const saveBandSession=()=>{try{if(S.band)localStorage.setItem('soscifras_band_session',JSON.stringify(S.band));else localStorage.removeItem('soscifras_band_session')}catch(_){}};
 let FB=null,fbUnsub=null;
 const song=id=>D.songs.find(x=>x.id===id);
-let timer=null;const stopPlay=()=>{clearInterval(timer);S.play=0};
+let timer=null,scrollRemainder=0;const scrollPlaybackTick=()=>{scrollRemainder+=S.scrollSpeed;const pixels=Math.floor(scrollRemainder+1e-9);if(pixels>0){window.scrollBy(0,pixels);scrollRemainder-=pixels}};const startScrollPlayback=()=>{clearInterval(timer);scrollRemainder=0;timer=setInterval(scrollPlaybackTick,50)};const stopPlay=()=>{clearInterval(timer);timer=null;scrollRemainder=0;S.play=0};
 const applyTheme=()=>{document.documentElement.dataset.theme=D.theme||'dark'};
 
 const IC={web:"⌕",band:"♬",busca:"⌕",sets:"▤",pub:"◎",conta:"●"};
@@ -2022,8 +2022,8 @@ document.addEventListener('click',ev=>{if(document.documentElement.classList.con
  case'tr':s.shift=((s.shift||0)+ +v+12)%12;if(s.shift>6)s.shift-=12;save();render();break;
  case'fs':S.fs=Math.min(30,Math.max(11,S.fs+ +v*2));render();break;
  case'fav':s.fav=s.fav?0:1;save();render();break;
- case'play':if(S.play){stopPlay();document.documentElement.classList.remove('reading-mode');}else{S.play=1;document.documentElement.classList.add('reading-mode');timer=setInterval(()=>window.scrollBy(0,S.scrollSpeed),50)}render();break;
-  case'scroll-speed':S.scrollSpeed=Math.round(Math.max(0.25,Math.min(10,S.scrollSpeed+(+v)))*100)/100;if(S.play){clearInterval(timer);timer=setInterval(()=>window.scrollBy(0,S.scrollSpeed),50)}render();break;
+ case'play':if(S.play){stopPlay();document.documentElement.classList.remove('reading-mode');}else{S.play=1;document.documentElement.classList.add('reading-mode');startScrollPlayback()}render();break;
+  case'scroll-speed':S.scrollSpeed=Math.round(Math.max(0.25,Math.min(10,S.scrollSpeed+(+v)))*100)/100;if(S.play)startScrollPlayback();render();break;
  case'pick':S.pick=S.pick?0:1;render();break;
  case'toset':{const t=D.sets.find(x=>x.id===v);if(!t.items.includes(s.id))t.items.push(s.id);save();S.pick=0;toast('Adicionada a “'+t.n+'”');break}
  case'print':document.documentElement.classList.toggle('print-dark',!!D.printDark);window.print();break;
@@ -2131,7 +2131,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
  window.addEventListener('load',function(){
   var reloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloading)return;reloading=true;location.reload();});
-  navigator.serviceWorker.register('./sw.js?v=1.2.78',{scope:'./',updateViaCache:'none'})
+  navigator.serviceWorker.register('./sw.js?v=1.2.79',{scope:'./',updateViaCache:'none'})
    .then(function(reg){reg.update().catch(function(){});})
    .catch(function(err){console.error('Falha ao ativar PWA SOS CIFRAS:',err);});
  });
