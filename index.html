@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.68">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.69">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1042,7 +1042,7 @@ document.addEventListener("click",function(ev){
    while((bm=bars.exec(lineText))!==null){var candidate=lineStart+bm.index;if(Math.abs(candidate-start)<distance){nearest=candidate;distance=Math.abs(candidate-start);}}
    var at=nearest>=0?nearest:start;
    var prefixChar=at>lineStart?text[at-1]:"";
-   ins=(prefixChar&&!/\s/.test(prefixChar)?" ":"")+"𝄋 ";
+   ins=(prefixChar&&!/\s/.test(prefixChar)?" ":"")+symbol+" ";
    area.value=text.slice(0,at)+ins+text.slice(at);
    area.focus();area.selectionStart=area.selectionEnd=at+ins.length;return;
   }
@@ -1845,7 +1845,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
  const openingIndex=lines.findIndex(isContentLine);
  const meterAtLine={},openingBarlineAt={},mergedOpeningLines=new Set();
  lines.forEach((line,i)=>{const tm=line.match(/^\s*(?:⟦(\d+\/\d+)⟧|\[(\d+\/\d+)\])\s*$/);if(!tm)return;for(let n=i+1;n<lines.length;n++){if(isContentLine(lines[n])){meterAtLine[n]=tm[1]||tm[2];break;}}});
- if(openingIndex>0){const prev=lines[openingIndex-1].trim();if(/^(?:\|+|‖|\|\|)(?:\s+(?:\|+|‖|\|\|))*$/.test(prev)){openingBarlineAt[openingIndex]=prev;mergedOpeningLines.add(openingIndex-1);}}
+ if(openingIndex>0){const prev=lines[openingIndex-1].trim();if(/^(?:(?:𝄋|𝄌|\|+|‖|\|\|)\s*)+$/.test(prev)){openingBarlineAt[openingIndex]=prev;mergedOpeningLines.add(openingIndex-1);}}
  const meterHtml=(value)=>{const meter=String(value||'4/4').split('/');return `<span class="time-signature-inline" aria-label="Fórmula de compasso ${e(value||'4/4')}"><span>${e(meter[0])}</span><span>${e(meter[1]||'4')}</span></span>`;};
  const voltaSegments={};
  lines.forEach((line,i)=>{
@@ -1870,7 +1870,7 @@ function vSong(){const s=song(S.song);if(!s)return'';const cur=s.shift||0;
   else row=`<div class="cs ${s.type==='chords'?'c':'l'}">${e(l)||' '}</div>`;
   const segments=(voltaSegments[i]||[]).map(r=>'<span class="volta-fragment '+(r.first?'is-first ':'')+(r.last?'is-last':'')+'" data-volta-left="'+r.left+'" data-volta-right="'+r.right+'" style="left:'+r.left+'%;width:'+Math.max(0,r.right-r.left)+'%">'+(r.first?'<span class="volta-label-inline">'+e(r.label)+'</span><span class="volta-endpoint start" data-volta-key="'+r.key+'" data-volta-endpoint="start" role="slider" aria-label="Mover início da chave" tabindex="0"></span>':'')+(r.last?'<span class="volta-endpoint end" data-volta-key="'+r.key+'" data-volta-endpoint="end" role="slider" aria-label="Mover fim da chave" tabindex="0"></span>':'')+'</span>').join('');
   const meterValue=meterAtLine[i]||(i===openingIndex?(s.meter||'4/4'):null);
-  const openingBarline=openingBarlineAt[i]?'<div class="music-markers">'+openingBarlineAt[i].split(/\s+/).map(x=>'<span class="'+(x==='‖'||x==='||'?'doublebar':'barline')+'">'+e(x)+'</span>').join('')+'</div>':'';
+  const openingBarline=openingBarlineAt[i]?'<div class="music-markers">'+(()=>{const t=openingBarlineAt[i].split(/\s+/),o=[];if(t.some(x=>x==='𝄋'||x==='𝄌')&&!t.some(x=>x==='|'||x==='‖'||x==='||'))t.push('|');for(let j=0;j<t.length;j++){const x=t[j];if((x==='𝄋'||x==='𝄌')&&['|','‖','||'].includes(t[j+1])){const b=t[++j],bc=b==='|'?'barline':'doublebar',wc=x==='𝄋'?'segno-over-bar':'coda-bar',sc=x==='𝄋'?'segno':'coda-symbol';o.push('<span class="'+wc+'"><span class="music-inline-marker '+sc+'">'+e(x)+'</span><span class="music-inline-marker '+bc+'">'+e(b==='||'?'‖':b)+'</span></span>');}else if(x==='|'||x==='‖'||x==='||')o.push('<span class="'+(x==='|'?'barline':'doublebar')+'">'+e(x==='||'?'‖':x)+'</span>');}return o.join('')})()+'</div>':'';
   return '<div class="score-row" data-score-line="'+i+'">'+(meterValue?'<div class="score-opening">'+openingBarline+meterHtml(meterValue)+row+'</div>':row)+segments+'</div>';
  }).join('');
  const k=s.k?nn(s.k.replace(/m$/,''),cur)+(/m$/.test(s.k)?'m':''):'—';
@@ -2062,7 +2062,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
  window.addEventListener('load',function(){
   var reloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloading)return;reloading=true;location.reload();});
-  navigator.serviceWorker.register('./sw.js?v=1.2.68',{scope:'./',updateViaCache:'none'})
+  navigator.serviceWorker.register('./sw.js?v=1.2.69',{scope:'./',updateViaCache:'none'})
    .then(function(reg){reg.update().catch(function(){});})
    .catch(function(err){console.error('Falha ao ativar PWA SOS CIFRAS:',err);});
  });
