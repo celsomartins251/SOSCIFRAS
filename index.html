@@ -997,8 +997,7 @@ function panel(){
  var html='<div class="chord-panel-inline" data-selected-chord="'+esc(x.name)+'"><section class="chord-panel-card" role="region" aria-label="Diagrama do acorde">';
  html+='<select id="chord-instrument" class="chord-instrument" aria-label="Instrumento">';
  html+='<option value="guitar6" '+(key==="guitar6"?"selected":"")+'>Violão · 6 cordas</option>';
- html+='<option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão · 7 cordas (Dó)</option>';
- html+='<option value="bass4" '+(key==="bass4"?"selected":"")+'>Contrabaixo · 4 cordas</option>';
+ html+='<option value="guitar7" '+(key==="guitar7"?"selected":"")+'>Violão · 7 cordas (Dó)</option>'; html+='<option value="bass4" '+(key==="bass4"?"selected":"")+'>Contrabaixo · 4 cordas</option>';
  html+='<option value="cavaquinho4" '+(key==="cavaquinho4"?"selected":"")+'>Cavaquinho · 4 cordas</option>';
  html+='</select><div class="chord-diagram-title">'+esc(x.name)+'</div><div class="scale-neck-host">'+frettedNeck(x,key)+'</div></section></div>';
  return html;
@@ -1997,8 +1996,7 @@ document.addEventListener('click',ev=>{if(document.documentElement.classList.con
  case'delete-cancel':document.querySelector('.delete-song-overlay')?.remove();break;
  case'delete-confirm':{const target=song(v);document.querySelector('.delete-song-overlay')?.remove();if(!target||target.src==='com'){toast('Esta música não pode ser excluída por aqui.');break;}D.songs=D.songs.filter(x=>x.id!==v);D.sets.forEach(set=>{set.items=set.items.filter(id=>id!==v)});if(S.song===v){S.song=null;S.ctx=null;stopPlay()}save();render();toast('Música excluída.');break}
  case'back':if(S.song){S.song=null;S.ctx=null;stopPlay()}else if(S.sl){S.sl=null;S.setQ=''}render();break;
- case'new':S.edit={id:uid(),t:'',a:'',k:'',body:'[Verso]\n',type:'lyrics'};render();break;
- case'edit':S.edit={...s};S.song=null;render();break;
+ case'new':S.edit={id:uid(),t:'',a:'',k:'',body:'[Verso]\n',type:'lyrics'};render();break; case'edit':S.edit={...s};S.song=null;render();break;
  case'cancel':S.edit=null;render();break;
  case'save':{const x=S.edit;x.t=document.getElementById('et').value.trim()||'Sem título';x.a=document.getElementById('ea').value.trim();x.k=document.getElementById('ek').value.trim();x.meter=(document.getElementById('emeter').value||'4/4').replace(/\s+/g,'');if(!/^\d+\/\d+$/.test(x.meter)||x.meter.split('/').some(n=>+n<1)){toast('Informe uma fórmula de compasso válida, por exemplo 4/4 ou 7/8.');break;}x.type=document.getElementById('etype').value;x.body=organizeImportedText(document.getElementById('eb').value,x.type==='chords');
   const i=D.songs.findIndex(y=>y.id===x.id);if(i<0)D.songs.unshift({...x,src:'mine',fav:0,shift:0});else D.songs[i]={...D.songs[i],...x};save();S.edit=null;S.song=x.id;toast('Cifra salva com sucesso');break}
