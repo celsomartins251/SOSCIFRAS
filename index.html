@@ -5,7 +5,7 @@
 
 
 
-<link rel="manifest" href="./manifest.webmanifest?v=1.2.79">
+<link rel="manifest" href="./manifest.webmanifest?v=1.2.80">
 <meta name="theme-color" content="#101010">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1397,9 +1397,9 @@ let D;try{D=JSON.parse(localStorage.getItem('soscifras_v1'))}catch(_){}
 if(!D){try{D=JSON.parse(localStorage.getItem('acordes_v1'))}catch(_){}}
 D=D||JSON.parse(JSON.stringify(SEED));
 const save=()=>{try{localStorage.setItem('soscifras_v1',JSON.stringify(D))}catch(_){}};
-const S={tab:'busca',q:'',setQ:'',song:null,ctx:null,edit:null,sl:null,fs:16,play:0,scrollSpeed:1,pick:0,msg:'',band:(()=>{try{return JSON.parse(localStorage.getItem('soscifras_band_session')||'null')}catch(_){return null}})()};
+const S={tab:'busca',q:'',setQ:'',song:null,ctx:null,edit:null,sl:null,fs:16,play:0,scrollSpeed:1,pick:0,msg:'',bandView:'inicio',bandItems:[],band:(()=>{try{return JSON.parse(localStorage.getItem('soscifras_band_session')||'null')}catch(_){return null}})()};
 const saveBandSession=()=>{try{if(S.band)localStorage.setItem('soscifras_band_session',JSON.stringify(S.band));else localStorage.removeItem('soscifras_band_session')}catch(_){}};
-let FB=null,fbUnsub=null;
+let FB=null,fbUnsub=null,fbActivityUnsub=null;
 const song=id=>D.songs.find(x=>x.id===id);
 let timer=null,scrollRemainder=0;const scrollPlaybackTick=()=>{scrollRemainder+=S.scrollSpeed;const pixels=Math.floor(scrollRemainder+1e-9);if(pixels>0){window.scrollBy(0,pixels);scrollRemainder-=pixels}};const startScrollPlayback=()=>{clearInterval(timer);scrollRemainder=0;timer=setInterval(scrollPlaybackTick,50)};const stopPlay=()=>{clearInterval(timer);timer=null;scrollRemainder=0;S.play=0};
 const applyTheme=()=>{document.documentElement.dataset.theme=D.theme||'dark'};
@@ -1750,7 +1750,23 @@ async function pasteFromClipboard(){
  }catch(_){toast('O aparelho não permitiu ler a área de transferência. Cole manualmente no campo de conteúdo.')}
 }
 function vWeb(){return `<h1>Buscar e importar cifras</h1><p class="sub" style="text-align:left">Pesquise a música ou cole o link direto da página. O aplicativo tenta ler o conteúdo e organizar as seções automaticamente. Se o site bloquear a leitura, use copiar e colar.</p><label for="webq">Música ou artista</label><input id="webq" placeholder="Ex.: nome da música — artista"><div class="row" style="margin:8px 0"><button class="btn" data-a="webgoogle">Google</button><button class="btn ghost" data-a="webbing">Bing</button></div><label for="wurl">Link da cifra</label><input id="wurl" type="url" placeholder="https://site.com/cifra-da-musica"><button class="btn" style="width:100%;margin-top:8px" data-a="webfetch">Buscar cifra pelo link</button><h2>Dados da música</h2><label for="wtitle">Título</label><input id="wtitle" placeholder="Título da música"><label for="wartist">Artista</label><input id="wartist" placeholder="Artista"><label for="wkey">Tom original (opcional)</label><input id="wkey" placeholder="Ex.: G, F#m, Bb"><button type="button" id="wonly" class="btn ghost" style="width:100%;margin-top:12px;text-align:left" data-a="only" aria-pressed="false">☐ Importar somente os acordes, sem a letra</button><label for="wimg">Imagem da cifra (foto ou print)</label><div class="row"><button class="btn ghost" type="button" data-a="imgpick">Ler cifra de uma imagem</button><button class="btn ghost" type="button" data-a="paste">Colar da área de transferência</button></div><input id="wimg" class="vh" type="file" accept="image/*" tabindex="-1" aria-hidden="true"><label for="wfile">Arquivo de cifra</label><div class="row"><button class="btn ghost" type="button" data-a="filepick">Carregar arquivo do dispositivo</button><span class="sub" style="text-align:left;margin:0">TXT, DOCX (Word), PDF, imagem, ChordPro, CRD e HTML</span></div><input id="wfile" class="vh" type="file" tabindex="-1" aria-hidden="true"><label for="wbody">Conteúdo importado, arquivo ou cifra copiada</label><textarea id="wbody" placeholder="[Intro]\nG  D  Em  C\n\n[Verso]\nG..." spellcheck="false"></textarea><button class="btn" style="width:100%;margin-top:10px" data-a="webimport">Importar para minhas cifras</button>`}
-function vBand(){return `<h1>Banda sincronizada</h1><p class="sub" style="text-align:left">O líder cria o grupo e compartilha um código. Os músicos entram somente com esse código, sem criar conta ou informar e-mail e senha.</p><h2>Configuração Firebase</h2><label for="fbapi">API Key</label><input id="fbapi" placeholder="Firebase apiKey" value="${e((D.firebase||{}).apiKey||'')}"><label for="fbdom">Auth Domain</label><input id="fbdom" placeholder="projeto.firebaseapp.com" value="${e((D.firebase||{}).authDomain||'')}"><label for="fbpid">Project ID</label><input id="fbpid" placeholder="Firebase Project ID" value="${e((D.firebase||{}).projectId||'')}"><label for="fbapp">App ID</label><input id="fbapp" placeholder="Firebase App ID" value="${e((D.firebase||{}).appId||'')}"><button class="btn" style="width:100%;margin-top:8px" data-a="fbconfig">Salvar configuração</button><h2>Acesso do líder</h2><p class="sub" style="text-align:left">O líder continua usando sua conta de e-mail e senha.</p><label for="fbemail">E-mail do líder</label><input id="fbemail" type="email" autocomplete="username" placeholder="seu@email.com"><label for="fbpass">Senha</label><input id="fbpass" type="password" autocomplete="current-password" placeholder="Senha"><div class="row" style="margin-top:8px"><button class="btn" data-a="fblogin">Entrar</button><button class="btn ghost" data-a="fbcreate">Criar conta</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbgroup">Criar grupo e ser líder</button><h2>Acesso dos músicos</h2><p class="sub" style="text-align:left">Digite o código fornecido pelo líder. O acesso será criado automaticamente neste aparelho.</p><div class="row"><input id="fbcode" placeholder="Código do grupo" value="${e(S.band?.code||'')}"><button class="btn" data-a="fbjoin">Entrar como músico</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbsync">Enviar repertório e setlists aos membros</button><p id="fbstatus" class="sub" style="text-align:left">${e(S.bandSyncStatus||(S.band?.code?'Código salvo: '+S.band.code+'. Toque em Entrar como músico para reconectar.':'Ainda não conectado.'))}</p><p class="sub" style="text-align:left">Todos os aparelhos precisam usar a mesma configuração Firebase. No Firebase, ative E-mail/senha e Anônimo em Authentication e configure o Firestore.</p>`}
+function vBand(){
+ const connected=!!(S.band&&S.band.code),view=S.bandView||'inicio',items=Array.isArray(S.bandItems)?S.bandItems:[];
+ const list=(type)=>items.filter(x=>x.type===type).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||Number(b.createdAt||0)-Number(a.createdAt||0));
+ const events=list('event'),availability=list('availability'),suggestions=list('suggestion'),wall=list('wall');
+ const nav=[['inicio','Visão geral'],['agenda','Agenda'],['disponibilidade','Disponibilidade'],['repertorio','Repertório'],['mural','Mural']];
+ const navHtml=nav.map(([k,n])=>'<button class="btn '+(view===k?'':'ghost')+'" data-a="bandnav" data-v="'+k+'" style="flex:1;min-width:105px">'+n+'</button>').join('');
+ const card=x=>'<article class="item" style="display:block;text-align:left"><b>'+e(x.title||x.eventTitle||'Sem título')+'</b><small>'+e(x.date||'')+(x.time?' · '+e(x.time):'')+(x.place?' · '+e(x.place):'')+'</small>'+(x.details?'<p style="margin:8px 0;color:var(--mute)">'+e(x.details)+'</p>':'')+(x.type==='event'?'<div class="row" style="margin-top:8px"><button class="btn" data-a="bandpresence" data-v="'+e(x.id)+'" data-answer="Vou">Vou</button><button class="btn ghost" data-a="bandpresence" data-v="'+e(x.id)+'" data-answer="Não vou">Não vou</button></div>':'')+(x.type==='suggestion'?'<small>Enviado por: '+e(x.memberName||'Músico')+'</small>':'')+(x.type==='wall'?'<small>Por: '+e(x.memberName||'Músico')+'</small>':'')+'</article>';
+ const config='<details><summary>Configuração e acesso do grupo</summary><label for="fbapi">API Key</label><input id="fbapi" placeholder="Firebase apiKey" value="'+e((D.firebase||{}).apiKey||'')+'"><label for="fbdom">Auth Domain</label><input id="fbdom" placeholder="projeto.firebaseapp.com" value="'+e((D.firebase||{}).authDomain||'')+'"><label for="fbpid">Project ID</label><input id="fbpid" placeholder="Firebase Project ID" value="'+e((D.firebase||{}).projectId||'')+'"><label for="fbapp">App ID</label><input id="fbapp" placeholder="Firebase App ID" value="'+e((D.firebase||{}).appId||'')+'"><button class="btn" style="width:100%;margin-top:8px" data-a="fbconfig">Salvar configuração</button><h2>Acesso do líder</h2><label for="fbemail">E-mail do líder</label><input id="fbemail" type="email" autocomplete="username" placeholder="seu@email.com"><label for="fbpass">Senha</label><input id="fbpass" type="password" autocomplete="current-password" placeholder="Senha"><div class="row" style="margin-top:8px"><button class="btn" data-a="fblogin">Entrar</button><button class="btn ghost" data-a="fbcreate">Criar conta</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbgroup">Criar grupo e ser líder</button><h2>Acesso dos músicos</h2><div class="row"><input id="fbcode" placeholder="Código do grupo" value="'+e(S.band?.code||'')+'"><button class="btn" data-a="fbjoin">Entrar como músico</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-a="fbsync">Enviar repertório e setlists aos membros</button><p id="fbstatus" class="sub" style="text-align:left">'+e(S.bandSyncStatus||(connected?'Grupo salvo: '+S.band.code+'. Reconecte se necessário.':'Ainda não conectado.'))+'</p><p class="sub" style="text-align:left">Todos os aparelhos usam a mesma configuração Firebase. Ative E-mail/senha e Anônimo em Authentication e configure o Firestore.</p></details>';
+ if(!connected)return '<h1>Banda</h1><p class="sub" style="text-align:left">Crie uma banda como líder ou entre com o código recebido. Depois você terá agenda, disponibilidade, repertório e mural compartilhados.</p>'+config;
+ let content='';
+ if(view==='inicio')content='<h2>Resumo da banda</h2><div class="item"><b>Código do grupo</b><span class="chip">'+e(S.band.code)+'</span><small>Perfil: '+(S.band.role==='leader'?'Líder':'Músico')+'</small></div><div class="row"><button class="btn" data-a="bandnav" data-v="agenda">Abrir agenda ('+events.length+')</button><button class="btn ghost" data-a="bandnav" data-v="disponibilidade">Disponibilidade ('+availability.length+')</button></div><h2>Próximos compromissos</h2>'+(events.slice(0,4).map(card).join('')||'<div class="empty">Nenhum compromisso cadastrado.</div>')+'<h2>Repertório sincronizado</h2><p class="sub" style="text-align:left">'+D.songs.length+' músicas · '+D.sets.length+' setlists. O líder administra o repertório oficial e envia as alterações aos integrantes.</p>';
+ if(view==='agenda')content='<h2>Novo ensaio ou apresentação</h2><label for="be-title">Nome do compromisso</label><input id="be-title" placeholder="Ex.: Ensaio geral ou Show de sábado"><div class="row"><div><label for="be-date">Data</label><input id="be-date" type="date"></div><div><label for="be-time">Horário</label><input id="be-time" type="time"></div></div><label for="be-place">Local / endereço</label><input id="be-place" placeholder="Local do ensaio ou apresentação"><label for="be-details">Observações</label><textarea id="be-details" rows="3" style="min-height:90px" placeholder="Repertório, horário de chegada, equipamento..."></textarea><button class="btn" style="width:100%;margin-top:10px" data-a="bandpost" data-v="event">Publicar compromisso</button><h2>Agenda da banda</h2>'+(events.map(card).join('')||'<div class="empty">A agenda ainda está vazia.</div>');
+ if(view==='disponibilidade')content='<h2>Informar disponibilidade</h2><label for="ba-date">Data</label><input id="ba-date" type="date"><label for="ba-status">Disponibilidade</label><select id="ba-status"><option value="Disponível">Disponível</option><option value="Indisponível">Indisponível</option><option value="Talvez">Talvez</option></select><label for="ba-details">Observação (opcional)</label><input id="ba-details" placeholder="Ex.: somente depois das 19h"><button class="btn" style="width:100%;margin-top:10px" data-a="bandpost" data-v="availability">Enviar disponibilidade</button><h2>Respostas dos músicos</h2>'+(availability.map(card).join('')||'<div class="empty">Nenhuma disponibilidade informada.</div>');
+ if(view==='repertorio')content='<h2>Repertório oficial</h2><p class="sub" style="text-align:left">O repertório e as setlists são administrados pelo líder. Depois de alterar músicas ou setlists nas abas Busca e Setlists, o líder deve tocar em “Enviar repertório e setlists aos membros”.</p><div class="item"><b>'+D.songs.length+' músicas</b><small>Repertório neste aparelho</small></div><div class="item"><b>'+D.sets.length+' setlists</b><small>Sequências organizadas</small></div><button class="btn" style="width:100%" data-a="fbsync">Enviar repertório e setlists aos membros</button><h2>Sugerir música ou playlist</h2><label for="bs-title">Nome da música / playlist</label><input id="bs-title" placeholder="Título da música ou playlist"><label for="bs-link">Link (Spotify, YouTube ou outro)</label><input id="bs-link" type="url" placeholder="https://..."><label for="bs-details">Comentário</label><input id="bs-details" placeholder="Tom, versão ou motivo da sugestão"><button class="btn ghost" style="width:100%;margin-top:10px" data-a="bandpost" data-v="suggestion">Enviar sugestão ao líder</button><h2>Sugestões dos músicos</h2>'+(suggestions.map(card).join('')||'<div class="empty">Nenhuma sugestão recebida.</div>');
+ if(view==='mural')content='<h2>Compartilhar no mural</h2><label for="bw-title">Mensagem</label><textarea id="bw-title" rows="3" style="min-height:100px" placeholder="Compartilhe um aviso, referência ou link musical..."></textarea><label for="bw-link">Link (opcional)</label><input id="bw-link" type="url" placeholder="https://..."><button class="btn" style="width:100%;margin-top:10px" data-a="bandpost" data-v="wall">Publicar no mural</button><h2>Mural da banda</h2>'+(wall.map(card).join('')||'<div class="empty">O mural ainda está vazio.</div>');
+ return '<h1>Banda</h1><p class="sub" style="text-align:left">Grupo '+e(S.band.code)+' · '+(S.band.role==='leader'?'Líder':'Músico')+'</p><div class="row" style="flex-wrap:wrap">'+navHtml+'</div>'+content+'<p id="fbstatus" class="sub" style="text-align:left">'+e(S.bandSyncStatus||'Conectado ao grupo.')+'</p>'+config;
+}
 function vPub(){const l=D.songs.filter(s=>s.src==='com');return `<h1>Público</h1><p class="sub" style="text-align:left">Cifras compartilhadas pela comunidade.</p>${l.map(s=>item(s)).join('')||'<div class="empty">Nenhuma cifra pública ainda.</div>'}`}
 
 function vSets(){
@@ -1769,28 +1785,29 @@ function vSets(){
 
 const RULES=`rules_version = '2';
 service cloud.firestore {
-  match /databases/{database}/documents {
-    match /sos_cifras_groups/{code} {
-      // A leitura por código é necessária para o músico localizar o grupo.
-      // Consultas/listagens da coleção ficam bloqueadas.
-      allow get: if request.auth != null;
-      allow list: if false;
-      allow create: if request.auth != null
-        && request.resource.data.owner == request.auth.uid
-        && request.resource.data.leader == request.auth.uid
-        && request.resource.data.members.hasOnly([request.auth.uid]);
-      allow update: if request.auth != null && (
-        resource.data.leader == request.auth.uid ||
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
-         && resource.data.members.toSet()
-            .difference(request.resource.data.members.toSet()).size() == 0
-         && request.resource.data.members.toSet()
-            .difference(resource.data.members.toSet())
-            .hasOnly([request.auth.uid])));
-      allow delete: if request.auth != null
-        && resource.data.owner == request.auth.uid;
-    }
+ match /databases/{database}/documents {
+  match /sos_cifras_groups/{code} {
+   allow get: if request.auth != null;
+   allow list: if false;
+   allow create: if request.auth != null
+    && request.resource.data.owner == request.auth.uid
+    && request.resource.data.leader == request.auth.uid
+    && request.resource.data.members.hasOnly([request.auth.uid]);
+   allow update: if request.auth != null && (
+    resource.data.leader == request.auth.uid ||
+    (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+     && resource.data.members.toSet().difference(request.resource.data.members.toSet()).size() == 0
+     && request.resource.data.members.toSet().difference(resource.data.members.toSet()).hasOnly([request.auth.uid])));
+   allow delete: if request.auth != null && resource.data.owner == request.auth.uid;
+   match /activity/{itemId} {
+    function isMember() { return request.auth != null && request.auth.uid in get(/databases/$(database)/documents/sos_cifras_groups/$(code)).data.members; }
+    function isLeader() { return request.auth != null && request.auth.uid == get(/databases/$(database)/documents/sos_cifras_groups/$(code)).data.leader; }
+    allow read: if isMember();
+    allow create: if isMember() && request.resource.data.createdBy == request.auth.uid;
+    allow update, delete: if isMember() && (resource.data.createdBy == request.auth.uid || isLeader());
+   }
   }
+ }
 }`;
 function vAjuda(){return `<h1>Ajuda</h1><p class="sub" style="text-align:left">Toque em um assunto para abrir. Tudo o que o aplicativo faz está explicado aqui.</p>
 <details open><summary>Visão geral das abas</summary><ul>
@@ -2009,6 +2026,10 @@ document.addEventListener('click',ev=>{if(document.documentElement.classList.con
  case'webimport':{const t=document.getElementById('wtitle').value.trim(),ar=document.getElementById('wartist').value.trim(),k=document.getElementById('wkey').value.trim(),only=onlyChords(),body=organizeImportedText(document.getElementById('wbody').value,only);if(!t||!body){toast('Informe o título e o conteúdo da cifra.');break}const x={id:uid(),t,a:ar,k,body,type:only?'chords':'lyrics',src:'mine',fav:0,shift:0};D.songs.unshift(x);save();S.tab='busca';S.q='';openSong(x.id);toast(only?'Importada somente com acordes':'Cifra importada');break}
  case'fbconfig':D.firebase={apiKey:document.getElementById('fbapi').value.trim(),authDomain:document.getElementById('fbdom').value.trim(),projectId:document.getElementById('fbpid').value.trim(),appId:document.getElementById('fbapp').value.trim()};save();toast('Configuração salva neste dispositivo.');break;
  case'fbcreate':case'fblogin':case'fbjoin':case'fbgroup':case'fbsync':fbDo(a);break;
+ case'bandnav':S.bandView=v;render();break;
+ case'bandpost':fbBandPost(v);break;
+ case'bandpresence':fbBandPresence(v,b.dataset.answer||'');break;
+ case'banddelete':fbBandDelete(v);break;
  case'renameset':{const n=prompt('Novo nome da setlist:',l.n);if(n&&n.trim()){l.n=n.trim();save();render()}break}
  case'open':openSong(v);break;
  case'delete-cancel':document.querySelector('.delete-song-overlay')?.remove();break;
@@ -2069,13 +2090,13 @@ async function fbDo(action){
    const payload={songs:D.songs,sets:D.sets},bytes=fbPayloadBytes(payload);if(bytes>850000){status('Repertório muito grande ('+Math.round(bytes/1024)+' KB) para um único documento Firestore.');return}
    const code=Math.random().toString(36).slice(2,10).toUpperCase(),ref=doc(db,'sos_cifras_groups',code);
    await setDoc(ref,{code,owner:auth.currentUser.uid,leader:auth.currentUser.uid,members:[auth.currentUser.uid],currentSong:null,songs:D.songs,sets:D.sets,updatedAt:Date.now()});
-   S.band={code,role:'leader'};saveBandSession();const field=document.getElementById('fbcode');if(field)field.value=code;fbListen(ref);status('Grupo criado: '+code+'. Repertório inicial: '+D.songs.length+' músicas e '+D.sets.length+' setlists.');return;
+   S.band={code,role:'leader',memberName:'Líder'};saveBandSession();const field=document.getElementById('fbcode');if(field)field.value=code;fbListen(ref);status('Grupo criado: '+code+'. Repertório inicial: '+D.songs.length+' músicas e '+D.sets.length+' setlists.');return;
   }
   if(action==='fbjoin'){
    const code=document.getElementById('fbcode')?.value.trim().toUpperCase();if(!code){status('Digite o código que o líder compartilhou.');return}
    const ref=doc(db,'sos_cifras_groups',code),snap=await getDoc(ref);if(!snap.exists()){status('Código não encontrado. Confira o código com o líder.');return}
    const data=snap.data();if(!Array.isArray(data.members)||!data.members.includes(auth.currentUser.uid))await updateDoc(ref,{members:arrayUnion(auth.currentUser.uid)});
-   S.band={code,role:data.leader===auth.currentUser.uid?'leader':'member'};saveBandSession();fbListen(ref);status('Código aceito. Lendo o repertório enviado pelo líder…');return;
+   S.band={code,role:data.leader===auth.currentUser.uid?'leader':'member',memberName:S.band?.memberName||'Músico'};saveBandSession();fbListen(ref);status('Código aceito. Lendo o repertório enviado pelo líder…');return;
   }
   if(action==='fbsync'){
    if(S.band?.role!=='leader'||!S.band?.code){status('Entre no grupo como líder antes de enviar.');return}
@@ -2091,8 +2112,53 @@ async function fbDo(action){
   }
  }catch(err){console.error('SOS Cifras / Banda:',err);status('Falha Firebase: '+(err.code||err.message||'erro desconhecido')+'. Verifique a conexão e as regras do Firestore.')}
 }
+async function fbEnsure(){
+ if(FB)return FB;
+ const cfg=D.firebase||{};
+ if(!cfg.apiKey||!cfg.authDomain||!cfg.projectId||!cfg.appId)throw new Error('Salve primeiro a configuração Firebase.');
+ const [appM,authM,dbM]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js')]);
+ const app=appM.initializeApp(cfg,'soscifras');const auth=authM.getAuth(app),db=dbM.getFirestore(app);FB={...appM,...authM,...dbM,app,auth,db};return FB;
+}
+async function fbBandPost(type){
+ try{
+  const f=await fbEnsure();await fbWaitAuth(f.auth);if(!S.band?.code||!f.auth.currentUser)throw new Error('Entre no grupo antes de publicar.');
+  const get=id=>document.getElementById(id)?.value?.trim()||'';
+  let data={type,createdBy:f.auth.currentUser.uid,memberName:get('band-name')||S.band.memberName||'Músico',createdAt:Date.now()};
+  if(type==='event'){data.title=get('be-title');data.date=get('be-date');data.time=get('be-time');data.place=get('be-place');data.details=get('be-details');if(!data.title||!data.date)throw new Error('Informe o nome e a data do compromisso.');}
+  if(type==='availability'){data.title=data.memberName;data.date=get('ba-date');data.status=get('ba-status')||'Disponível';data.details=get('ba-details');if(!data.date)throw new Error('Escolha a data da disponibilidade.');}
+  if(type==='suggestion'){data.title=get('bs-title');data.link=get('bs-link');data.details=get('bs-details');if(!data.title&&!data.link)throw new Error('Informe uma música, playlist ou link.');}
+  if(type==='wall'){data.title=get('bw-title');data.link=get('bw-link');if(!data.title&&!data.link)throw new Error('Escreva uma mensagem ou informe um link.');}
+  await f.addDoc(f.collection(f.db,'sos_cifras_groups',S.band.code,'activity'),data);
+  S.bandSyncStatus='Publicado com sucesso.';toast('Publicado na banda.');S.bandView=type==='event'?'agenda':type==='availability'?'disponibilidade':type==='suggestion'?'repertorio':'mural';
+ }catch(err){S.bandSyncStatus='Não foi possível publicar: '+(err.message||err.code||'erro')+'. Se for erro de permissão, atualize as regras do Firestore na Ajuda.';toast(S.bandSyncStatus)}
+ render();
+}
+async function fbBandPresence(eventId,answer){
+ try{
+  const f=await fbEnsure();await fbWaitAuth(f.auth);if(!S.band?.code||!f.auth.currentUser)throw new Error('Entre no grupo antes de confirmar presença.');
+  const event=(S.bandItems||[]).find(x=>x.id===eventId);if(!event)throw new Error('Compromisso não encontrado.');
+  const id='presence_'+eventId+'_'+f.auth.currentUser.uid;
+  await f.setDoc(f.doc(f.db,'sos_cifras_groups',S.band.code,'activity',id),{type:'presence',eventId,eventTitle:event.title,answer,createdBy:f.auth.currentUser.uid,memberName:S.band.memberName||'Músico',createdAt:Date.now()},{merge:true});
+  S.bandSyncStatus='Presença registrada: '+answer+'.';toast(S.bandSyncStatus);
+ }catch(err){S.bandSyncStatus='Falha ao confirmar presença: '+(err.message||err.code);toast(S.bandSyncStatus)}
+ render();
+}
+async function fbBandDelete(id){
+ try{const f=await fbEnsure();await fbWaitAuth(f.auth);if(!S.band?.code||!f.auth.currentUser)throw new Error('Entre no grupo.');await f.deleteDoc(f.doc(f.db,'sos_cifras_groups',S.band.code,'activity',id));toast('Item excluído.');}
+ catch(err){toast('Não foi possível excluir: '+(err.message||err.code))}
+}
+function fbListenActivity(){
+ if(!FB||!S.band?.code)return;
+ if(fbActivityUnsub)fbActivityUnsub();
+ const ref=FB.collection(FB.db,'sos_cifras_groups',S.band.code,'activity');
+ fbActivityUnsub=FB.onSnapshot(ref,snap=>{
+  S.bandItems=snap.docs.map(d=>({id:d.id,...d.data()}));
+  if(S.tab==='band'&&!S.song&&!S.edit)render();
+ },err=>{S.bandSyncStatus='Falha ao carregar os módulos da Banda: '+(err.code||err.message);const n=document.getElementById('fbstatus');if(n)n.textContent=S.bandSyncStatus});
+}
 function fbListen(ref){
  if(fbUnsub)fbUnsub();
+ fbListenActivity();
  fbUnsub=FB.onSnapshot(ref,snap=>{
   if(!snap.exists()){S.bandSyncStatus='O grupo não foi encontrado no Firestore.';return}
   const data=snap.data();
@@ -2131,7 +2197,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
  window.addEventListener('load',function(){
   var reloading=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloading)return;reloading=true;location.reload();});
-  navigator.serviceWorker.register('./sw.js?v=1.2.79',{scope:'./',updateViaCache:'none'})
+  navigator.serviceWorker.register('./sw.js?v=1.2.80',{scope:'./',updateViaCache:'none'})
    .then(function(reg){reg.update().catch(function(){});})
    .catch(function(err){console.error('Falha ao ativar PWA SOS CIFRAS:',err);});
  });
