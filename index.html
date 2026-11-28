@@ -1042,7 +1042,7 @@ document.addEventListener("click",function(ev){
    while((bm=bars.exec(lineText))!==null){var candidate=lineStart+bm.index;if(Math.abs(candidate-start)<distance){nearest=candidate;distance=Math.abs(candidate-start);}}
    var at=nearest>=0?nearest:start;
    var prefixChar=at>lineStart?text[at-1]:"";
-   ins=(prefixChar&&!/\s/.test(prefixChar)?" ":"")+"𝄋";
+   ins=(prefixChar&&!/\s/.test(prefixChar)?" ":"")+"𝄋 ";
    area.value=text.slice(0,at)+ins+text.slice(at);
    area.focus();area.selectionStart=area.selectionEnd=at+ins.length;return;
   }
