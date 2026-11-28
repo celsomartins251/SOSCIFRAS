@@ -20,20 +20,50 @@
 (async function(){
  const status=document.getElementById('status'),detail=document.getElementById('detail');
  const home='./?atualizacao=1.2.75';
- function finish(message){status.textContent=message;detail.textContent='Abrindo o SOS CIFRAS atualizado…';setTimeout(()=>location.replace(home),900)}
- if(!('serviceWorker' in navigator)){status.textContent='Este navegador não oferece atualização automática.';detail.innerHTML='<a href="./">Abrir SOS CIFRAS</a>';return}
+ let redirected=false,updateFound=false;
+ function finish(message){
+  if(redirected)return;redirected=true;
+  status.textContent=message;
+  detail.textContent='Abrindo o SOS CIFRAS atualizado…';
+  setTimeout(()=>location.replace(home),1100);
+ }
+ if(!('serviceWorker' in navigator)){
+  status.textContent='Este navegador não oferece atualização automática.';
+  detail.innerHTML='<a href="./">Abrir SOS CIFRAS</a>';return;
+ }
  try{
   const reg=await navigator.serviceWorker.register('./sw.js?v=1.2.75',{scope:'./',updateViaCache:'none'});
-  let changed=false;
-  const activate=worker=>{if(worker&&worker.state!=='activated'){changed=true;worker.postMessage({type:'SKIP_WAITING'});}};
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(changed)finish('Atualização instalada com sucesso.');},{once:true});
-  reg.addEventListener('updatefound',()=>{const w=reg.installing;if(!w)return;w.addEventListener('statechange',()=>{if(w.state==='installed')activate(w);});});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>finish('Atualização instalada com sucesso.'));
+  reg.addEventListener('updatefound',()=>{
+   updateFound=true;
+   const worker=reg.installing;
+   if(!worker)return;
+   worker.addEventListener('statechange',()=>{
+    if(worker.state==='installed'){
+     if(navigator.serviceWorker.controller){
+      status.textContent='Nova versão encontrada. Aplicando atualização…';
+      worker.postMessage({type:'SKIP_WAITING'});
+     }else finish('Aplicativo instalado com sucesso.');
+    }
+    if(worker.state==='activated')finish('Atualização instalada com sucesso.');
+   });
+  });
   await reg.update();
-  if(reg.waiting)activate(reg.waiting);
-  else if(reg.installing){const w=reg.installing;if(w.state==='installed')activate(w);else w.addEventListener('statechange',()=>{if(w.state==='installed')activate(w);});}
-  if(!changed){status.textContent='O aplicativo já está na versão mais recente.';finish('Verificação concluída.');}
-  setTimeout(()=>{if(!changed)location.replace(home);},1800);
- }catch(err){console.error('Falha na atualização SOS CIFRAS:',err);status.textContent='Não foi possível concluir a atualização agora.';detail.innerHTML='<a href="./">Tentar abrir o SOS CIFRAS</a>';}
+  if(reg.waiting){
+   status.textContent='Nova versão encontrada. Aplicando atualização…';
+   reg.waiting.postMessage({type:'SKIP_WAITING'});
+   return;
+  }
+  if(reg.installing){
+   status.textContent='Baixando e instalando a nova versão…';
+   return;
+  }
+  if(!updateFound)finish('O aplicativo já está na versão mais recente.');
+ }catch(err){
+  console.error('Falha na atualização SOS CIFRAS:',err);
+  status.textContent='Não foi possível concluir a atualização agora.';
+  detail.innerHTML='<a href="./">Tentar abrir o SOS CIFRAS</a>';
+ }
 })();
 </script>
 </body>
