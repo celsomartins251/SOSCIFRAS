@@ -19,7 +19,7 @@
 <script>
 (async function(){
  const status=document.getElementById('status'),detail=document.getElementById('detail');
- const home='./?atualizacao=1.2.78';
+ const home='./?atualizacao=1.2.79';
  let redirected=false,updateFound=false;
  function finish(message){
   if(redirected)return;redirected=true;
@@ -32,7 +32,7 @@
   detail.innerHTML='<a href="./">Abrir SOS CIFRAS</a>';return;
  }
  try{
-  const reg=await navigator.serviceWorker.register('./sw.js?v=1.2.78',{scope:'./',updateViaCache:'none'});
+  const reg=await navigator.serviceWorker.register('./sw.js?v=1.2.79',{scope:'./',updateViaCache:'none'});
   navigator.serviceWorker.addEventListener('controllerchange',()=>finish('Atualização instalada com sucesso.'));
   reg.addEventListener('updatefound',()=>{
    updateFound=true;
